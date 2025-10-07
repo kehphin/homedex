@@ -47,6 +47,8 @@ import ActiveSubscriptions from "./payments/ActiveSubscriptions";
 import SampleProtectedFile from "./samples/SampleProtectedFile";
 import SampleProtectedSubscription from "./samples/SampleRequiresSubscription";
 import AskDex from "./dex/AskDex";
+import ScheduleAppointment from "./appointments/ScheduleAppointment";
+import Tasks from "./tasks/Tasks";
 
 function RedirectToAstro() {
   useEffect(() => {
@@ -78,6 +80,22 @@ function createRouter() {
           element: (
             <AuthenticatedRoute>
               <AskDex />
+            </AuthenticatedRoute>
+          ),
+        },
+        {
+          path: "/account/appointment",
+          element: (
+            <AuthenticatedRoute>
+              <ScheduleAppointment />
+            </AuthenticatedRoute>
+          ),
+        },
+        {
+          path: "/account/tasks",
+          element: (
+            <AuthenticatedRoute>
+              <Tasks />
             </AuthenticatedRoute>
           ),
         },

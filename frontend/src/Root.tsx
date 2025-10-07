@@ -10,7 +10,10 @@ interface LayoutProps {
   toggleFeedbackModal?: () => void;
 }
 
-const AuthenticatedLayout: React.FC<LayoutProps> = ({ children, toggleFeedbackModal }) => (
+const AuthenticatedLayout: React.FC<LayoutProps> = ({
+  children,
+  toggleFeedbackModal,
+}) => (
   <div className="flex flex-1 bg-base-100 pt-16">
     <SideMenu openFeedbackModal={toggleFeedbackModal} />
     <main className="lg:ml-64 flex-1 p-6">{children}</main>
@@ -50,7 +53,10 @@ export default function Root() {
       <Layout toggleFeedbackModal={toggleFeedbackModal}>
         <Outlet />
       </Layout>
-      <FeedbackModal isOpen={isFeedbackModalOpen} onClose={toggleFeedbackModal} />
+      <FeedbackModal
+        isOpen={isFeedbackModalOpen}
+        onClose={toggleFeedbackModal}
+      />
     </div>
   );
 }

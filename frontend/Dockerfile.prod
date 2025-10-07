@@ -15,9 +15,6 @@ ARG PUBLIC_URL
 
 RUN npm run build
 
-# copy the output css to build/static/output.css
-RUN cp ./public/output.css /code/build/static/output.css
-
 # Install serve globally
 RUN npm install -g serve
 
