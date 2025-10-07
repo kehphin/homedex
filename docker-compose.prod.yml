@@ -40,8 +40,8 @@ services:
     volumes:
       - ./backend/backend:/code/backend/
       - ./backend:/code/
-    depends_on:
-      - db
+    # depends_on:
+    #   - db
 
   proxy:
     image: traefik:v3.4
