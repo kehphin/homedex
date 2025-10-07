@@ -50,6 +50,7 @@ import AskDex from "./dex/AskDex";
 import ScheduleAppointment from "./appointments/ScheduleAppointment";
 import Tasks from "./tasks/Tasks";
 import HomeComponents from "./components/HomeComponents";
+import Documents from "./documents/Documents";
 
 function RedirectToAstro() {
   useEffect(() => {
@@ -105,6 +106,14 @@ function createRouter() {
           element: (
             <AuthenticatedRoute>
               <HomeComponents />
+            </AuthenticatedRoute>
+          ),
+        },
+        {
+          path: "/account/documents",
+          element: (
+            <AuthenticatedRoute>
+              <Documents />
             </AuthenticatedRoute>
           ),
         },

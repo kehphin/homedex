@@ -10,6 +10,10 @@ COPY requirements.txt .
 RUN pip install -r requirements.txt
 COPY manage.py .
 COPY ./backend ./backend/
+COPY ./user_auth ./user_auth/
+COPY ./contactus ./contactus/
+COPY ./payments ./payments/
+COPY ./sample ./sample/
 EXPOSE 8000
 
 # Copy the wait-for-postgres script
