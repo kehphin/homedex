@@ -1,0 +1,17 @@
+---
+import Layout from './Layout.astro';
+const { frontmatter } = Astro.props;
+
+---
+
+<Layout title={frontmatter.title} description={frontmatter.description}>
+  <div class="min-h-screen bg-base-200 py-32">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+      <h1 class="text-4xl font-bold mb-8 text-center">{frontmatter.title}</h1>
+      <div class="prose lg:prose-xl mx-auto">
+        <p class="text-lg mb-8">Last updated: {frontmatter.lastUpdated}</p>
+        <slot />
+      </div>
+    </div>
+  </div>
+</Layout>

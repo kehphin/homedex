@@ -1,0 +1,79 @@
+---
+// src/components/ContactForm.astro
+---
+
+<div class="bg-base-300 p-8 rounded-lg">
+    <h2 class="text-3xl font-bold mb-6">Get in Touch</h2>
+    <form id="contactForm" class="space-y-4">
+      <div class="form-control">
+        <input type="text" name="name" placeholder="Your Name" class="input input-bordered w-full" required />
+      </div>
+      <div class="form-control">
+        <input type="email" name="email" placeholder="your@email.com" class="input input-bordered w-full" required />
+      </div>
+      <div class="form-control">
+        <textarea name="message" class="textarea textarea-bordered h-24" placeholder="Your message here..." required></textarea>
+      </div>
+      <button type="submit" class="btn btn-primary w-full">Send Message</button>
+    </form>
+    <div id="toast" class="alert mt-4 hidden">
+      <span id="toastMessage"></span>
+    </div>
+  </div>
+  
+  <script>
+    const form = document.getElementById('contactForm');
+    const toast = document.getElementById('toast');
+    const toastMessage = document.getElementById('toastMessage');
+    
+    function getCookie (name) {
+      let cookieValue = null
+      if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';')
+        for (let i = 0; i < cookies.length; i++) {
+          const cookie = cookies[i].trim()
+          // Does this cookie string begin with the name we want?
+          if (cookie.substring(0, name.length + 1) === (name + '=')) {
+            cookieValue = decodeURIComponent(cookie.substring(name.length + 1))
+            break
+          }
+        }
+      }
+      return cookieValue
+    }
+    export function getCSRFToken () {
+      return getCookie('csrftoken')
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(form);
+      const data = Object.fromEntries(formData);
+      
+      try {
+        const response = await fetch('/api/v1/contactus/contact/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json',
+            'X-CSRFToken': getCSRFToken()
+           },
+          body: JSON.stringify(data),
+        });
+  
+        if (response.ok) {
+          showToast("Thanks for reaching out! I'll respond shortly!", 'alert-success');
+          form.reset();
+        } else {
+          showToast('Failed to send message. Please try again.', 'alert-error');
+        }
+      } catch (error) {
+        showToast('An error occurred. Please try again later.', 'alert-error');
+      }
+    });
+    
+    function showToast(message, type) {
+      toastMessage.textContent = message;
+      toast.className = `alert ${type} mt-4`;
+      toast.classList.remove('hidden');
+      setTimeout(() => toast.classList.add('hidden'), 3000);
+    }
+  </script>

@@ -1,0 +1,98 @@
+[http.middlewares]
+  [http.middlewares.react-to-astro.errors]
+    status = ["404"]
+    service = "astro"
+    query = "/"
+
+  [http.middlewares.https-redirect.redirectScheme]
+    scheme = "https"
+    permanent = true
+
+[http.routers]
+  [http.routers.django]
+    service = "django"
+    rule = "Host(`{{ env "DOMAIN" }}`) && (PathPrefix(`/accounts`) || PathPrefix(`/_allauth`) || PathPrefix(`/payments`) || PathPrefix(`/api`) || PathPrefix(`/stripe`) || PathPrefix(`/admin`) || PathPrefix(`/django-static`))"
+    entryPoints = ["web"]
+
+  [http.routers.react]
+    service = "react"
+    rule = "Host(`{{ env "DOMAIN" }}`) && (PathPrefix(`/account`) || PathPrefix(`/app`) || PathPrefix(`/payment`) || PathPrefix(`/static`))"
+    entryPoints = ["web"]
+    middlewares = ["react-to-astro"]
+
+  [http.routers.astro]
+    service = "astro"
+    rule = "Host(`{{ env "DOMAIN" }}`) && (PathPrefix(`/blog`) || PathPrefix(`/about`) || PathPrefix(`/contact`))"
+    priority = 20
+    entryPoints = ["web"]
+
+  [http.routers.astro_static]
+    service = "astro"
+    rule = "Host(`{{ env "DOMAIN" }}`) && PathPrefix(`/astro-static`)"
+    priority = 30
+    entryPoints = ["web"]
+
+  [http.routers.astro_root]
+    service = "astro"
+    rule = "Host(`{{ env "DOMAIN" }}`) && PathPrefix(`/`) && !PathPrefix(`/account`)"
+    priority = 5
+    entryPoints = ["web"]
+
+[http.services]
+  [http.services.react.loadBalancer]
+    [[http.services.react.loadBalancer.servers]]
+      url = "http://frontend:3000"
+
+  [http.services.django.loadBalancer]
+    [[http.services.django.loadBalancer.servers]]
+      url = "http://backend:8000"
+
+  [http.services.astro.loadBalancer]
+    [[http.services.astro.loadBalancer.servers]]
+      url = "http://astro:4321"
+
+{{ if ne (env "ENV") "development" }}
+# Production-specific configurations
+[http.routers.django-secure]
+  service = "django"
+  rule = "Host(`{{ env "DOMAIN" }}`) && (PathPrefix(`/accounts`) || PathPrefix(`/_allauth`) || PathPrefix(`/payments`) || PathPrefix(`/api`) || PathPrefix(`/stripe`) || PathPrefix(`/admin`) || PathPrefix(`/django-static`))"
+  entryPoints = ["websecure"]
+  middlewares = ["https-redirect"]
+  [http.routers.django-secure.tls]
+    certResolver = "myresolver"
+
+[http.routers.react-secure]
+  service = "react"
+  rule = "Host(`{{ env "DOMAIN" }}`) && (PathPrefix(`/account`) || PathPrefix(`/app`) || PathPrefix(`/payment`) || PathPrefix(`/static`))"
+  entryPoints = ["websecure"]
+  middlewares = ["react-to-astro", "https-redirect"]
+  [http.routers.react-secure.tls]
+    certResolver = "myresolver"
+
+[http.routers.astro-secure]
+  service = "astro"
+  rule = "Host(`{{ env "DOMAIN" }}`) && (PathPrefix(`/blog`) || PathPrefix(`/about`) || PathPrefix(`/contact`))"
+  priority = 20
+  entryPoints = ["websecure"]
+  middlewares = ["https-redirect"]
+  [http.routers.astro-secure.tls]
+    certResolver = "myresolver"
+
+[http.routers.astro_static-secure]
+  service = "astro"
+  rule = "Host(`{{ env "DOMAIN" }}`) && PathPrefix(`/astro-static`)"
+  priority = 30
+  entryPoints = ["websecure"]
+  middlewares = ["https-redirect"]
+  [http.routers.astro_static-secure.tls]
+    certResolver = "myresolver"
+
+[http.routers.astro_root-secure]
+  service = "astro"
+  rule = "Host(`{{ env "DOMAIN" }}`) && PathPrefix(`/`) && !PathPrefix(`/account`)"
+  priority = 5
+  entryPoints = ["websecure"]
+  middlewares = ["https-redirect"]
+  [http.routers.astro_root-secure.tls]
+    certResolver = "myresolver"
+{{ end }}

@@ -1,0 +1,26 @@
+---
+// src/pages/index.astro
+import HeroSection from '../components/HeroSection.astro';
+import FeaturesSection from '../components/FeaturesSection.astro';
+import TestimonialsSection from '../components/TestimonialsSection.astro';
+import PricingSection from '../components/PricingSection.jsx';
+import ContactSection from '../components/ContactSection.astro'
+import FooterSection from '../components/FooterSection.astro';
+import Layout from '../layouts/Layout.astro';
+
+
+const title = "Your SaaS Product - Home";
+const description = "Experience seamless collaboration and skyrocket your productivity with our cutting-edge platform.";
+---
+
+<Layout title={title} description={description}>
+
+    <div class="min-h-screen bg-base-100 overflow-hidden">
+      <HeroSection />
+      <FeaturesSection />
+      <TestimonialsSection />
+      <PricingSection client:load />
+      <ContactSection />
+    </div>
+  </body>
+</Layout>

@@ -1,0 +1,30 @@
+---
+// src/layouts/BlogPostLayout.astro
+import Layout from './Layout.astro';
+
+const { frontmatter } = Astro.props;
+
+function slugify(text) {
+  return text
+    .toString()
+    .toLowerCase()
+    .replace(/\s+/g, '-')
+    .replace(/[^\w-]+/g, '')
+    .replace(/--+/g, '-')
+    .replace(/^-+/, '')
+    .replace(/-+$/, '');
+}
+---
+
+<Layout title={frontmatter.title} description={frontmatter.excerpt} ogImage={frontmatter.image} keywords={frontmatter.keywords}>
+  <article class="prose lg:prose-xl mx-auto px-4 py-32">
+    <h1>{frontmatter.title}</h1>
+    <p class="text-base-content opacity-70">
+      By <a href={`/author/${slugify(frontmatter.author)}`} class="font-medium hover:text-primary transition-colors duration-300">
+        {frontmatter.author}
+      </a> on {new Date(frontmatter.date).toLocaleDateString()}
+    </p>
+    <img src={frontmatter.image} alt={frontmatter.title} class="w-full h-64 object-cover rounded-lg mb-8" />
+    <slot />
+  </article>
+</Layout>

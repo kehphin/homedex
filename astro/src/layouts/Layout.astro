@@ -1,0 +1,36 @@
+---
+import FooterSection from '../components/FooterSection.astro';
+import NavBar from '../components/NavBar.astro';
+
+const { title, description, user, config, ogImage, keywords } = Astro.props;
+const pathname = new URL(Astro.request.url).pathname;
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="generator" content={Astro.generator} />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <!-- Add more meta tags for SEO as needed -->
+    <meta property="og:image" content={ogImage || '/favicon.svg'} />
+    <!-- og title -->
+    <meta property="og:title" content={title || "my site"} />
+    <!-- og description -->
+    <meta property="og:description" content={description || "my site"} />
+    <!-- og type -->
+    <meta property="og:type" content="website" />
+    <!-- keywords -->
+    <meta name="keywords" content={keywords || "my site"} />
+
+  </head>
+  <body class="bg-base-300">
+    <NavBar user={user} config={config} pathname={pathname} />
+    <main>
+      <slot />
+    </main>
+    <FooterSection />
+  </body>
+</html>

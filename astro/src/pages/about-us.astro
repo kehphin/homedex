@@ -1,0 +1,110 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const title = "About Us - Your SaaS Product";
+const description = "Revolutionizing [your industry] with innovative solutions.";
+
+const teamMembers = [
+  { name: "Jane Doe", role: "CEO & Co-founder" },
+  { name: "John Smith", role: "CTO & Co-founder" },
+  { name: "Alice Johnson", role: "Head of Design" }
+];
+
+---
+
+<Layout title={title} description={description}>
+  <main class="min-h-screen bg-base-100 text-base-content">
+    <!-- Hero Section -->
+    <section class="hero min-h-screen bg-base-200">
+      <div class="hero-content text-center">
+        <div class="max-w-md">
+          <h1 class="text-5xl font-bold mb-8 animate-fade-in">About Us</h1>
+          <p class="text-xl mb-8 animate-fade-in animation-delay-300">Revolutionizing [your industry] with innovative solutions.</p>
+          <div class="h-1 w-16 bg-primary mx-auto animate-grow animation-delay-600"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Mission Statement -->
+    <section class="py-32">
+      <div class="container mx-auto px-4 max-w-2xl">
+        <h2 class="text-4xl font-bold mb-8 text-center">Our Mission</h2>
+        <p class="text-xl text-center leading-relaxed">
+          To empower businesses with cutting-edge SaaS solutions that drive growth, efficiency, and innovation in [your industry].
+        </p>
+      </div>
+    </section>
+
+    <!-- Team Section -->
+    <section class="py-32 bg-base-200">
+      <div class="container mx-auto px-4 max-w-4xl">
+        <h2 class="text-4xl font-bold mb-16 text-center">Our Team</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-12">
+          {teamMembers.map((member) => (
+            <div class="text-center">
+              <div class="w-32 h-32 bg-primary mx-auto rounded-full mb-4"></div>
+              <h3 class="text-xl font-bold mb-2">{member.name}</h3>
+              <p class="text-base-content/60">{member.role}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <!-- Values Section -->
+    <section class="py-32">
+      <div class="container mx-auto px-4 max-w-4xl">
+        <h2 class="text-4xl font-bold mb-16 text-center">Our Values</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-12 text-center">
+          <div>
+            <div class="text-4xl mb-4">🚀</div>
+            <h3 class="text-xl font-bold mb-2">Innovation</h3>
+            <p class="text-base-content/60">Pushing boundaries and embracing new ideas</p>
+          </div>
+          <div>
+            <div class="text-4xl mb-4">🤝</div>
+            <h3 class="text-xl font-bold mb-2">Collaboration</h3>
+            <p class="text-base-content/60">Working together to achieve greatness</p>
+          </div>
+          <div>
+            <div class="text-4xl mb-4">💡</div>
+            <h3 class="text-xl font-bold mb-2">Excellence</h3>
+            <p class="text-base-content/60">Striving for the highest quality in everything we do</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Call to Action -->
+    <section class="py-32 bg-primary text-primary-content">
+      <div class="container mx-auto px-4 max-w-2xl text-center">
+        <h2 class="text-4xl font-bold mb-8">Join Our Journey</h2>
+        <p class="text-xl mb-12">Be part of our story and let's shape the future of [your industry] together.</p>
+        <a href="/" class="btn btn-secondary btn-lg">Get in Touch</a>
+      </div>
+    </section>
+  </main>
+</Layout>
+
+<style>
+  .animate-fade-in {
+    animation: fadeIn 1s ease-out;
+  }
+  .animate-grow {
+    animation: grow 1s ease-out;
+  }
+  .animation-delay-300 {
+    animation-delay: 300ms;
+  }
+  .animation-delay-600 {
+    animation-delay: 600ms;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes grow {
+    from { transform: scaleX(0); }
+    to { transform: scaleX(1); }
+  }
+</style>

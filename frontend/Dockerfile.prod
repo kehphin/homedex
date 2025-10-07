@@ -1,0 +1,28 @@
+FROM node:18
+
+WORKDIR /code/
+COPY package*.json .
+COPY tailwind.config.js .
+COPY tsconfig.json .
+COPY . .
+RUN npm install
+COPY ./src ./src
+COPY ./public ./public
+# Define build arguments
+ARG REACT_APP_HOST
+ARG REACT_APP_STRIPE_PUBLIC_KEY
+ARG PUBLIC_URL
+
+RUN npm run build
+
+# copy the output css to build/static/output.css
+RUN cp ./public/output.css /code/build/static/output.css
+
+# Install serve globally
+RUN npm install -g serve
+
+# Expose port 3000
+EXPOSE 3000
+
+# Use serve to serve the built application on port 3000
+CMD ["serve", "-s", "build", "-l", "3000"]

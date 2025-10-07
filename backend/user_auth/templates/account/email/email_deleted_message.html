@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Address Removed</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif;
+            line-height: 1.5;
+            color: #333333;
+            background-color: #f4f4f4;
+        }
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+        }
+        .email-header {
+            background-color: #f8f8f8;
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .email-body {
+            padding: 30px 20px;
+            background-color: #ffffff;
+        }
+        .email-footer {
+            background-color: #f8f8f8;
+            color: #666666;
+            text-align: center;
+            padding: 20px;
+            font-size: 12px;
+            border-top: 1px solid #e0e0e0;
+        }
+        h1 {
+            color: #222222;
+            font-size: 24px;
+            font-weight: bold;
+            margin: 0 0 15px 0;
+        }
+        p {
+            margin: 0 0 15px 0;
+            font-size: 14px;
+        }
+        .highlight {
+            background-color: #f9f9f9;
+            border-left: 3px solid #cccccc;
+            padding: 10px 15px;
+            margin: 20px 0;
+        }
+        .button {
+            display: inline-block;
+            background-color: #333333;
+            color: #ffffff !important;
+            text-decoration: none;
+            padding: 12px 30px;
+            border-radius: 50px;
+            font-weight: bold;
+            font-size: 14px;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .footer-links a {
+            color: #666666;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="email-header">
+
+            <h1>Email Address Removed</h1>
+        </div>
+        <div class="email-body">
+            <p>Hello,</p>
+            <div class="highlight">
+                <p>The email address <strong>{{ deleted_email }}</strong> has been removed from your account.</p>
+            </div>
+            <p>For security reasons, we recommend reviewing your account settings to ensure all information is up to date.</p>
+        </div>
+        <div class="email-footer">
+            <p>&copy; {% now "Y" %} {{ company_name }}. All rights reserved.</p>
+            <p>{{ company_address }}</p>
+            <p class="footer-links">
+                <a href="{{ privacy_policy_url }}">Privacy Policy</a> | 
+                <a href="{{ terms_of_service_url }}">Terms of Service</a> | 
+                <a href="{{ contact_url }}">Contact Us</a>
+            </p>
+        </div>
+    </div>
+</body>
+</html>

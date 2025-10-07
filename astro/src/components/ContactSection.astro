@@ -1,0 +1,18 @@
+---
+// src/components/ContactSection.astro
+import ContactForm from './ContactForm.astro';
+import QuickLinks from './QuickLinks.astro';
+---
+
+<section id="contact" class="bg-base-300 py-20">
+  <div class="container mx-auto px-4">
+    <div class="flex flex-wrap -mx-4">
+      <div class="w-full lg:w-1/2 px-4 mb-8 lg:mb-0">
+        <ContactForm />
+      </div>
+      <div class="w-full lg:w-1/2 px-4">
+        <QuickLinks />
+      </div>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,108 @@
+---
+import ThemeSelector from './ThemeSelector.astro';
+
+const navItems = [
+  { href: '#home', name: 'Home' },
+  { href: '#features', name: 'Features' },
+  { href: '#pricing', name: 'Pricing' },
+  { href: '#contact', name: 'Contact' },
+  { href: '/account/signup', name: 'Sign Up' },
+];
+
+const { pathname } = Astro.props;
+const isHomePage = pathname === '/';
+
+const getNavLink = (href) => {
+  if (href.startsWith('#')) {
+    return isHomePage ? href : `/${href}`;
+  }
+  return href;
+};
+---
+
+<div class="navbar bg-base-100 fixed top-0 left-0 right-0 z-50">
+  <div class="navbar-start">
+    <div class="dropdown">
+      <label tabindex={0} class="btn btn-ghost lg:hidden">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h8m-8 6h16" />
+        </svg>
+      </label>
+      <ul tabindex={0} class="menu menu-sm dropdown-content mt-3 z-50 p-2 shadow bg-base-100 rounded-box w-52">
+        {navItems.map((item) => (
+          <li>
+            <a 
+              href={getNavLink(item.href)} 
+              class={`px-4 py-2 hover:bg-base-200 ${pathname === item.href ? 'text-primary font-bold' : ''}`}
+              data-nav-link
+            >
+              {item.name}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+    <a href="/" class="btn btn-ghost normal-case text-xl" data-nav-link>
+      <span class="text-primary font-bold">saas -</span>
+      <span class="text-secondary">dev</span>
+      <span class="text-accent font-bold">- pack</span>
+    </a>
+  </div>
+  <div class="navbar-end hidden lg:flex">
+    <ul class="menu menu-horizontal px-1">
+      {navItems.map((item) => (
+        <li>
+          <a 
+            href={getNavLink(item.href)} 
+            class={`px-4 py-2 hover:bg-base-200 ${pathname === item.href ? 'text-primary font-bold' : ''}`}
+            data-nav-link
+          >
+            {item.name}
+          </a>
+        </li>
+      ))}
+    </ul>
+    <ThemeSelector />
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const navLinks = document.querySelectorAll('[data-nav-link]');
+    const sections = Array.from(navLinks).map(link => {
+      const href = link.getAttribute('href');
+      if (href.startsWith('#')) {
+        return document.querySelector(href);
+      }
+      return null;
+    }).filter(section => section !== null);
+
+    navLinks.forEach(link => {
+      link.addEventListener('click', function(e) {
+        const href = this.getAttribute('href');
+        
+        // Check if the href is a hash link
+        if (href.startsWith('#') && window.location.pathname === '/') {
+          e.preventDefault();
+          
+          const targetId = href.substring(1);
+          const targetElement = document.getElementById(targetId);
+          
+          if (targetElement) {
+            // Smooth scroll to the target element
+            targetElement.scrollIntoView({
+              behavior: 'smooth'
+            });
+            
+            // Close the mobile menu if it's open
+            const dropdown = document.querySelector('.dropdown');
+            if (dropdown) {
+              dropdown.removeAttribute('open');
+            }
+            (e.currentTarget as HTMLAnchorElement).blur();
+          }
+        }
+      });
+    });
+  });
+</script>

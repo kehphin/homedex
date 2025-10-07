@@ -1,0 +1,18 @@
+---
+// src/components/QuickLinks.astro
+const links = [
+  { title: "About Us", href: "/about-us" },
+  { title: "Blog", href: "/blog" },
+  { title: "Privacy Policy", href: "/privacy-policy" },
+  { title: "Terms of Service", href: "/terms-of-service" },
+];
+---
+
+<div class="bg-base-300 p-8 rounded-lg">
+  <h2 class="text-3xl font-bold mb-6">Quick Links</h2>
+  <ul class="space-y-2">
+    {links.map((link) => (
+      <li><a href={link.href} class="link link-hover">{link.title}</a></li>
+    ))}
+  </ul>
+</div>
