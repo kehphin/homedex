@@ -37,9 +37,7 @@ services:
     build:
       context: ./backend/
       dockerfile: Dockerfile
-    volumes:
-      - ./backend/backend:/code/backend/
-      - ./backend:/code/
+    # Volume mounts removed for production - use files baked into the image
     # depends_on:
     #   - db
 
