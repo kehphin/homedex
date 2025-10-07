@@ -21,7 +21,11 @@ import {
 } from "@heroicons/react/24/outline";
 import { HeartIcon } from "@heroicons/react/24/solid";
 
-export default function SideMenu({ openFeedbackModal }: { openFeedbackModal?: () => void }) {
+export default function SideMenu({
+  openFeedbackModal,
+}: {
+  openFeedbackModal?: () => void;
+}) {
   const [isOpen, setIsOpen] = useState(false);
   const user = useUser();
   const config = useConfig();
@@ -80,15 +84,15 @@ export default function SideMenu({ openFeedbackModal }: { openFeedbackModal?: ()
           icon: LockClosedIcon,
           name: "Change Password",
         },
-        ...(config?.data.socialaccount
-          ? [
-              {
-                to: "/account/providers",
-                icon: UserGroupIcon,
-                name: "Providers",
-              },
-            ]
-          : []),
+        // ...(config?.data.socialaccount
+        //   ? [
+        //       {
+        //         to: "/account/providers",
+        //         icon: UserGroupIcon,
+        //         name: "Providers",
+        //       },
+        //     ]
+        //   : []),
         ...(config?.data.mfa
           ? [
               {
@@ -202,11 +206,14 @@ export default function SideMenu({ openFeedbackModal }: { openFeedbackModal?: ()
             ))}
           </ul>
           <div className="mt-auto p-4">
-            <button className="btn btn-ghost btn-sm w-full h-16 text-xs" onClick={openFeedbackModal}>
+            <button
+              className="btn btn-ghost btn-sm w-full h-16 text-xs"
+              onClick={openFeedbackModal}
+            >
               <span>
                 Made with{" "}
-                <HeartIcon className="-mt-0.5 inline-block h-4 w-4 text-pink-500" /> in
-                Boston
+                <HeartIcon className="-mt-0.5 inline-block h-4 w-4 text-pink-500" />{" "}
+                in Boston
               </span>
               <span>Got feedback? Let us know!</span>
             </button>

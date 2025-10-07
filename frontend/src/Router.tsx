@@ -49,6 +49,7 @@ import SampleProtectedSubscription from "./samples/SampleRequiresSubscription";
 import AskDex from "./dex/AskDex";
 import ScheduleAppointment from "./appointments/ScheduleAppointment";
 import Tasks from "./tasks/Tasks";
+import HomeComponents from "./components/HomeComponents";
 
 function RedirectToAstro() {
   useEffect(() => {
@@ -96,6 +97,14 @@ function createRouter() {
           element: (
             <AuthenticatedRoute>
               <Tasks />
+            </AuthenticatedRoute>
+          ),
+        },
+        {
+          path: "/account/components",
+          element: (
+            <AuthenticatedRoute>
+              <HomeComponents />
             </AuthenticatedRoute>
           ),
         },
