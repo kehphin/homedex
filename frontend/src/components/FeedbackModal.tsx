@@ -24,7 +24,7 @@ export const FeedbackModal = ({
     >
       <div className="modal-box">
         <h3 className="font-bold text-lg">Submit Feedback</h3>
-        <p className="py-4">Got a bug or issue to report? Let us know!</p>
+        <p className="py-4">Got a bug or problem to report? Let us know!</p>
         <form onSubmit={handleFormSubmit}>
           <textarea
             className="textarea textarea-bordered w-full"

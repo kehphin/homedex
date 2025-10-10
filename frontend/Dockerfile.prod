@@ -12,6 +12,9 @@ COPY ./public ./public
 ARG REACT_APP_HOST
 ARG REACT_APP_STRIPE_PUBLIC_KEY
 
+# Set PUBLIC_URL to empty string to use relative paths
+ENV PUBLIC_URL=/
+
 RUN npm run build
 
 # Install serve globally
@@ -21,4 +24,5 @@ RUN npm install -g serve
 EXPOSE 3000
 
 # Use serve to serve the built application on port 3000
-CMD ["serve", "-s", "build", "-l", "3000"]
+# The --single flag ensures SPA routing works correctly
+CMD ["serve", "-s", "build", "-l", "3000", "--no-clipboard"]
