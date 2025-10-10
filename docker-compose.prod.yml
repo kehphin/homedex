@@ -9,9 +9,6 @@ services:
         REACT_APP_HOST: ${REACT_APP_HOST}
         REACT_APP_STRIPE_PUBLIC_KEY: ${REACT_APP_STRIPE_PUBLIC_KEY}
         PUBLIC_URL: ${PUBLIC_URL}
-    volumes:
-      - ./frontend/src:/code/src/
-      - ./frontend/public:/code/public/
     environment:
       - PUBLIC_URL=/static/
 
@@ -22,14 +19,8 @@ services:
       args:
         PUBLIC_ASTRO_DOMAIN: ${PUBLIC_ASTRO_DOMAIN}
         PUBLIC_STRIPE_PUBLIC_KEY: ${PUBLIC_STRIPE_PUBLIC_KEY}
-    volumes:
-      - ./astro/src:/app/src
-      - ./astro/public:/app/public
     env_file:
       - .env
-    environment:
-      - CHOKIDAR_USEPOLLING=true
-      - WATCHPACK_POLLING=true
 
   backend:
     env_file:
@@ -37,9 +28,6 @@ services:
     build:
       context: ./backend/
       dockerfile: Dockerfile
-    volumes:
-      - ./backend/backend:/code/backend/
-      - ./backend:/code/
     depends_on:
       - db
 
