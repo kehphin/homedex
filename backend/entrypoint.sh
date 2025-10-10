@@ -8,15 +8,15 @@ wait-for-postgres.sh
 echo "Running migrations..."
 python manage.py migrate
 
-echo "Setting up Stripe API keys..."
-python manage.py shell <<EOF
-from djstripe.models import APIKey
-from django.conf import settings
-if settings.STRIPE_TEST_SECRET_KEY:
-    APIKey.objects.get_or_create_by_api_key(secret=settings.STRIPE_TEST_SECRET_KEY)
-if settings.STRIPE_LIVE_SECRET_KEY:
-    APIKey.objects.get_or_create_by_api_key(secret=settings.STRIPE_LIVE_SECRET_KEY)
-EOF
+# echo "Setting up Stripe API keys..."
+# python manage.py shell <<EOF
+# from djstripe.models import APIKey
+# from django.conf import settings
+# if settings.STRIPE_TEST_SECRET_KEY:
+#     APIKey.objects.get_or_create_by_api_key(secret=settings.STRIPE_TEST_SECRET_KEY)
+# if settings.STRIPE_LIVE_SECRET_KEY:
+#     APIKey.objects.get_or_create_by_api_key(secret=settings.STRIPE_LIVE_SECRET_KEY)
+# EOF
 
 # Optional, feel free to uncomment if you want this, but it's takes a while.
 echo "Syncing DJ-Stripe models..."
