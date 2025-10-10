@@ -6,12 +6,6 @@ echo "Waiting for postgres..."
 wait-for-postgres.sh
 
 echo "Running migrations..."
-# Migrate core Django apps first to ensure auth_user table exists
-python manage.py migrate contenttypes
-python manage.py migrate auth
-python manage.py migrate admin
-python manage.py migrate sessions
-# Now migrate all remaining apps
 python manage.py migrate
 
 echo "Setting up Stripe API keys..."

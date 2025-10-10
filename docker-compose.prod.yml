@@ -37,9 +37,11 @@ services:
     build:
       context: ./backend/
       dockerfile: Dockerfile
-    # Volume mounts removed for production - use files baked into the image
-    # depends_on:
-    #   - db
+    volumes:
+      - ./backend/backend:/code/backend/
+      - ./backend:/code/
+    depends_on:
+      - db
 
   # proxy:
   #   image: traefik:v3.4
@@ -52,12 +54,13 @@ services:
   #     - ./acme.json:/acme.json
   #   env_file:
   #     - .env
-#   db:
-#     image: postgres:17
-#     volumes:
-#       - postgres_data:/var/lib/postgresql/data
-#     env_file:
-#       - .env
 
-# volumes:
-#   postgres_data:
+  db:
+    image: postgres:17
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    env_file:
+      - .env
+
+volumes:
+  postgres_data:
