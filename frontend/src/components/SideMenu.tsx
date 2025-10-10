@@ -215,7 +215,7 @@ export default function SideMenu({
                 <HeartIcon className="-mt-0.5 inline-block h-4 w-4 text-pink-500" />{" "}
                 in Boston
               </span>
-              <span>Got feedback? Let us know!</span>
+              <span>Got feedback? Let us know</span>
             </button>
           </div>
         </div>
