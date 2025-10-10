@@ -44,6 +44,12 @@ FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:3000')
 if FRONTEND_URL and FRONTEND_URL not in CSRF_TRUSTED_ORIGINS:
     CSRF_TRUSTED_ORIGINS.append(FRONTEND_URL)
 
+# Add app subdomain if using separate app domain (e.g., app.homedex.app)
+APP_DOMAIN = os.getenv('APP_DOMAIN', '')
+if APP_DOMAIN:
+    CSRF_TRUSTED_ORIGINS.append('https://' + APP_DOMAIN)
+    CSRF_TRUSTED_ORIGINS.append('http://' + APP_DOMAIN)
+
 # CORS settings for cross-domain API requests
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
@@ -51,6 +57,9 @@ CORS_ALLOWED_ORIGINS = [
 ]
 if FRONTEND_URL:
     CORS_ALLOWED_ORIGINS.append(FRONTEND_URL)
+if APP_DOMAIN:
+    CORS_ALLOWED_ORIGINS.append('https://' + APP_DOMAIN)
+    CORS_ALLOWED_ORIGINS.append('http://' + APP_DOMAIN)
 
 CORS_ALLOW_CREDENTIALS = True  # Required for cookies/sessions to work across domains
 
@@ -58,12 +67,16 @@ CORS_ALLOW_CREDENTIALS = True  # Required for cookies/sessions to work across do
 SESSION_COOKIE_SAMESITE = 'None' if not DEBUG else 'Lax'
 SESSION_COOKIE_SECURE = not DEBUG  # True in production (HTTPS)
 SESSION_COOKIE_HTTPONLY = True
-SESSION_COOKIE_DOMAIN = None  # Let browser handle domain
+# Set domain to share cookies across subdomains (e.g., api.homedex.app and app.homedex.app)
+# In production, this will be .homedex.app (with leading dot)
+SESSION_COOKIE_DOMAIN = ('.' + os.getenv('DOMAIN', '')) if os.getenv('DOMAIN') and not DEBUG else None
 
 CSRF_COOKIE_SAMESITE = 'None' if not DEBUG else 'Lax'
 CSRF_COOKIE_SECURE = not DEBUG  # True in production (HTTPS)
 CSRF_COOKIE_HTTPONLY = False  # Must be False so JavaScript can read it
-CSRF_COOKIE_DOMAIN = None  # Let browser handle domain
+# Set domain to share cookies across subdomains (e.g., api.homedex.app and app.homedex.app)
+# In production, this will be .homedex.app (with leading dot)
+CSRF_COOKIE_DOMAIN = ('.' + os.getenv('DOMAIN', '')) if os.getenv('DOMAIN') and not DEBUG else None
 CSRF_USE_SESSIONS = False  # Use cookies for CSRF tokens, not sessions
 CSRF_COOKIE_NAME = 'csrftoken'  # Default name, explicit for clarity
 
