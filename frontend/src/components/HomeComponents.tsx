@@ -321,6 +321,8 @@ export default function HomeComponents() {
     ).length,
   };
 
+  return <div>TODO</div>;
+
   return (
     <div className="min-h-screen bg-base-100 p-6">
       <div className="max-w-7xl mx-auto">

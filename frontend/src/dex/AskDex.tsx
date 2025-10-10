@@ -170,7 +170,7 @@ export default function AskDex() {
                     message.role === "user" ? "chat-end" : "chat-start"
                   }`}
                 >
-                  <div className="chat-image avatar">
+                  <div className="chat-image avatar flex">
                     <div
                       className={`w-10 rounded-full ${
                         message.role === "assistant"

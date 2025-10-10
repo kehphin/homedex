@@ -211,6 +211,8 @@ export default function Tasks() {
     completed: tasks.filter((t) => t.status === "completed").length,
   };
 
+  return <div>TODO</div>;
+
   return (
     <div className="min-h-screen bg-base-100 p-6">
       <div className="max-w-7xl mx-auto">

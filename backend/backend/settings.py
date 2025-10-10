@@ -29,6 +29,21 @@ CSRF_TRUSTED_ORIGINS = ['http://localhost']
 CSRF_TRUSTED_ORIGINS.append('https://' + os.getenv('DOMAIN', ''))
 CSRF_TRUSTED_ORIGINS.append('http://' + os.getenv('DOMAIN', ''))
 
+# Add frontend URL to CSRF trusted origins for cross-domain requests
+FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:3000')
+if FRONTEND_URL and FRONTEND_URL not in CSRF_TRUSTED_ORIGINS:
+    CSRF_TRUSTED_ORIGINS.append(FRONTEND_URL)
+
+# CORS settings for cross-domain API requests
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://localhost",
+]
+if FRONTEND_URL:
+    CORS_ALLOWED_ORIGINS.append(FRONTEND_URL)
+
+CORS_ALLOW_CREDENTIALS = True  # Required for cookies/sessions to work across domains
+
 # Application definition
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -37,6 +52,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "corsheaders",  # Add CORS headers support
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
@@ -55,6 +71,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "corsheaders.middleware.CorsMiddleware",  # Add CORS middleware (must be before CommonMiddleware)
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",

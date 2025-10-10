@@ -270,6 +270,8 @@ export default function ScheduleAppointment() {
 
   const canSubmit = selectedService && selectedDate && selectedTime;
 
+  return <div>TODO</div>;
+
   return (
     <div className="min-h-screen bg-base-100 p-6">
       <div className="max-w-4xl mx-auto">
