@@ -25,9 +25,19 @@ DEBUG = os.getenv('DEBUG', 'True') == 'True'
 ALLOWED_HOSTS = ["localhost", "backend", "proxy",]
 ALLOWED_HOSTS.append(os.getenv('DOMAIN', '')) # this is the domain that you configure in your .env file
 
+# Add API subdomain if different from main domain
+API_DOMAIN = os.getenv('API_DOMAIN', '')
+if API_DOMAIN and API_DOMAIN not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append(API_DOMAIN)
+
 CSRF_TRUSTED_ORIGINS = ['http://localhost']
 CSRF_TRUSTED_ORIGINS.append('https://' + os.getenv('DOMAIN', ''))
 CSRF_TRUSTED_ORIGINS.append('http://' + os.getenv('DOMAIN', ''))
+
+# Add API domain to CSRF trusted origins
+if API_DOMAIN:
+    CSRF_TRUSTED_ORIGINS.append('https://' + API_DOMAIN)
+    CSRF_TRUSTED_ORIGINS.append('http://' + API_DOMAIN)
 
 # Add frontend URL to CSRF trusted origins for cross-domain requests
 FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:3000')
@@ -43,6 +53,17 @@ if FRONTEND_URL:
     CORS_ALLOWED_ORIGINS.append(FRONTEND_URL)
 
 CORS_ALLOW_CREDENTIALS = True  # Required for cookies/sessions to work across domains
+
+# Session and CSRF cookie settings for cross-origin requests
+SESSION_COOKIE_SAMESITE = 'None' if not DEBUG else 'Lax'
+SESSION_COOKIE_SECURE = not DEBUG  # True in production (HTTPS)
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_DOMAIN = None  # Let browser handle domain
+
+CSRF_COOKIE_SAMESITE = 'None' if not DEBUG else 'Lax'
+CSRF_COOKIE_SECURE = not DEBUG  # True in production (HTTPS)
+CSRF_COOKIE_HTTPONLY = False  # Must be False so JavaScript can read it
+CSRF_COOKIE_DOMAIN = None  # Let browser handle domain
 
 # Application definition
 INSTALLED_APPS = [
@@ -173,8 +194,8 @@ else:
     EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
     EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
     EMAIL_BACKEND = os.getenv("EMAIL_BACKEND")
-    
-#If you prefer to use another email service, check out 
+
+#If you prefer to use another email service, check out
 # https://github.com/anymail/django-anymail for more information
 
 DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL")
@@ -248,7 +269,7 @@ if os.getenv("FACEBOOK_APP_ID") and os.getenv("FACEBOOK_APP_SECRET"):
             'key': '' # you can leave these blank
         }
     }
-    
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
