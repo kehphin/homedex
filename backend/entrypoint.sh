@@ -3,18 +3,21 @@
 set -e
 
 echo "Waiting for postgres..."
-wait-for-postgres.sh
+until PGPASSWORD=$POSTGRES_PASSWORD psql -h "$DB_HOST" -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c '\q' 2>/dev/null; do
+  >&2 echo "Postgres is unavailable - sleeping"
+  sleep 1
+done
+&2 echo "Postgres is up - continuing"
+
+# Verify database connection and print version
+echo "Verifying database connection..."
+PGPASSWORD=$POSTGRES_PASSWORD psql -h "$DB_HOST" -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "SELECT version();" || echo "Warning: Could not query database"
+echo "Database connection verified."
 
 echo "Running migrations..."
 
-# Run core Django migrations first to ensure auth_user table exists
-python manage.py migrate auth
-python manage.py migrate contenttypes
-python manage.py migrate admin
-python manage.py migrate sessions
-
-# Now run all migrations including djstripe and custom apps
-python manage.py migrate
+# Let Django handle migration order based on dependencies
+python manage.py migrate --noinput
 
 # echo "Setting up Stripe API keys..."
 # python manage.py shell <<EOF
