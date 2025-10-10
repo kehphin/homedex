@@ -8,9 +8,6 @@ services:
       args:
         REACT_APP_HOST: ${REACT_APP_HOST}
         REACT_APP_STRIPE_PUBLIC_KEY: ${REACT_APP_STRIPE_PUBLIC_KEY}
-        PUBLIC_URL: ${PUBLIC_URL}
-    environment:
-      - PUBLIC_URL=/static/
 
   astro:
     build:
