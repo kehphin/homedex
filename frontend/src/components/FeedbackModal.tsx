@@ -1,17 +1,26 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 
-export const FeedbackModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => {
-  const [feedback, setFeedback] = useState('');
+export const FeedbackModal = ({
+  isOpen,
+  onClose,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+}) => {
+  const [feedback, setFeedback] = useState("");
 
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log({ feedback });
-    setFeedback('');
+
+    setFeedback("");
     onClose();
   };
 
   return (
-    <dialog id="feedback_modal" className={`modal ${isOpen ? 'modal-open' : ''}`}>
+    <dialog
+      id="feedback_modal"
+      className={`modal ${isOpen ? "modal-open" : ""}`}
+    >
       <div className="modal-box">
         <h3 className="font-bold text-lg">Submit Feedback</h3>
         <p className="py-4">Got a bug or problem to report? Let us know!</p>
@@ -34,7 +43,9 @@ export const FeedbackModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: (
         </form>
       </div>
       <form method="dialog" className="modal-backdrop">
-        <button type="button" onClick={onClose}>close</button>
+        <button type="button" onClick={onClose}>
+          close
+        </button>
       </form>
     </dialog>
   );
