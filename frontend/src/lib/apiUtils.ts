@@ -1,5 +1,6 @@
 import { getCSRFToken } from '../auth/csrf';
 import { URLs } from '../auth/constants';
+import { config } from '../config';
 
 interface RequestHeaders {
   [key: string]: string;
@@ -39,7 +40,10 @@ export async function request(
     options.headers['Content-Type'] = 'application/json';
   }
 
-  const resp = await fetch(path, options);
+  // Prepend API host to the path if it's a relative URL
+  const url = path.startsWith('http') ? path : `${config.appHost}${path}`;
+
+  const resp = await fetch(url, options);
   const msg: any = await resp.json();
 
   if (msg.status === 410) {
