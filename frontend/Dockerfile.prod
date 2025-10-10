@@ -11,7 +11,6 @@ COPY ./public ./public
 # Define build arguments
 ARG REACT_APP_HOST
 ARG REACT_APP_STRIPE_PUBLIC_KEY
-ARG PUBLIC_URL
 
 RUN npm run build
 
