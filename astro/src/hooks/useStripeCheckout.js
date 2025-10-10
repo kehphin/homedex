@@ -25,6 +25,7 @@ export const useStripeCheckout = () => {
           'X-CSRFToken':  getCSRFToken(),
           'Accept': 'application/json',
         },
+        credentials: 'include', // Include cookies for cross-origin requests
         body: JSON.stringify({
           product_id: productId,
           success_url: successUrl,

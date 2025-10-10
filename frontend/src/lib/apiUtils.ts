@@ -28,6 +28,7 @@ export async function request(
       ...ACCEPT_JSON,
       ...(headers || {}),
     },
+    credentials: 'include', // Always include cookies for cross-origin requests
   };
 
   if (path !== URLs.CONFIG) {

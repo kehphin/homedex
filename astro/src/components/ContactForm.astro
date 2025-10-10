@@ -56,6 +56,7 @@
           headers: { 'Content-Type': 'application/json',
             'X-CSRFToken': getCSRFToken()
            },
+          credentials: 'include', // Include cookies for cross-origin requests
           body: JSON.stringify(data),
         });
   

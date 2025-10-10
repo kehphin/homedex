@@ -64,6 +64,8 @@ CSRF_COOKIE_SAMESITE = 'None' if not DEBUG else 'Lax'
 CSRF_COOKIE_SECURE = not DEBUG  # True in production (HTTPS)
 CSRF_COOKIE_HTTPONLY = False  # Must be False so JavaScript can read it
 CSRF_COOKIE_DOMAIN = None  # Let browser handle domain
+CSRF_USE_SESSIONS = False  # Use cookies for CSRF tokens, not sessions
+CSRF_COOKIE_NAME = 'csrftoken'  # Default name, explicit for clarity
 
 # Application definition
 INSTALLED_APPS = [
