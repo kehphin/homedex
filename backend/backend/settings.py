@@ -68,15 +68,16 @@ SESSION_COOKIE_SAMESITE = 'None' if not DEBUG else 'Lax'
 SESSION_COOKIE_SECURE = not DEBUG  # True in production (HTTPS)
 SESSION_COOKIE_HTTPONLY = True
 # Set domain to share cookies across subdomains (e.g., api.homedex.app and app.homedex.app)
-# In production, this will be .homedex.app (with leading dot)
-SESSION_COOKIE_DOMAIN = ('.' + os.getenv('DOMAIN', '')) if os.getenv('DOMAIN') and not DEBUG else None
+# In production, this will be .homedex.app (with leading dot) to allow subdomain sharing
+BASE_DOMAIN = os.getenv('DOMAIN', '')
+SESSION_COOKIE_DOMAIN = ('.' + BASE_DOMAIN) if (BASE_DOMAIN and not DEBUG) else None
 
 CSRF_COOKIE_SAMESITE = 'None' if not DEBUG else 'Lax'
 CSRF_COOKIE_SECURE = not DEBUG  # True in production (HTTPS)
 CSRF_COOKIE_HTTPONLY = False  # Must be False so JavaScript can read it
 # Set domain to share cookies across subdomains (e.g., api.homedex.app and app.homedex.app)
-# In production, this will be .homedex.app (with leading dot)
-CSRF_COOKIE_DOMAIN = ('.' + os.getenv('DOMAIN', '')) if os.getenv('DOMAIN') and not DEBUG else None
+# In production, this will be .homedex.app (with leading dot) to allow subdomain sharing
+CSRF_COOKIE_DOMAIN = ('.' + BASE_DOMAIN) if (BASE_DOMAIN and not DEBUG) else None
 CSRF_USE_SESSIONS = False  # Use cookies for CSRF tokens, not sessions
 CSRF_COOKIE_NAME = 'csrftoken'  # Default name, explicit for clarity
 

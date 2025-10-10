@@ -32,7 +32,13 @@ export async function request(
   };
 
   if (path !== URLs.CONFIG) {
-    options.headers["X-CSRFToken"] = getCSRFToken() || "";
+    const csrfToken = getCSRFToken();
+    if (csrfToken) {
+      options.headers["X-CSRFToken"] = csrfToken;
+    } else {
+      console.warn('CSRF token not found in cookies. This may cause 403 errors on POST requests.');
+      console.log('Available cookies:', document.cookie);
+    }
   }
 
   if (typeof data !== "undefined") {
