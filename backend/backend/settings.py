@@ -173,14 +173,9 @@ else:
         "MAILGUN_API_KEY": os.getenv("MAILGUN_API_KEY"),
         "MAILGUN_SENDER_DOMAIN": 'homedex.app',  # your Mailgun domain, if needed
     }
-    EMAIL_BACKEND = "anymail.backends.mailgun.EmailBackend"  # or amazon_ses.EmailBackend, or...
+    EMAIL_BACKEND = "anymail.backends.mailgun.EmailBackend"
     DEFAULT_FROM_EMAIL = "hello@homedex.app"  # if you don't already have this in settings
     SERVER_EMAIL = "hello@homedex.app"  # ditto (default from-email for Django errors)
-
-#If you prefer to use another email service, check out
-# https://github.com/anymail/django-anymail for more information
-
-DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL")
 
 ACCOUNT_EMAIL_SUBJECT_PREFIX = ''
 
