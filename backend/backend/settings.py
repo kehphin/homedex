@@ -74,7 +74,7 @@ MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",  # Add CORS middleware (must be before CommonMiddleware)
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
-    "django.middleware.csrf.CsrfViewMiddleware",
+    # "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
@@ -173,8 +173,8 @@ else:
     EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
     EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
     EMAIL_BACKEND = os.getenv("EMAIL_BACKEND")
-    
-#If you prefer to use another email service, check out 
+
+#If you prefer to use another email service, check out
 # https://github.com/anymail/django-anymail for more information
 
 DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL")
@@ -248,7 +248,7 @@ if os.getenv("FACEBOOK_APP_ID") and os.getenv("FACEBOOK_APP_SECRET"):
             'key': '' # you can leave these blank
         }
     }
-    
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
