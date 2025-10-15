@@ -10,9 +10,8 @@ COPY requirements.txt .
 RUN pip install -r requirements.txt
 COPY manage.py .
 COPY ./backend ./backend/
-COPY ./contactus ./contactus/
 COPY ./payments ./payments/
-COPY ./sample ./sample/
+COPY ./owner ./owner/
 COPY ./user_auth ./user_auth/
 EXPOSE 8000
 
