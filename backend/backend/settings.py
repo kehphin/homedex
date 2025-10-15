@@ -3,6 +3,8 @@ import os
 import logging
 from pathlib import Path
 from dotenv import load_dotenv
+from corsheaders.defaults import default_headers
+
 
 # Determine the environment and load the corresponding .env file
 env_path = Path('..') / f'.env'
@@ -32,6 +34,13 @@ CORS_ALLOWED_ORIGINS = [
 ]
 
 CORS_ALLOW_CREDENTIALS = True  # Required for cookies/sessions to work across domains
+
+CORS_ALLOW_HEADERS = (
+    *default_headers,
+    "x-session-token",
+    "x-email-verification-key",
+    "x-password-reset-key",
+)
 
 # Application definition
 INSTALLED_APPS = [
