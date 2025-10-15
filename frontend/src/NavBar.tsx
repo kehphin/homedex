@@ -3,6 +3,7 @@ import { useUser } from "./auth";
 import { useLocation, Link } from "react-router-dom";
 import ThemeSelector from "./components/ThemeSelector";
 import { KeyIcon, UserPlusIcon } from "@heroicons/react/24/outline";
+import { getAssetUrl } from "./lib/assetUtils";
 
 function NavBarItem({
   to,
@@ -114,7 +115,7 @@ export default function NavBar() {
         </div>
         <Link to="/" className="">
           <img
-            src="/assets/homedex_h.png"
+            src={getAssetUrl("assets/homedex_h.png")}
             alt="Homedex"
             className="h-16 ml-2"
           />

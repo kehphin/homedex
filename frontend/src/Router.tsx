@@ -51,13 +51,7 @@ import ScheduleAppointment from "./appointments/ScheduleAppointment";
 import Tasks from "./tasks/Tasks";
 import HomeComponents from "./components/HomeComponents";
 import Documents from "./documents/Documents";
-
-function RedirectToAstro() {
-  useEffect(() => {
-    window.location.href = "/";
-  }, []);
-  return null;
-}
+import { Navigate } from "react-router-dom";
 
 function createRouter() {
   return createBrowserRouter([
@@ -67,7 +61,7 @@ function createRouter() {
       children: [
         {
           path: "/",
-          element: <RedirectToAstro />,
+          element: <Navigate to="/account/dashboard" replace />,
         },
         {
           path: "/account/dashboard",
@@ -315,7 +309,7 @@ function createRouter() {
 
         // SAMPLE ROUTES
         {
-          path: "/account/sample/protected_file",
+          path: "/account/owner/protected_file",
           element: (
             <AuthenticatedRoute>
               <SampleProtectedFile />
@@ -323,7 +317,7 @@ function createRouter() {
           ),
         },
         {
-          path: "/account/sample/protected_subscription",
+          path: "/account/owner/protected_subscription",
           element: (
             <AuthenticatedRoute>
               <SampleProtectedSubscription />
@@ -332,7 +326,7 @@ function createRouter() {
         },
         {
           path: "*",
-          element: <RedirectToAstro />, // Handle 404s with redirect to home.
+          element: <Navigate to="/account/dashboard" replace />, // Handle 404s with redirect to dashboard.
         },
       ],
     },

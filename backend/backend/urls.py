@@ -8,6 +8,5 @@ urlpatterns = [
     path("stripe/", include("djstripe.urls", namespace="djstripe")),
     path("api/v1/payments/", include("payments.urls")),
     path("api/v1/user_auth/", include("user_auth.urls")),
-    path("api/v1/contactus/", include("contactus.urls")),
-    path("api/v1/sample/", include("sample.urls")), # This is just a sample that can be removed
+    path("api/v1/owner/", include("owner.urls")),
 ]

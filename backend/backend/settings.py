@@ -64,8 +64,7 @@ INSTALLED_APPS = [
     "djstripe",
     "user_auth",
     "payments",
-    "contactus",
-    "sample"
+    "owner"
 ]
 
 MIDDLEWARE = [

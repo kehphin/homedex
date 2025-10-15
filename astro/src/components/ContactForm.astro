@@ -20,12 +20,12 @@
       <span id="toastMessage"></span>
     </div>
   </div>
-  
+
   <script>
     const form = document.getElementById('contactForm');
     const toast = document.getElementById('toast');
     const toastMessage = document.getElementById('toastMessage');
-    
+
     function getCookie (name) {
       let cookieValue = null
       if (document.cookie && document.cookie !== '') {
@@ -49,16 +49,16 @@
       e.preventDefault();
       const formData = new FormData(form);
       const data = Object.fromEntries(formData);
-      
+
       try {
-        const response = await fetch('/api/v1/contactus/contact/', {
+        const response = await fetch('/api/v1/owner/contact/', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json',
             'X-CSRFToken': getCSRFToken()
            },
           body: JSON.stringify(data),
         });
-  
+
         if (response.ok) {
           showToast("Thanks for reaching out! I'll respond shortly!", 'alert-success');
           form.reset();
@@ -69,7 +69,7 @@
         showToast('An error occurred. Please try again later.', 'alert-error');
       }
     });
-    
+
     function showToast(message, type) {
       toastMessage.textContent = message;
       toast.className = `alert ${type} mt-4`;

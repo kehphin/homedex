@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useLoaderData, Navigate, useNavigate } from "react-router-dom";
 import { AuthService } from "../AuthService";
 import { AuthState, EmailVerificationInfo } from "../types";
@@ -33,8 +33,8 @@ export default function VerifyEmail() {
   });
   const navigate = useNavigate();
 
-  function submit() {
-    setResponse({ ...response, fetching: true });
+  const submit = useCallback(() => {
+    setResponse((prevResponse) => ({ ...prevResponse, fetching: true }));
     AuthService.verifyEmail(key)
       .then((content) => {
         setResponse((r) => {
@@ -66,7 +66,14 @@ export default function VerifyEmail() {
           return { ...r, fetching: false };
         });
       });
-  }
+  }, [key, navigate]);
+
+  useEffect(() => {
+    // Automatically verify email if the verification info is valid
+    if (verification.status === 200 && !response.content) {
+      submit();
+    }
+  }, [verification.status, response.content, submit]);
 
   if ([200, 401].includes(response.content?.status ?? 0)) {
     return <Navigate to="/account/email" />;
@@ -77,22 +84,20 @@ export default function VerifyEmail() {
     body = (
       <>
         <p className="mb-4">
-          Please confirm that{" "}
+          Verifying email address{" "}
           <a
             href={"mailto:" + verification.data.email}
             className="link link-primary"
           >
             {verification.data.email}
           </a>{" "}
-          is an email address for user {verification.data.user.display}.
+          for user {verification.data.user.display}...
         </p>
-        <button
-          className={`btn btn-primary ${response.fetching ? "loading" : ""}`}
-          disabled={response.fetching}
-          onClick={() => submit()}
-        >
-          Confirm
-        </button>
+        {response.fetching && (
+          <div className="flex items-center justify-center">
+            <span className="loading loading-spinner loading-lg"></span>
+          </div>
+        )}
       </>
     );
   } else if (!verification.data?.email) {

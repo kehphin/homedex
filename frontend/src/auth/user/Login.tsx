@@ -69,7 +69,9 @@ const Login: React.FC = () => {
     <div className="min-h-screen bg-base-100 flex items-center">
       <div className="card mx-auto w-full max-w-sm bg-base-100 m-10">
         <div className="card-body">
-          <h1 className="text-2xl font-bold text-center mb-2">Login</h1>
+          <h1 className="text-2xl font-bold text-center mb-2">
+            Login to Homedex
+          </h1>
           <p className="text-center mb-4">
             No account?{" "}
             <Link to="/account/signup" className="link link-primary">
