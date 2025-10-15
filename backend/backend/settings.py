@@ -22,25 +22,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = ["localhost", "backend", "proxy",]
-ALLOWED_HOSTS.append(os.getenv('DOMAIN', '')) # this is the domain that you configure in your .env file
-
-CSRF_TRUSTED_ORIGINS = ['http://localhost']
-CSRF_TRUSTED_ORIGINS.append('https://' + os.getenv('DOMAIN', ''))
-CSRF_TRUSTED_ORIGINS.append('http://' + os.getenv('DOMAIN', ''))
-
-# Add frontend URL to CSRF trusted origins for cross-domain requests
-FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:3000')
-if FRONTEND_URL and FRONTEND_URL not in CSRF_TRUSTED_ORIGINS:
-    CSRF_TRUSTED_ORIGINS.append(FRONTEND_URL)
-
-# CORS settings for cross-domain API requests
+ALLOWED_HOSTS = ["localhost", "backend", "proxy", "https://app.homedex.app"]
+CSRF_TRUSTED_ORIGINS = ['http://localhost', 'https://app.homedex.app']
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://localhost",
+    "https://app.homedex.app"
 ]
-if FRONTEND_URL:
-    CORS_ALLOWED_ORIGINS.append(FRONTEND_URL)
 
 CORS_ALLOW_CREDENTIALS = True  # Required for cookies/sessions to work across domains
 
@@ -192,11 +180,11 @@ ACCOUNT_EMAIL_NOTIFICATIONS = True # Security notifications on email change, pas
 
 HEADLESS_ONLY = True
 HEADLESS_FRONTEND_URLS = {
-    "account_confirm_email": "/account/verify-email/{key}",
-    "account_reset_password": "/account/password/reset",
-    "account_reset_password_from_key": "/account/password/reset/key/{key}",
-    "account_signup": "/account/signup",
-    "socialaccount_login_error": "/account/provider/callback",
+    "account_confirm_email": "https://app.homedex.app/account/verify-email/{key}",
+    "account_reset_password": "https://app.homedex.app/account/password/reset",
+    "account_reset_password_from_key": "https://app.homedex.app/account/password/reset/key/{key}",
+    "account_signup": "https://app.homedex.app/account/signup",
+    "socialaccount_login_error": "https://app.homedex.app/account/provider/callback",
 }
 
 MFA_SUPPORTED_TYPES = ["totp", "recovery_codes",]
@@ -217,8 +205,8 @@ CONTACT_US_RECIPIENT_EMAIL = os.getenv("CONTACT_US_RECIPIENT_EMAIL")
 ACCOUNT_REAUTHENTICATION_REQUIRED = False
 
 # These are used for the email templates
-COMPANY_NAME = 'Your Company Name'
-COMPANY_ADDRESS = '123 Company Street, City, Country 12345'
+COMPANY_NAME = 'Homedex'
+COMPANY_ADDRESS = ''
 
 # URLs
 PRIVACY_POLICY_URL = f'https://{os.getenv('DOMAIN')}/privacy-policy'
