@@ -114,7 +114,7 @@ export default function NavBar() {
         </div>
         <Link to="/" className="">
           <img
-            src="/static/assets/homedex_h.png"
+            src="/assets/homedex_h.png"
             alt="Homedex"
             className="h-16 ml-2"
           />
