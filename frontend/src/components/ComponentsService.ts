@@ -1,6 +1,6 @@
 import { config } from "../config";
 
-const API_BASE = `${config.appHost}/api/owner`;
+const API_BASE = `${config.appHost}/api/v1/owner`;
 
 interface ComponentData {
   name: string;
