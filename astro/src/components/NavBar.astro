@@ -6,7 +6,7 @@ const navItems = [
   { href: '#features', name: 'Features' },
   { href: '#pricing', name: 'Pricing' },
   { href: '#contact', name: 'Contact' },
-  { href: '/account/signup', name: 'Sign Up' },
+  { href: 'https://app.homedex.app', name: 'Sign Up' },
 ];
 
 const { pathname } = Astro.props;
@@ -43,9 +43,7 @@ const getNavLink = (href) => {
       </ul>
     </div>
     <a href="/" class="btn btn-ghost normal-case text-xl" data-nav-link>
-      <span class="text-primary font-bold">saas -</span>
-      <span class="text-secondary">dev</span>
-      <span class="text-accent font-bold">- pack</span>
+      <img src="/assets/homedex_h.png" alt="Homedex Logo" class="h-8 w-auto" />
     </a>
   </div>
   <div class="navbar-end hidden lg:flex">

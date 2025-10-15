@@ -10,18 +10,18 @@ const stripeProductId = 'prod_12345';
     <div class="absolute -top-1/4 -left-1/4 w-1/2 h-1/2 bg-primary opacity-10 rounded-full filter blur-5xl animate-drift"></div>
     <div class="absolute -bottom-1/4 -right-1/4 w-1/2 h-1/2 bg-secondary opacity-10 rounded-full filter blur-5xl animate-drift animation-delay-2000"></div>
   </div>
-    
+
     {/* Content */}
   <div class="container mx-auto px-4 sm:px-6 lg:px-8 z-10">
     <div class="flex flex-col lg:flex-row items-center">
       <div class="w-full lg:w-1/2 lg:pr-16 text-center lg:text-left">
         <h1 class="text-6xl lg:text-7xl font-extrabold mb-6 leading-tight text-center lg:text-left">
           <span class="relative inline-block">
-            <span 
+            <span
               class="absolute inset-0 bg-gradient-to-r from-primary to-secondary opacity-50 blur-3xl"
               style="transform: translate(-5%, -5%) scale(1.1)"
             ></span>
-            <span 
+            <span
               class="relative text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary"
               style={{
                 textShadow: `
@@ -31,39 +31,64 @@ const stripeProductId = 'prod_12345';
                 `
               }}
             >
-              Launch
+              Organize
             </span>
           </span>{" "}
-          Your Startup Today
+          Your Home Life
         </h1>
-        <p class="text-xl mb-8 text-base-content opacity-80">Try changing this page! Head over to <span class="text-secondary">./astro/src/components/HeroSection.astro</span></p>
+        <p class="text-xl mb-8 text-base-content opacity-80">Keep track of your home maintenance, documents, and tasks all in one place. Say goodbye to lost warranties and forgotten repairs.</p>
         <div class="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
           <CheckoutButton client:load stripeProductId={stripeProductId}  className="btn btn-primary btn-lg rounded-full px-8 py-4 text-xl transition-all duration-300 hover:bg-primary-focus w-full sm:w-auto">
-            Get Started
+            Get Started Free
           </CheckoutButton>
           <button class="btn btn-outline btn-secondary btn-lg rounded-full px-8 py-4 text-xl transition-all duration-300 w-full sm:w-auto">
-            Watch Demo
+            See How It Works
           </button>
         </div>
         <div class="mt-8 sm:mt-12 text-center lg:text-left">
-          <p class="text-base-content opacity-80">Join 10,000+ teams already using our platform</p>
+          <p class="text-base-content opacity-80">Join thousands of homeowners simplifying their lives</p>
         </div>
       </div>
       <div class="lg:w-1/2 md:w-full px-4 mt-12 mb-12">
         <div class="relative">
           <div class="bg-base-200 rounded-3xl p-4 sm:p-6 md:p-8">
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {[1, 2, 3, 4].map((item) => (
-                <div class="bg-base-100 rounded-2xl p-4 sm:p-6 border border-base-300 transition-all duration-300 hover:border-primary">
-                  <div class="w-12 h-12 bg-primary bg-opacity-10 rounded-full flex items-center justify-center mb-4">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                    </svg>
-                  </div>
-                  <h3 class="font-bold mb-2 text-lg">Feature {item}</h3>
-                  <p class="text-sm text-base-content opacity-70">Boost your productivity with our amazing features.</p>
+              <div class="bg-base-100 rounded-2xl p-4 sm:p-6 border border-base-300 transition-all duration-300 hover:border-primary">
+                <div class="w-12 h-12 bg-primary bg-opacity-10 rounded-full flex items-center justify-center mb-4">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
                 </div>
-              ))}
+                <h3 class="font-bold mb-2 text-lg">Document Hub</h3>
+                <p class="text-sm text-base-content opacity-70">Store warranties, manuals, and receipts in one secure place.</p>
+              </div>
+              <div class="bg-base-100 rounded-2xl p-4 sm:p-6 border border-base-300 transition-all duration-300 hover:border-primary">
+                <div class="w-12 h-12 bg-primary bg-opacity-10 rounded-full flex items-center justify-center mb-4">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                  </svg>
+                </div>
+                <h3 class="font-bold mb-2 text-lg">Task Manager</h3>
+                <p class="text-sm text-base-content opacity-70">Never miss another home maintenance task or repair.</p>
+              </div>
+              <div class="bg-base-100 rounded-2xl p-4 sm:p-6 border border-base-300 transition-all duration-300 hover:border-primary">
+                <div class="w-12 h-12 bg-primary bg-opacity-10 rounded-full flex items-center justify-center mb-4">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <h3 class="font-bold mb-2 text-lg">Appointments</h3>
+                <p class="text-sm text-base-content opacity-70">Schedule and track service appointments with ease.</p>
+              </div>
+              <div class="bg-base-100 rounded-2xl p-4 sm:p-6 border border-base-300 transition-all duration-300 hover:border-primary">
+                <div class="w-12 h-12 bg-primary bg-opacity-10 rounded-full flex items-center justify-center mb-4">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                  </svg>
+                </div>
+                <h3 class="font-bold mb-2 text-lg">Home Inventory</h3>
+                <p class="text-sm text-base-content opacity-70">Track appliances, systems, and components in your home.</p>
+              </div>
             </div>
           </div>
         </div>

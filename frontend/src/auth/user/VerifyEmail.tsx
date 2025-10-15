@@ -42,7 +42,9 @@ export default function VerifyEmail() {
         });
         if (content.status === 200) {
           // Successful verification
-          navigate(REDIRECT_URLs.LOGIN_REDIRECT_URL);
+          navigate(
+            `${REDIRECT_URLs.LOGIN_REDIRECT_URL}?email=${verification.data.email}`
+          );
         } else if (content.status === 401) {
           // Check for pending flow
           const pendingFlow = content.data?.flows?.find(

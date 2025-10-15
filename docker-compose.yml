@@ -17,6 +17,8 @@ services:
     build:
       context: ./astro/
       dockerfile: Dockerfile
+    ports:
+      - 4321:4321
     volumes:
       - ./astro/src:/app/src
       - ./astro/public:/app/public

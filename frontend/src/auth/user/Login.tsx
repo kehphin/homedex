@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { AuthService } from "../AuthService";
 import { pathForPendingFlow, useConfig } from "../../auth";
 import ProviderList from "../social/ProviderList";
@@ -24,6 +24,16 @@ const Login: React.FC = () => {
     (config?.data?.socialaccount?.providers?.length ?? 0) > 0;
   const navigate = useNavigate();
   const [, auth] = useAuthStatus();
+  const location = useLocation();
+
+  useEffect(() => {
+    const queryParams = new URLSearchParams(location.search);
+    const emailFromQuery = queryParams.get("email");
+    if (emailFromQuery) {
+      setEmail(emailFromQuery);
+    }
+  }, [location.search]);
+
   if (auth.isAuthenticated) {
     navigate(REDIRECT_URLs.LOGIN_REDIRECT_URL);
   }

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import ContactUs, HomeComponent, ComponentImage, ComponentAttachment
+from .models import ContactUs, HomeComponent, ComponentImage, ComponentAttachment, Document, Task
 
 
 class ComponentImageInline(admin.TabularInline):
@@ -40,4 +40,53 @@ class HomeComponentAdmin(admin.ModelAdmin):
     )
 
 
+@admin.register(Document)
+class DocumentAdmin(admin.ModelAdmin):
+    list_display = ['name', 'category', 'year', 'user', 'uploaded_at']
+    list_filter = ['category', 'year', 'uploaded_at']
+    search_fields = ['name', 'description', 'category']
+    readonly_fields = ['uploaded_at', 'updated_at', 'file_type', 'file_size']
+
+    fieldsets = (
+        ('Document Information', {
+            'fields': ('user', 'name', 'category', 'description')
+        }),
+        ('File Information', {
+            'fields': ('file', 'file_type', 'file_size')
+        }),
+        ('Date Information', {
+            'fields': ('document_date', 'year')
+        }),
+        ('Tags', {
+            'fields': ('tags',)
+        }),
+        ('Timestamps', {
+            'fields': ('uploaded_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+
+
 admin.site.register(ContactUs)
+
+
+@admin.register(Task)
+class TaskAdmin(admin.ModelAdmin):
+    list_display = ['title', 'category', 'priority', 'status', 'due_date', 'user', 'created_at']
+    list_filter = ['category', 'priority', 'status', 'due_date', 'created_at']
+    search_fields = ['title', 'description', 'category']
+    readonly_fields = ['created_at', 'updated_at']
+
+    fieldsets = (
+        ('Task Information', {
+            'fields': ('user', 'title', 'description', 'category')
+        }),
+        ('Task Details', {
+            'fields': ('priority', 'status', 'due_date')
+        }),
+        ('Timestamps', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+

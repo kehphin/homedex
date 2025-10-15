@@ -82,3 +82,83 @@ class ComponentAttachment(models.Model):
 
     def __str__(self):
         return f"{self.name} - {self.component.name}"
+
+
+class Document(models.Model):
+    CATEGORY_CHOICES = [
+        ('Property Tax', 'Property Tax'),
+        ('Utilities', 'Utilities'),
+        ('Insurance', 'Insurance'),
+        ('Mortgage', 'Mortgage'),
+        ('HOA Documents', 'HOA Documents'),
+        ('Permits', 'Permits'),
+        ('Inspection Reports', 'Inspection Reports'),
+        ('Appraisals', 'Appraisals'),
+        ('Title & Deed', 'Title & Deed'),
+        ('Warranties', 'Warranties'),
+        ('Contracts', 'Contracts'),
+        ('Receipts', 'Receipts'),
+        ('Other', 'Other'),
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='documents')
+    name = models.CharField(max_length=255)
+    category = models.CharField(max_length=50, choices=CATEGORY_CHOICES)
+    description = models.TextField(blank=True)
+    file = models.FileField(upload_to='documents/')
+    file_type = models.CharField(max_length=100)
+    file_size = models.IntegerField()
+    document_date = models.DateField(null=True, blank=True)
+    year = models.CharField(max_length=4, blank=True)
+    tags = models.JSONField(default=list, blank=True)
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-uploaded_at']
+
+    def __str__(self):
+        return f"{self.name} - {self.category}"
+
+
+class Task(models.Model):
+    PRIORITY_CHOICES = [
+        ('low', 'Low'),
+        ('medium', 'Medium'),
+        ('high', 'High'),
+    ]
+
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('in-progress', 'In Progress'),
+        ('completed', 'Completed'),
+    ]
+
+    CATEGORY_CHOICES = [
+        ('HVAC', 'HVAC'),
+        ('Plumbing', 'Plumbing'),
+        ('Electrical', 'Electrical'),
+        ('Landscaping', 'Landscaping'),
+        ('Painting', 'Painting'),
+        ('Roofing', 'Roofing'),
+        ('Flooring', 'Flooring'),
+        ('Appliances', 'Appliances'),
+        ('General Maintenance', 'General Maintenance'),
+        ('Other', 'Other'),
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='tasks')
+    title = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
+    category = models.CharField(max_length=50, choices=CATEGORY_CHOICES, default='General Maintenance')
+    priority = models.CharField(max_length=20, choices=PRIORITY_CHOICES, default='medium')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    due_date = models.DateField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.title} - {self.status}"

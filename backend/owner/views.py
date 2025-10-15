@@ -11,8 +11,8 @@ from payments.permissions import HasPurchasedProduct, HasAnyActiveSubscription, 
 from rest_framework import permissions
 import os
 
-from .models import ContactUs, HomeComponent, ComponentImage, ComponentAttachment
-from .serializers import HomeComponentSerializer
+from .models import ContactUs, HomeComponent, ComponentImage, ComponentAttachment, Document, Task
+from .serializers import HomeComponentSerializer, DocumentSerializer, TaskSerializer
 from django.core.mail import send_mail
 
 # CHANGE: These are the product IDs and subscription IDs that the user must have purchased to access the views
@@ -145,3 +145,74 @@ class HomeComponentViewSet(viewsets.ModelViewSet):
             'needs_maintenance': needs_maintenance,
             'under_warranty': under_warranty
         })
+
+
+class DocumentViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet for managing home documents
+    """
+    serializer_class = DocumentSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        # Users can only see their own documents
+        return Document.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        # Automatically set the user when creating
+        serializer.save(user=self.request.user)
+
+    @action(detail=False, methods=['get'])
+    def stats(self, request):
+        """Get statistics about user's documents"""
+        from django.utils import timezone
+
+        queryset = self.get_queryset()
+        total = queryset.count()
+
+        current_year = timezone.now().year
+        this_year = queryset.filter(year=str(current_year)).count()
+
+        categories = queryset.values('category').distinct().count()
+
+        total_size = sum(doc.file_size for doc in queryset)
+
+        return Response({
+            'total': total,
+            'this_year': this_year,
+            'categories': categories,
+            'total_size': total_size
+        })
+
+
+class TaskViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet for managing home tasks
+    """
+    serializer_class = TaskSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        # Users can only see their own tasks
+        return Task.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        # Automatically set the user when creating
+        serializer.save(user=self.request.user)
+
+    @action(detail=False, methods=['get'])
+    def stats(self, request):
+        """Get statistics about user's tasks"""
+        queryset = self.get_queryset()
+        total = queryset.count()
+        pending = queryset.filter(status='pending').count()
+        in_progress = queryset.filter(status='in-progress').count()
+        completed = queryset.filter(status='completed').count()
+
+        return Response({
+            'total': total,
+            'pending': pending,
+            'in_progress': in_progress,
+            'completed': completed
+        })
+

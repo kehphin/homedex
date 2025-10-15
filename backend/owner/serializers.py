@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import HomeComponent, ComponentImage, ComponentAttachment
+from .models import HomeComponent, ComponentImage, ComponentAttachment, Document, Task
 
 
 class ComponentImageSerializer(serializers.ModelSerializer):
@@ -104,5 +104,69 @@ class HomeComponentSerializer(serializers.ModelSerializer):
                 file_type=getattr(attachment_file, 'content_type', ''),
                 file_size=attachment_file.size
             )
+
+        return instance
+
+
+class TaskSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Task
+        fields = [
+            'id', 'title', 'description', 'category', 'priority',
+            'status', 'due_date', 'created_at', 'updated_at'
+        ]
+        read_only_fields = ['created_at', 'updated_at']
+
+
+class DocumentSerializer(serializers.ModelSerializer):
+    file_url = serializers.SerializerMethodField()
+    upload_date = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Document
+        fields = [
+            'id', 'name', 'category', 'description', 'file_type',
+            'file_size', 'document_date', 'year', 'tags', 'uploaded_at',
+            'updated_at', 'file_url', 'upload_date'
+        ]
+        read_only_fields = ['uploaded_at', 'updated_at', 'file_type', 'file_size']
+
+    def get_file_url(self, obj):
+        request = self.context.get('request')
+        if obj.file and hasattr(obj.file, 'url'):
+            if request is not None:
+                return request.build_absolute_uri(obj.file.url)
+            return obj.file.url
+        return None
+
+    def get_upload_date(self, obj):
+        return obj.uploaded_at.strftime('%Y-%m-%d') if obj.uploaded_at else None
+
+    def create(self, validated_data):
+        # Extract file from request
+        request = self.context.get('request')
+        file = request.FILES.get('file')
+
+        if file:
+            validated_data['file'] = file
+            validated_data['file_type'] = file.content_type
+            validated_data['file_size'] = file.size
+
+        return Document.objects.create(**validated_data)
+
+    def update(self, instance, validated_data):
+        # Extract file from request if present
+        request = self.context.get('request')
+        file = request.FILES.get('file')
+
+        if file:
+            validated_data['file'] = file
+            validated_data['file_type'] = file.content_type
+            validated_data['file_size'] = file.size
+
+        # Update document fields
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
 
         return instance
