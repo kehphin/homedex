@@ -25,7 +25,7 @@ function buildHeaders(): HeadersInit {
  * Send feedback to the contactus endpoint
  */
 export async function sendFeedback(data: FeedbackData): Promise<void> {
-  const response = await fetch(`${API_BASE}/contactus/`, {
+  const response = await fetch(`${API_BASE}/owner/contact/`, {
     method: "POST",
     credentials: "include",
     headers: buildHeaders(),
