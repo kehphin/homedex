@@ -22,13 +22,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = ["localhost", "backend", "proxy", "https://app.homedex.app", "https://api.homedex.app"]
-CSRF_TRUSTED_ORIGINS = ['http://localhost', 'https://app.homedex.app', "https://api.homedex.app"]
+ALLOWED_HOSTS = ["localhost", "backend", "proxy", "app.homedex.app", "api.homedex.app"]
+CSRF_TRUSTED_ORIGINS = ['localhost', 'app.homedex.app', "api.homedex.app"]
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-    "http://localhost",
-    "https://app.homedex.app",
-    "https://api.homedex.app"
+    "localhost:3000",
+    "localhost",
+    "app.homedex.app",
+    "api.homedex.app"
 ]
 
 CORS_ALLOW_CREDENTIALS = True  # Required for cookies/sessions to work across domains
