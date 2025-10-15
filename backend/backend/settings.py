@@ -61,6 +61,7 @@ INSTALLED_APPS = [
     "allauth.mfa",
     "allauth.headless",
     "allauth.usersessions",
+    "anymail",
     "rest_framework",
     "djstripe",
     "user_auth",
@@ -167,12 +168,14 @@ if DEBUG:
     EMAIL_HOST = "mail"
     EMAIL_PORT = 1025
 else:
-    EMAIL_BACKEND = os.getenv("EMAIL_BACKEND", "django.core.mail.backends.smtp.EmailBackend")
-    EMAIL_HOST = os.getenv("EMAIL_HOST")
-    EMAIL_PORT = int(os.getenv("EMAIL_PORT", 587))
-    EMAIL_USE_TLS = True
-    EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
-    EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
+    ANYMAIL = {
+        # (exact settings here depend on your ESP...)
+        "MAILGUN_API_KEY": os.getenv("MAILGUN_API_KEY"),
+        "MAILGUN_SENDER_DOMAIN": 'homedex.app',  # your Mailgun domain, if needed
+    }
+    EMAIL_BACKEND = "anymail.backends.mailgun.EmailBackend"  # or amazon_ses.EmailBackend, or...
+    DEFAULT_FROM_EMAIL = "hello@homedex.app"  # if you don't already have this in settings
+    SERVER_EMAIL = "hello@homedex.app"  # ditto (default from-email for Django errors)
 
 #If you prefer to use another email service, check out
 # https://github.com/anymail/django-anymail for more information

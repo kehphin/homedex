@@ -4,6 +4,7 @@ qrcode >= 7.0.0
 django-sendgrid-v5==1.2.3
 dj-stripe==2.8.4
 stripe
+django-anymail[mailgun]==13.1.0
 django-unfold==0.30.0
 djangorestframework==3.15.2
 python-dotenv==1.0.1

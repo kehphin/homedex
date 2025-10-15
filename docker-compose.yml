@@ -1,8 +1,9 @@
-
 services:
   frontend:
     env_file:
       - .env
+    ports:
+      - 3000:3000
     build:
       context: ./frontend/
       dockerfile: Dockerfile
@@ -11,7 +12,7 @@ services:
       - ./frontend/public:/code/public/
     environment:
       - PUBLIC_URL=/static/
-  
+
   astro:
     build:
       context: ./astro/
@@ -29,6 +30,8 @@ services:
   backend:
     env_file:
       - .env
+    ports:
+      - 8000:8000
     build:
       context: ./backend/
       dockerfile: Dockerfile
@@ -38,17 +41,17 @@ services:
     depends_on:
       - db
 
-  proxy:
-    image: traefik:v3.4
-    ports:
-      - ${HTTP_PORT:-80}:80
-      - ${HTTPS_PORT:-443}:443
-    volumes:
-      - ./traefik.toml:/etc/traefik/traefik.toml:ro
-      - ./dynamic_conf.toml:/etc/traefik/dynamic_conf.toml:ro
-      - ./acme.json:/acme.json
-    env_file:
-      - .env
+  # proxy:
+  #   image: traefik:v3.4
+  #   ports:
+  #     - ${HTTP_PORT:-80}:80
+  #     - ${HTTPS_PORT:-443}:443
+  #   volumes:
+  #     - ./traefik.toml:/etc/traefik/traefik.toml:ro
+  #     - ./dynamic_conf.toml:/etc/traefik/dynamic_conf.toml:ro
+  #     - ./acme.json:/acme.json
+  #   env_file:
+  #     - .env
 
   mail:
     image: schickling/mailcatcher
@@ -60,10 +63,17 @@ services:
     env_file:
       - .env
     image: stripe/stripe-cli:v1.7.4
-    command: ["listen", "-H", "x-djstripe-webhook-secret: ${STRIPE_WEBHOOK_SECRET}", "--forward-to", "http://backend:8000/stripe/webhook/"]
+    command:
+      [
+        "listen",
+        "-H",
+        "x-djstripe-webhook-secret: ${STRIPE_WEBHOOK_SECRET}",
+        "--forward-to",
+        "http://backend:8000/stripe/webhook/",
+      ]
     depends_on:
       - backend
-      - proxy
+      # - proxy
     environment:
       - STRIPE_API_KEY=${STRIPE_API_KEY_TEST}
 
