@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { useLoaderData, Navigate, useNavigate } from "react-router-dom";
+import { useLoaderData, useNavigate } from "react-router-dom";
 import { AuthService } from "../AuthService";
 import { AuthState, EmailVerificationInfo } from "../types";
 import { REDIRECT_URLs } from "../constants";
@@ -77,10 +77,6 @@ export default function VerifyEmail() {
       submit();
     }
   }, [verification.status, response.content, submit]);
-
-  if ([200, 401].includes(response.content?.status ?? 0)) {
-    return <Navigate to="/account/email" />;
-  }
 
   let body = null;
   if (verification.status === 200) {
