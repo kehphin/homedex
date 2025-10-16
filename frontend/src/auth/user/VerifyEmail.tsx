@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useLoaderData, Navigate, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useLoaderData, useNavigate } from "react-router-dom";
 import { AuthService } from "../AuthService";
 import { AuthState, EmailVerificationInfo } from "../types";
 import { REDIRECT_URLs } from "../constants";
@@ -33,6 +33,18 @@ export default function VerifyEmail() {
   });
   const navigate = useNavigate();
 
+  // Automatically submit when the page loads if verification is valid
+  useEffect(() => {
+    if (
+      verification.status === 200 &&
+      !response.fetching &&
+      !response.content
+    ) {
+      submit();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   function submit() {
     setResponse({ ...response, fetching: true });
     AuthService.verifyEmail(key)
@@ -55,6 +67,15 @@ export default function VerifyEmail() {
             } else {
               console.error("No path found for pending flow:", pendingFlow);
             }
+          } else {
+            // No pending flow - user needs to log in first to verify their email
+            // This happens when the verification link is clicked after the session expired
+            const email = verification.data?.email;
+            navigate(
+              `${REDIRECT_URLs.LOGIN_URL}?email=${encodeURIComponent(
+                email || ""
+              )}`
+            );
           }
         }
       })
@@ -68,31 +89,23 @@ export default function VerifyEmail() {
       });
   }
 
-  if ([200, 401].includes(response.content?.status ?? 0)) {
-    return <Navigate to="/account/email" />;
-  }
-
   let body = null;
   if (verification.status === 200) {
     body = (
       <>
         <p className="mb-4">
-          Please confirm that{" "}
+          Confirming email{" "}
           <a
             href={"mailto:" + verification.data.email}
             className="link link-primary"
           >
             {verification.data.email}
           </a>{" "}
-          is an email address for user {verification.data.user.display}.
+          for user {verification.data.user.display}...
         </p>
-        <button
-          className={`btn btn-primary ${response.fetching ? "loading" : ""}`}
-          disabled={response.fetching}
-          onClick={() => submit()}
-        >
-          Confirm
-        </button>
+        <div className="flex justify-center">
+          <span className="loading loading-spinner loading-lg"></span>
+        </div>
       </>
     );
   } else if (!verification.data?.email) {
