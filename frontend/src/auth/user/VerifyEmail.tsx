@@ -78,6 +78,12 @@ export default function VerifyEmail() {
     }
   }, [verification.status, response.content, submit]);
 
+  if ([200].includes(response.content?.status ?? 0)) {
+    navigate(`${REDIRECT_URLs.LOGIN_URL}?email=${verification.data.email}`);
+
+    return;
+  }
+
   let body = null;
   if (verification.status === 200) {
     body = (
