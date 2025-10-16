@@ -41,6 +41,7 @@ export default function VerifyEmail() {
         setResponse((r) => {
           return { ...r, content };
         });
+        console.log("Verification response:", content);
         if (content.status === 200) {
           // Successful verification
           navigate(
