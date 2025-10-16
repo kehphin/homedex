@@ -25,8 +25,8 @@ const Logout: React.FC = () => {
       console.error(e);
     } finally {
       setResponse((r) => ({ ...r, fetching: false }));
-      // navigate to login page after logout
-      navigate("/");
+
+      navigate("/account/login");
     }
   };
 

@@ -35,6 +35,7 @@ export default function VerifyEmail() {
 
   const submit = useCallback(() => {
     setResponse((prevResponse) => ({ ...prevResponse, fetching: true }));
+
     AuthService.verifyEmail(key)
       .then((content) => {
         setResponse((r) => {
@@ -43,7 +44,7 @@ export default function VerifyEmail() {
         if (content.status === 200) {
           // Successful verification
           navigate(
-            `${REDIRECT_URLs.LOGIN_REDIRECT_URL}?email=${verification.data.email}`
+            `${REDIRECT_URLs.LOGIN_URL}?email=${verification.data.email}`
           );
         } else if (content.status === 401) {
           // Check for pending flow
