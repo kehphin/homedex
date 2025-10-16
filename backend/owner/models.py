@@ -162,3 +162,30 @@ class Task(models.Model):
 
     def __str__(self):
         return f"{self.title} - {self.status}"
+
+
+class Appointment(models.Model):
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('confirmed', 'Confirmed'),
+        ('completed', 'Completed'),
+        ('cancelled', 'Cancelled'),
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='appointments')
+    service_id = models.CharField(max_length=100)
+    service_name = models.CharField(max_length=255)
+    service_category = models.CharField(max_length=100)
+    service_duration = models.IntegerField()  # in minutes
+    appointment_date = models.DateField()
+    appointment_time = models.TimeField()
+    notes = models.TextField(blank=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-appointment_date', '-appointment_time']
+
+    def __str__(self):
+        return f"{self.service_name} - {self.appointment_date} at {self.appointment_time}"

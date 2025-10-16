@@ -7,6 +7,7 @@ router = DefaultRouter()
 router.register(r'components', views.HomeComponentViewSet, basename='homecomponent')
 router.register(r'documents', views.DocumentViewSet, basename='document')
 router.register(r'tasks', views.TaskViewSet, basename='task')
+router.register(r'appointments', views.AppointmentViewSet, basename='appointment')
 
 urlpatterns = [
     # These samples are for demonstration purposes only

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import HomeComponent, ComponentImage, ComponentAttachment, Document, Task
+from .models import HomeComponent, ComponentImage, ComponentAttachment, Document, Task, Appointment
 
 
 class ComponentImageSerializer(serializers.ModelSerializer):
@@ -170,3 +170,14 @@ class DocumentSerializer(serializers.ModelSerializer):
         instance.save()
 
         return instance
+
+
+class AppointmentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Appointment
+        fields = [
+            'id', 'service_id', 'service_name', 'service_category',
+            'service_duration', 'appointment_date', 'appointment_time',
+            'notes', 'status', 'created_at', 'updated_at'
+        ]
+        read_only_fields = ['created_at', 'updated_at']

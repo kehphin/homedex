@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import ContactUs, HomeComponent, ComponentImage, ComponentAttachment, Document, Task
+from .models import ContactUs, HomeComponent, ComponentImage, ComponentAttachment, Document, Task, Appointment
 
 
 class ComponentImageInline(admin.TabularInline):
@@ -83,6 +83,30 @@ class TaskAdmin(admin.ModelAdmin):
         }),
         ('Task Details', {
             'fields': ('priority', 'status', 'due_date')
+        }),
+        ('Timestamps', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+
+
+@admin.register(Appointment)
+class AppointmentAdmin(admin.ModelAdmin):
+    list_display = ['service_name', 'user', 'appointment_date', 'appointment_time', 'status', 'created_at']
+    list_filter = ['status', 'service_category', 'appointment_date', 'created_at']
+    search_fields = ['service_name', 'service_category', 'notes']
+    readonly_fields = ['created_at', 'updated_at']
+
+    fieldsets = (
+        ('Appointment Information', {
+            'fields': ('user', 'service_id', 'service_name', 'service_category', 'service_duration')
+        }),
+        ('Schedule', {
+            'fields': ('appointment_date', 'appointment_time', 'status')
+        }),
+        ('Additional Information', {
+            'fields': ('notes',)
         }),
         ('Timestamps', {
             'fields': ('created_at', 'updated_at'),

@@ -11,8 +11,8 @@ from payments.permissions import HasPurchasedProduct, HasAnyActiveSubscription, 
 from rest_framework import permissions
 import os
 
-from .models import ContactUs, HomeComponent, ComponentImage, ComponentAttachment, Document, Task
-from .serializers import HomeComponentSerializer, DocumentSerializer, TaskSerializer
+from .models import ContactUs, HomeComponent, ComponentImage, ComponentAttachment, Document, Task, Appointment
+from .serializers import HomeComponentSerializer, DocumentSerializer, TaskSerializer, AppointmentSerializer
 from django.core.mail import send_mail
 
 # CHANGE: These are the product IDs and subscription IDs that the user must have purchased to access the views
@@ -214,5 +214,81 @@ class TaskViewSet(viewsets.ModelViewSet):
             'pending': pending,
             'in_progress': in_progress,
             'completed': completed
+        })
+
+
+class AppointmentViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet for managing appointments
+    """
+    serializer_class = AppointmentSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        # Users can only see their own appointments
+        return Appointment.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        # Automatically set the user when creating
+        serializer.save(user=self.request.user)
+
+    @action(detail=True, methods=['post'])
+    def cancel(self, request, pk=None):
+        """Cancel an appointment"""
+        appointment = self.get_object()
+        appointment.status = 'cancelled'
+        appointment.save()
+        serializer = self.get_serializer(appointment)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['get'], url_path='available-times')
+    def available_times(self, request):
+        """
+        Get available time slots for a specific date
+        This is a simplified implementation - in production, you would:
+        1. Check actual provider availability
+        2. Consider existing appointments
+        3. Apply business hours logic
+        """
+        from datetime import datetime, time, timedelta
+
+        date_str = request.query_params.get('date')
+        if not date_str:
+            return Response(
+                {'error': 'date parameter is required (YYYY-MM-DD)'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            requested_date = datetime.strptime(date_str, '%Y-%m-%d').date()
+        except ValueError:
+            return Response(
+                {'error': 'Invalid date format. Use YYYY-MM-DD'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Get existing appointments for this date and user
+        existing_appointments = Appointment.objects.filter(
+            user=request.user,
+            appointment_date=requested_date
+        ).exclude(status='cancelled').values_list('appointment_time', flat=True)
+
+        # Generate time slots from 8 AM to 6 PM in 30-minute intervals
+        available_times = []
+        start_time = time(8, 0)
+        end_time = time(18, 0)
+        current_time = datetime.combine(requested_date, start_time)
+        end_datetime = datetime.combine(requested_date, end_time)
+
+        while current_time < end_datetime:
+            time_slot = current_time.time()
+            # Check if this time slot is not already booked
+            if time_slot not in existing_appointments:
+                available_times.append(time_slot.strftime('%H:%M'))
+            current_time += timedelta(minutes=30)
+
+        return Response({
+            'date': date_str,
+            'available_times': available_times
         })
 
