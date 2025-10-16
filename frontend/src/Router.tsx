@@ -48,6 +48,7 @@ import SampleProtectedFile from "./samples/SampleProtectedFile";
 import SampleProtectedSubscription from "./samples/SampleRequiresSubscription";
 import AskDex from "./dex/AskDex";
 import ScheduleAppointment from "./appointments/ScheduleAppointment";
+import Appointments from "./appointments/Appointments";
 import Tasks from "./tasks/Tasks";
 import HomeComponents from "./components/HomeComponents";
 import Documents from "./documents/Documents";
@@ -76,6 +77,14 @@ function createRouter() {
           element: (
             <AuthenticatedRoute>
               <AskDex />
+            </AuthenticatedRoute>
+          ),
+        },
+        {
+          path: "/account/appointments",
+          element: (
+            <AuthenticatedRoute>
+              <Appointments />
             </AuthenticatedRoute>
           ),
         },

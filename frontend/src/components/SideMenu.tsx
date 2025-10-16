@@ -44,6 +44,11 @@ export default function SideMenu({
       title: "Maintenance",
       items: [
         {
+          to: "/account/appointments",
+          icon: CalendarDaysIcon,
+          name: "Appointments",
+        },
+        {
           to: "/account/appointment",
           icon: CalendarDaysIcon,
           name: "Schedule appointment",
