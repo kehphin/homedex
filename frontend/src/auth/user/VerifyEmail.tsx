@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from "react";
-import { useLoaderData, useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { useLoaderData, Navigate, useNavigate } from "react-router-dom";
 import { AuthService } from "../AuthService";
 import { AuthState, EmailVerificationInfo } from "../types";
 import { REDIRECT_URLs } from "../constants";
@@ -33,20 +33,16 @@ export default function VerifyEmail() {
   });
   const navigate = useNavigate();
 
-  const submit = useCallback(() => {
-    setResponse((prevResponse) => ({ ...prevResponse, fetching: true }));
-
+  function submit() {
+    setResponse({ ...response, fetching: true });
     AuthService.verifyEmail(key)
       .then((content) => {
         setResponse((r) => {
           return { ...r, content };
         });
-        console.log("Verification response:", content);
         if (content.status === 200) {
           // Successful verification
-          navigate(
-            `${REDIRECT_URLs.LOGIN_URL}?email=${verification.data.email}`
-          );
+          navigate(REDIRECT_URLs.LOGIN_URL);
         } else if (content.status === 401) {
           // Check for pending flow
           const pendingFlow = content.data?.flows?.find(
@@ -70,19 +66,10 @@ export default function VerifyEmail() {
           return { ...r, fetching: false };
         });
       });
-  }, [key, navigate]);
+  }
 
-  useEffect(() => {
-    // Automatically verify email if the verification info is valid
-    if (verification.status === 200 && !response.content) {
-      submit();
-    }
-  }, [verification.status, response.content, submit]);
-
-  if ([200].includes(response.content?.status ?? 0)) {
-    navigate(`${REDIRECT_URLs.LOGIN_URL}?email=${verification.data.email}`);
-
-    return;
+  if ([200, 401].includes(response.content?.status ?? 0)) {
+    return <Navigate to="/account/email" />;
   }
 
   let body = null;
@@ -90,20 +77,22 @@ export default function VerifyEmail() {
     body = (
       <>
         <p className="mb-4">
-          Verifying email address{" "}
+          Please confirm that{" "}
           <a
             href={"mailto:" + verification.data.email}
             className="link link-primary"
           >
             {verification.data.email}
           </a>{" "}
-          for user {verification.data.user.display}...
+          is an email address for user {verification.data.user.display}.
         </p>
-        {response.fetching && (
-          <div className="flex items-center justify-center">
-            <span className="loading loading-spinner loading-lg"></span>
-          </div>
-        )}
+        <button
+          className={`btn btn-primary ${response.fetching ? "loading" : ""}`}
+          disabled={response.fetching}
+          onClick={() => submit()}
+        >
+          Confirm
+        </button>
       </>
     );
   } else if (!verification.data?.email) {
