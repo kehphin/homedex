@@ -9,13 +9,13 @@ const pathname = new URL(Astro.request.url).pathname;
 <html lang="en" data-theme="homedex">
   <head>
     <meta charset="utf-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width" />
     <meta name="generator" content={Astro.generator} />
     <title>{title}</title>
     <meta name="description" content={description} />
     <!-- Add more meta tags for SEO as needed -->
-    <meta property="og:image" content={ogImage || '/favicon.svg'} />
+    <meta property="og:image" content={ogImage || '/favicon.ico'} />
     <!-- og title -->
     <meta property="og:title" content={title || "my site"} />
     <!-- og description -->
