@@ -26,6 +26,15 @@ DEBUG = os.getenv('DEBUG', 'True') == 'True'
 
 ALLOWED_HOSTS = ["localhost", "backend", "proxy", "app.homedex.app", "api.homedex.app"]
 CSRF_TRUSTED_ORIGINS = ['http://localhost:3000', 'https://app.homedex.app', "https://api.homedex.app"]
+
+# CSRF Cookie Settings
+CSRF_COOKIE_SECURE = not DEBUG  # Only send CSRF cookie over HTTPS in production
+CSRF_COOKIE_HTTPONLY = False  # JavaScript needs to read the CSRF token for fetch requests
+CSRF_COOKIE_SAMESITE = 'Lax'  # Allow cross-site requests with credentials
+CSRF_COOKIE_AGE = 31449600  # 1 year in seconds
+# Set cookie domain to parent domain so it's shared across app.homedex.app and api.homedex.app
+CSRF_COOKIE_DOMAIN = os.getenv('CSRF_COOKIE_DOMAIN', None)  # Set to '.homedex.app' in production .env
+
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://localhost",
@@ -72,7 +81,7 @@ MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",  # Add CORS middleware (must be before CommonMiddleware)
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
-    # "django.middleware.csrf.CsrfViewMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
@@ -258,6 +267,15 @@ LOGGING = {
     },
 }
 
+# REST Framework Configuration
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+}
 
 try:
     from .local_settings import *  # noqa
