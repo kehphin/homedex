@@ -33,19 +33,20 @@ interface Document {
 }
 
 const CATEGORIES = [
-  "Property Tax",
-  "Utilities",
-  "Insurance",
-  "Mortgage",
-  "HOA Documents",
-  "Permits",
-  "Inspection Reports",
   "Appraisals",
-  "Title & Deed",
-  "Warranties",
   "Contracts",
-  "Receipts",
+  "HOA Documents",
+  "Inspection Reports",
+  "Insurance",
+  "Manuals",
+  "Mortgage",
   "Other",
+  "Permits",
+  "Property Tax",
+  "Receipts",
+  "Title & Deed",
+  "Utilities",
+  "Warranties",
 ];
 
 const COMMON_TAGS = [

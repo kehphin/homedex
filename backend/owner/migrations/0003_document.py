@@ -18,7 +18,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('name', models.CharField(max_length=255)),
-                ('category', models.CharField(choices=[('Property Tax', 'Property Tax'), ('Utilities', 'Utilities'), ('Insurance', 'Insurance'), ('Mortgage', 'Mortgage'), ('HOA Documents', 'HOA Documents'), ('Permits', 'Permits'), ('Inspection Reports', 'Inspection Reports'), ('Appraisals', 'Appraisals'), ('Title & Deed', 'Title & Deed'), ('Warranties', 'Warranties'), ('Contracts', 'Contracts'), ('Receipts', 'Receipts'), ('Other', 'Other')], max_length=50)),
+                ('category', models.CharField(choices=[('Appraisals', 'Appraisals'), ('Contracts', 'Contracts'), ('HOA Documents', 'HOA Documents'), ('Inspection Reports', 'Inspection Reports'), ('Insurance', 'Insurance'), ('Manuals', 'Manuals'), ('Mortgage', 'Mortgage'), ('Other', 'Other'), ('Permits', 'Permits'), ('Property Tax', 'Property Tax'), ('Receipts', 'Receipts'), ('Title & Deed', 'Title & Deed'), ('Utilities', 'Utilities'), ('Warranties', 'Warranties')], max_length=50)),
                 ('description', models.TextField(blank=True)),
                 ('file', models.FileField(upload_to='documents/')),
                 ('file_type', models.CharField(max_length=100)),

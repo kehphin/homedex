@@ -130,19 +130,20 @@ class ComponentAttachment(models.Model):
 
 class Document(models.Model):
     CATEGORY_CHOICES = [
-        ('Property Tax', 'Property Tax'),
-        ('Utilities', 'Utilities'),
-        ('Insurance', 'Insurance'),
-        ('Mortgage', 'Mortgage'),
-        ('HOA Documents', 'HOA Documents'),
-        ('Permits', 'Permits'),
-        ('Inspection Reports', 'Inspection Reports'),
         ('Appraisals', 'Appraisals'),
-        ('Title & Deed', 'Title & Deed'),
-        ('Warranties', 'Warranties'),
         ('Contracts', 'Contracts'),
-        ('Receipts', 'Receipts'),
+        ('HOA Documents', 'HOA Documents'),
+        ('Inspection Reports', 'Inspection Reports'),
+        ('Insurance', 'Insurance'),
+        ('Manuals', 'Manuals'),
+        ('Mortgage', 'Mortgage'),
         ('Other', 'Other'),
+        ('Permits', 'Permits'),
+        ('Property Tax', 'Property Tax'),
+        ('Receipts', 'Receipts'),
+        ('Title & Deed', 'Title & Deed'),
+        ('Utilities', 'Utilities'),
+        ('Warranties', 'Warranties'),
     ]
 
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='documents')
