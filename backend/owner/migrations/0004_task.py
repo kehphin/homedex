@@ -23,9 +23,26 @@ class Migration(migrations.Migration):
                 ('priority', models.CharField(choices=[('low', 'Low'), ('medium', 'Medium'), ('high', 'High')], default='medium', max_length=20)),
                 ('status', models.CharField(choices=[('pending', 'Pending'), ('in-progress', 'In Progress'), ('completed', 'Completed')], default='pending', max_length=20)),
                 ('due_date', models.DateField()),
+                ('is_recurring', models.BooleanField(default=False)),
+                ('recurrence_pattern', models.CharField(blank=True, choices=[('daily', 'Daily'), ('weekly', 'Weekly'), ('monthly', 'Monthly'), ('yearly', 'Yearly')], max_length=20, null=True)),
+                ('recurrence_interval', models.IntegerField(default=1, help_text='Repeat every N days/weeks/months/years')),
+                ('recurrence_end_date', models.DateField(blank=True, help_text='Date when recurring task stops (null = never)', null=True)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
+                ('parent_task', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='recurring_instances', to='owner.task')),
                 ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='tasks', to=settings.AUTH_USER_MODEL)),
+            ],
+            options={
+                'ordering': ['-created_at'],
+            },
+        ),
+        migrations.CreateModel(
+            name='RecurringTaskInstance',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('created_at', models.DateTimeField(auto_now_add=True)),
+                ('instance_task', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='recurring_parent', to='owner.task')),
+                ('recurring_task', models.ForeignKey(limit_choices_to={'is_recurring': True}, on_delete=django.db.models.deletion.CASCADE, related_name='instances', to='owner.task')),
             ],
             options={
                 'ordering': ['-created_at'],

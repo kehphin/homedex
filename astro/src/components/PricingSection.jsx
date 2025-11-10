@@ -55,8 +55,7 @@ const PricingSection = () => {
           Simple <span className="text-primary">Pricing</span>
         </h2>
         <p className="text-center text-base-content opacity-70 mb-12 max-w-2xl mx-auto">
-          Start free and upgrade as your needs grow. No hidden fees, cancel
-          anytime.
+          FREE, owning a home is expensive enough, managing it shouldn't be
         </p>
 
         <div className="flex justify-center mb-12">

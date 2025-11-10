@@ -28,6 +28,7 @@ class Migration(migrations.Migration):
                 ('tags', models.JSONField(blank=True, default=list)),
                 ('uploaded_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
+                ('home_component', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='documents', to='owner.homecomponent')),
                 ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='documents', to=settings.AUTH_USER_MODEL)),
             ],
             options={

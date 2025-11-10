@@ -3,33 +3,33 @@
 const features = [
   {
     icon: "M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z",
-    title: "Smart Document Storage",
-    description: "Upload and organize warranties, manuals, receipts, and important home documents. Never lose a warranty again."
+    title: "Document Storage",
+    description: "Never lose your most important home documents. Upload your most important warranties, manuals, and more all attached to your specific appliance."
   },
   {
     icon: "M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4",
-    title: "Task Management",
-    description: "Create and track home maintenance tasks with reminders. Stay on top of seasonal maintenance and repairs."
+    title: "Manage Tasks",
+    description: "Get help staying organized with home maintenance. Track proactive tasks, and create your own recurring tasks to keep your most valuable asset in peak condition."
   },
   {
     icon: "M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z",
-    title: "Appointment Scheduling",
-    description: "Schedule service appointments and track when contractors or repair services are coming to your home."
+    title: "Track History",
+    description: "Log a detailed history of all home maintenance. Track costs, and repair details in a single pane of glass. Never guess at what was done and export the history to share with a contractor."
   },
   {
     icon: "M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6",
-    title: "Home Component Tracking",
-    description: "Maintain a comprehensive inventory of appliances, HVAC systems, and home components with purchase dates and warranties."
+    title: "Track your home appliances",
+    description: "Create a definitive list of your home appliances. Never lose track of key preventative maintenance tasks. Attach manuals, warranties, and more making sure you have everything at your fingertips when its needed."
   },
   {
     icon: "M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z",
-    title: "Maintenance Reminders",
-    description: "Receive timely reminders for routine maintenance tasks like filter changes, gutter cleaning, and seasonal upkeep."
+    title: "Maintenance reminders",
+    description: "Never miss a maintenance activity again. Set reminders to stay on top of home maintenance ensuring you keep up with preventative maintenance to avoid preventable repairs."
   },
   {
     icon: "M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z",
-    title: "Secure & Private",
-    description: "Your home information is encrypted and secure. We prioritize your privacy with bank-level security measures."
+    title: "Contractor Contacts",
+    description: "Keep track of your home maintenance all-stars. Always have your home service professional one click away, and track all of the work they have completed in your home."
   }
 ];
 ---
@@ -37,9 +37,10 @@ const features = [
 <section id="features" class="py-32 bg-base-200">
   <div class="container mx-auto px-4">
     <h2 class="text-4xl font-bold text-center mb-12">
+      Everything You Need to
       <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">
-        Everything You Need
-      </span> to Manage Your Home
+        {" "}Manage Your Home
+      </span>
     </h2>
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
       {features.map((feature, index) => (
