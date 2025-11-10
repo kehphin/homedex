@@ -22,6 +22,11 @@ interface Task {
   status: "pending" | "in-progress" | "completed";
   dueDate: string;
   createdAt: string;
+  isRecurring?: boolean;
+  recurrencePattern?: "daily" | "weekly" | "monthly" | "yearly";
+  recurrenceInterval?: number;
+  recurrenceEndDate?: string | null;
+  parentTask?: string | null;
 }
 
 const CATEGORIES = [
@@ -62,6 +67,11 @@ function convertAPIToFrontend(apiTask: APITask): Task {
     status: apiTask.status,
     dueDate: apiTask.due_date,
     createdAt: apiTask.created_at,
+    isRecurring: apiTask.is_recurring || false,
+    recurrencePattern: apiTask.recurrence_pattern || undefined,
+    recurrenceInterval: apiTask.recurrence_interval || 1,
+    recurrenceEndDate: apiTask.recurrence_end_date || null,
+    parentTask: apiTask.parent_task || null,
   };
 }
 
@@ -84,6 +94,10 @@ export default function Tasks() {
     priority: "medium" as "low" | "medium" | "high",
     status: "pending" as "pending" | "in-progress" | "completed",
     dueDate: "",
+    isRecurring: false,
+    recurrencePattern: "weekly" as "daily" | "weekly" | "monthly" | "yearly",
+    recurrenceInterval: 1,
+    recurrenceEndDate: "",
   });
 
   // Load tasks on mount
@@ -115,6 +129,10 @@ export default function Tasks() {
         priority: task.priority,
         status: task.status,
         dueDate: task.dueDate,
+        isRecurring: task.isRecurring || false,
+        recurrencePattern: task.recurrencePattern || "weekly",
+        recurrenceInterval: task.recurrenceInterval || 1,
+        recurrenceEndDate: task.recurrenceEndDate || "",
       });
     } else {
       setEditingTask(null);
@@ -125,6 +143,10 @@ export default function Tasks() {
         priority: "medium",
         status: "pending",
         dueDate: "",
+        isRecurring: false,
+        recurrencePattern: "weekly",
+        recurrenceInterval: 1,
+        recurrenceEndDate: "",
       });
     }
     setIsModalOpen(true);
@@ -147,6 +169,17 @@ export default function Tasks() {
         priority: formData.priority,
         status: formData.status,
         due_date: formData.dueDate,
+        is_recurring: formData.isRecurring,
+        recurrence_pattern: formData.isRecurring
+          ? formData.recurrencePattern
+          : null,
+        recurrence_interval: formData.isRecurring
+          ? formData.recurrenceInterval
+          : 1,
+        recurrence_end_date:
+          formData.isRecurring && formData.recurrenceEndDate
+            ? formData.recurrenceEndDate
+            : null,
       };
 
       if (editingTask) {
@@ -530,6 +563,11 @@ export default function Tasks() {
                             >
                               {task.status}
                             </span>
+                            {task.isRecurring && (
+                              <span className="badge badge-info">
+                                Recurring ({task.recurrencePattern})
+                              </span>
+                            )}
                             <span className="badge badge-ghost">
                               Due: {new Date(task.dueDate).toLocaleDateString()}
                             </span>
@@ -699,6 +737,105 @@ export default function Tasks() {
                           required
                         />
                       </div>
+                    </div>
+
+                    {/* Recurring Task Options */}
+                    <div className="border-t border-base-300 pt-4">
+                      <label className="label cursor-pointer">
+                        <span className="label-text font-semibold">
+                          Make this a recurring task
+                        </span>
+                        <input
+                          type="checkbox"
+                          className="checkbox"
+                          checked={formData.isRecurring}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              isRecurring: e.target.checked,
+                            })
+                          }
+                        />
+                      </label>
+
+                      {formData.isRecurring && (
+                        <div className="space-y-4 mt-4 p-4 bg-base-200 rounded-lg">
+                          <div className="grid grid-cols-2 gap-4">
+                            <div>
+                              <label className="label">
+                                <span className="label-text font-semibold">
+                                  Recurrence Pattern *
+                                </span>
+                              </label>
+                              <select
+                                className="select select-bordered w-full"
+                                value={formData.recurrencePattern}
+                                onChange={(e) =>
+                                  setFormData({
+                                    ...formData,
+                                    recurrencePattern: e.target.value as
+                                      | "daily"
+                                      | "weekly"
+                                      | "monthly"
+                                      | "yearly",
+                                  })
+                                }
+                                required
+                              >
+                                <option value="daily">Daily</option>
+                                <option value="weekly">Weekly</option>
+                                <option value="monthly">Monthly</option>
+                                <option value="yearly">Yearly</option>
+                              </select>
+                            </div>
+
+                            <div>
+                              <label className="label">
+                                <span className="label-text font-semibold">
+                                  Repeat Every N {formData.recurrencePattern} *
+                                </span>
+                              </label>
+                              <input
+                                type="number"
+                                min="1"
+                                max="365"
+                                className="input input-bordered w-full"
+                                value={formData.recurrenceInterval}
+                                onChange={(e) =>
+                                  setFormData({
+                                    ...formData,
+                                    recurrenceInterval:
+                                      parseInt(e.target.value) || 1,
+                                  })
+                                }
+                                required
+                              />
+                            </div>
+                          </div>
+
+                          <div>
+                            <label className="label">
+                              <span className="label-text font-semibold">
+                                End Date (Optional)
+                              </span>
+                              <span className="label-text-alt">
+                                Leave blank for indefinite recurrence
+                              </span>
+                            </label>
+                            <input
+                              type="date"
+                              className="input input-bordered w-full"
+                              value={formData.recurrenceEndDate}
+                              onChange={(e) =>
+                                setFormData({
+                                  ...formData,
+                                  recurrenceEndDate: e.target.value,
+                                })
+                              }
+                            />
+                          </div>
+                        </div>
+                      )}
                     </div>
 
                     {/* Actions */}

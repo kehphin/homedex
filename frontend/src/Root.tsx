@@ -4,6 +4,7 @@ import NavBar from "./NavBar";
 import SideMenu from "./components/SideMenu";
 import { Outlet, useLocation } from "react-router-dom";
 import { FeedbackModal } from "./components/FeedbackModal";
+import { HomeProfileOnboardingCheck } from "./HomeProfileOnboarding";
 
 interface LayoutProps {
   children: ReactNode;
@@ -57,6 +58,7 @@ export default function Root() {
         isOpen={isFeedbackModalOpen}
         onClose={toggleFeedbackModal}
       />
+      <HomeProfileOnboardingCheck />
     </div>
   );
 }

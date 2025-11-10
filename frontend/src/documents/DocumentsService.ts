@@ -9,6 +9,7 @@ interface DocumentData {
   document_date?: string;
   year?: string;
   tags?: string[];
+  home_component?: string | null;
 }
 
 interface Document extends DocumentData {
@@ -19,6 +20,7 @@ interface Document extends DocumentData {
   upload_date: string;
   uploaded_at: string;
   updated_at: string;
+  component_name?: string;
 }
 
 interface DocumentStats {

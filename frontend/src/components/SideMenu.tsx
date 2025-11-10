@@ -18,6 +18,7 @@ import {
   ClipboardDocumentListIcon,
   PuzzlePieceIcon,
   DocumentTextIcon,
+  DocumentArrowDownIcon,
 } from "@heroicons/react/24/outline";
 import { HeartIcon } from "@heroicons/react/24/solid";
 
@@ -39,34 +40,48 @@ export default function SideMenu({
         { to: "/account/dex", icon: SparklesIcon, name: "Ask Dex™" },
       ],
     },
-
-    {
-      title: "Maintenance",
-      items: [
-        {
-          to: "/account/appointments",
-          icon: CalendarDaysIcon,
-          name: "Appointments",
-        },
-        {
-          to: "/account/appointment",
-          icon: CalendarDaysIcon,
-          name: "Schedule appointment",
-        },
-        {
-          to: "/account/payment/history",
-          icon: BanknotesIcon,
-          name: "Payments",
-        },
-      ],
-    },
+    // {
+    //   title: "Maintenance",
+    //   items: [
+    //     {
+    //       to: "/account/appointments",
+    //       icon: CalendarDaysIcon,
+    //       name: "Appointments",
+    //     },
+    //     {
+    //       to: "/account/appointment",
+    //       icon: CalendarDaysIcon,
+    //       name: "Schedule appointment",
+    //     },
+    //     {
+    //       to: "/account/payment/history",
+    //       icon: BanknotesIcon,
+    //       name: "Payments",
+    //     },
+    //   ],
+    // },
     {
       title: "My Home",
       items: [
         {
+          to: "/account/home-profile",
+          icon: HomeIcon,
+          name: "Home Profile",
+        },
+        {
           to: "/account/tasks",
           icon: ClipboardDocumentListIcon,
           name: "Tasks",
+        },
+        {
+          to: "/account/maintenance",
+          icon: DocumentArrowDownIcon,
+          name: "Maintenance History",
+        },
+        {
+          to: "/account/contractors",
+          icon: UserGroupIcon,
+          name: "Contractors",
         },
         {
           to: "/account/components",
@@ -98,24 +113,24 @@ export default function SideMenu({
         //       },
         //     ]
         //   : []),
-        ...(config?.data.mfa
-          ? [
-              {
-                to: "/account/2fa",
-                icon: ShieldCheckIcon,
-                name: "Two-Factor Authentication",
-              },
-            ]
-          : []),
-        ...(config?.data.usersessions
-          ? [
-              {
-                to: "/account/sessions",
-                icon: RocketLaunchIcon,
-                name: "Sessions",
-              },
-            ]
-          : []),
+        // ...(config?.data.mfa
+        //   ? [
+        //       {
+        //         to: "/account/2fa",
+        //         icon: ShieldCheckIcon,
+        //         name: "Two-Factor Authentication",
+        //       },
+        //     ]
+        //   : []),
+        // ...(config?.data.usersessions
+        //   ? [
+        //       {
+        //         to: "/account/sessions",
+        //         icon: RocketLaunchIcon,
+        //         name: "Sessions",
+        //       },
+        //     ]
+        //   : []),
         {
           to: "/account/payment/subscriptions",
           icon: CalendarIcon,

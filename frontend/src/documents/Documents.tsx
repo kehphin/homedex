@@ -13,6 +13,7 @@ import {
   FolderIcon,
 } from "@heroicons/react/24/outline";
 import * as DocumentsService from "./DocumentsService";
+import * as ComponentsService from "../components/ComponentsService";
 import type { Document as APIDocument } from "./DocumentsService";
 
 interface Document {
@@ -27,6 +28,8 @@ interface Document {
   tags: string[];
   fileUrl: string;
   year: string;
+  homeComponentId?: string;
+  componentName?: string;
 }
 
 const CATEGORIES = [
@@ -71,11 +74,16 @@ function convertAPIToFrontend(apiDocument: APIDocument): Document {
     tags: apiDocument.tags || [],
     fileUrl: apiDocument.file_url,
     year: apiDocument.year || "",
+    homeComponentId: apiDocument.home_component || undefined,
+    componentName: apiDocument.component_name,
   };
 }
 
 export default function Documents() {
   const [documents, setDocuments] = useState<Document[]>([]);
+  const [components, setComponents] = useState<
+    ComponentsService.HomeComponent[]
+  >([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -94,11 +102,13 @@ export default function Documents() {
     description: "",
     documentDate: "",
     year: new Date().getFullYear().toString(),
+    homeComponentId: "",
   });
 
-  // Load documents on mount
+  // Load documents and components on mount
   useEffect(() => {
     loadDocuments();
+    loadComponents();
   }, []);
 
   const loadDocuments = async () => {
@@ -115,6 +125,15 @@ export default function Documents() {
     }
   };
 
+  const loadComponents = async () => {
+    try {
+      const data = await ComponentsService.getComponents();
+      setComponents(data);
+    } catch (err) {
+      console.error("Failed to load components:", err);
+    }
+  };
+
   const handleOpenModal = (document?: Document) => {
     if (document) {
       setEditingDocument(document);
@@ -124,6 +143,7 @@ export default function Documents() {
         description: document.description,
         documentDate: document.documentDate,
         year: document.year,
+        homeComponentId: document.homeComponentId || "",
       });
       setSelectedTags(document.tags);
       setSelectedFile(null);
@@ -135,6 +155,7 @@ export default function Documents() {
         description: "",
         documentDate: "",
         year: new Date().getFullYear().toString(),
+        homeComponentId: "",
       });
       setSelectedTags([]);
       setSelectedFile(null);
@@ -179,6 +200,7 @@ export default function Documents() {
         document_date: formData.documentDate || undefined,
         year: formData.year,
         tags: selectedTags,
+        home_component: formData.homeComponentId || null,
       };
 
       if (editingDocument) {
@@ -577,6 +599,14 @@ export default function Documents() {
                             <span className="badge badge-outline">
                               {document.category}
                             </span>
+                            {document.componentName && (
+                              <>
+                                <span>•</span>
+                                <span className="badge badge-primary">
+                                  {document.componentName}
+                                </span>
+                              </>
+                            )}
                             <span>•</span>
                             <span>{formatBytes(document.fileSize)}</span>
                             <span>•</span>
@@ -736,6 +766,34 @@ export default function Documents() {
                           }
                         />
                       </div>
+                    </div>
+
+                    {/* Home Component */}
+                    <div>
+                      <label className="label">
+                        <span className="label-text font-semibold">
+                          Home Component
+                        </span>
+                      </label>
+                      <select
+                        className="select select-bordered w-full"
+                        value={formData.homeComponentId}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            homeComponentId: e.target.value,
+                          })
+                        }
+                      >
+                        <option value="">
+                          -- Select a component (optional) --
+                        </option>
+                        {components.map((comp) => (
+                          <option key={comp.id} value={comp.id}>
+                            {comp.name}
+                          </option>
+                        ))}
+                      </select>
                     </div>
 
                     {/* Document Date */}

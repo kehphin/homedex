@@ -34,6 +34,16 @@ interface HomeComponent extends ComponentData {
     url: string;
     uploaded_at: string;
   }>;
+  documents?: Array<{
+    id: string;
+    name: string;
+    file_type: string;
+    file_size: number;
+    file_url: string;
+    upload_date: string;
+    document_date?: string;
+    category: string;
+  }>;
   created_at: string;
   updated_at: string;
 }

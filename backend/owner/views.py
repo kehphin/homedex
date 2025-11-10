@@ -11,8 +11,9 @@ from payments.permissions import HasPurchasedProduct, HasAnyActiveSubscription, 
 from rest_framework import permissions
 import os
 
-from .models import ContactUs, HomeComponent, ComponentImage, ComponentAttachment, Document, Task, Appointment
-from .serializers import HomeComponentSerializer, DocumentSerializer, TaskSerializer, AppointmentSerializer
+from .models import ContactUs, HomeProfile, HomeComponent, ComponentImage, ComponentAttachment, Document, Task, RecurringTaskInstance, Appointment, MaintenanceHistory, MaintenanceAttachment, Contractor
+from .serializers import HomeProfileSerializer, HomeComponentSerializer, DocumentSerializer, TaskSerializer, AppointmentSerializer, MaintenanceHistorySerializer, ContractorSerializer, ContractorDetailSerializer
+from .recurring_tasks import get_recurring_task_stats
 from django.core.mail import send_mail
 
 # CHANGE: These are the product IDs and subscription IDs that the user must have purchased to access the views
@@ -83,6 +84,56 @@ def send_email_for_contact_us(name, email, message):
     subject = f'New Contact Us form submission from {name}'
     message = f'Name: {name}\nEmail: {email}\nMessage: {message}'
     send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [settings.CONTACT_US_RECIPIENT_EMAIL])
+
+
+class HomeProfileViewSet(viewsets.ViewSet):
+    """
+    ViewSet for managing user's home profile information
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def list(self, request):
+        """Get user's home profile"""
+        try:
+            home_profile = HomeProfile.objects.get(user=request.user)
+            serializer = HomeProfileSerializer(home_profile, context={'request': request})
+            return Response(serializer.data)
+        except HomeProfile.DoesNotExist:
+            return Response({'error': 'Home profile not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    def create(self, request):
+        """Create or update user's home profile"""
+        try:
+            home_profile = HomeProfile.objects.get(user=request.user)
+            serializer = HomeProfileSerializer(home_profile, data=request.data, partial=True, context={'request': request})
+        except HomeProfile.DoesNotExist:
+            serializer = HomeProfileSerializer(data=request.data, context={'request': request})
+
+        if serializer.is_valid():
+            serializer.save(user=request.user)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def retrieve(self, request, pk=None):
+        """Get user's home profile (same as list for single resource)"""
+        try:
+            home_profile = HomeProfile.objects.get(user=request.user)
+            serializer = HomeProfileSerializer(home_profile, context={'request': request})
+            return Response(serializer.data)
+        except HomeProfile.DoesNotExist:
+            return Response({'error': 'Home profile not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    def update(self, request, pk=None):
+        """Update user's home profile"""
+        try:
+            home_profile = HomeProfile.objects.get(user=request.user)
+            serializer = HomeProfileSerializer(home_profile, data=request.data, partial=True, context={'request': request})
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except HomeProfile.DoesNotExist:
+            return Response({'error': 'Home profile not found'}, status=status.HTTP_404_NOT_FOUND)
 
 
 class HomeComponentViewSet(viewsets.ModelViewSet):
@@ -209,11 +260,15 @@ class TaskViewSet(viewsets.ModelViewSet):
         in_progress = queryset.filter(status='in-progress').count()
         completed = queryset.filter(status='completed').count()
 
+        # Get recurring task stats
+        recurring_stats = get_recurring_task_stats(request.user)
+
         return Response({
             'total': total,
             'pending': pending,
             'in_progress': in_progress,
-            'completed': completed
+            'completed': completed,
+            'recurring': recurring_stats
         })
 
 
@@ -292,3 +347,87 @@ class AppointmentViewSet(viewsets.ModelViewSet):
             'available_times': available_times
         })
 
+
+class MaintenanceHistoryViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet for managing maintenance history
+    """
+    serializer_class = MaintenanceHistorySerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        # Users can only see their own maintenance histories
+        return MaintenanceHistory.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        # Automatically set the user when creating
+        serializer.save(user=self.request.user)
+
+    @action(detail=True, methods=['delete'], url_path='attachments/(?P<attachment_id>[^/.]+)')
+    def delete_attachment(self, request, pk=None, attachment_id=None):
+        """Delete a specific attachment from a maintenance record"""
+        maintenance = self.get_object()
+        try:
+            attachment = MaintenanceAttachment.objects.get(id=attachment_id, maintenance=maintenance)
+            attachment.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except MaintenanceAttachment.DoesNotExist:
+            return Response(
+                {'error': 'Attachment not found'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+    @action(detail=False, methods=['get'])
+    def stats(self, request):
+        """Get statistics about user's maintenance history"""
+        queryset = self.get_queryset()
+        total = queryset.count()
+
+        # Calculate total spent on maintenance
+        total_cost = sum(item.price for item in queryset)
+
+        # Get average maintenance cost
+        average_cost = total_cost / total if total > 0 else 0
+
+        return Response({
+            'total': total,
+            'total_cost': float(total_cost),
+            'average_cost': float(average_cost)
+        })
+
+
+class ContractorViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet for managing contractors
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        # Users can only see their own contractors
+        return Contractor.objects.filter(user=self.request.user)
+
+    def get_serializer_class(self):
+        # Use detailed serializer for retrieve action to include maintenance history
+        if self.action == 'retrieve':
+            return ContractorDetailSerializer
+        return ContractorSerializer
+
+    def perform_create(self, serializer):
+        # Automatically set the user when creating
+        serializer.save(user=self.request.user)
+
+    @action(detail=False, methods=['get'])
+    def stats(self, request):
+        """Get statistics about user's contractors"""
+        queryset = self.get_queryset()
+        total = queryset.count()
+
+        # Calculate total spent through contractors
+        total_spent = 0
+        for contractor in queryset:
+            total_spent += sum(m.price for m in contractor.maintenance_histories.all())
+
+        return Response({
+            'total': total,
+            'total_spent': float(total_spent)
+        })

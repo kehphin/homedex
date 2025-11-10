@@ -9,12 +9,17 @@ interface TaskData {
   priority: "low" | "medium" | "high";
   status: "pending" | "in-progress" | "completed";
   due_date: string;
+  is_recurring?: boolean;
+  recurrence_pattern?: "daily" | "weekly" | "monthly" | "yearly" | null;
+  recurrence_interval?: number;
+  recurrence_end_date?: string | null;
 }
 
 interface Task extends TaskData {
   id: string;
   created_at: string;
   updated_at: string;
+  parent_task?: string | null;
 }
 
 interface TaskStats {
@@ -22,6 +27,11 @@ interface TaskStats {
   pending: number;
   in_progress: number;
   completed: number;
+  recurring?: {
+    total_recurring: number;
+    active_recurring: number;
+    inactive_recurring: number;
+  };
 }
 
 /**

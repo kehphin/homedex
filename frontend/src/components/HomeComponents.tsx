@@ -23,6 +23,17 @@ interface Attachment {
   url: string;
 }
 
+interface Document {
+  id: string;
+  name: string;
+  file_type: string;
+  file_size: number;
+  file_url: string;
+  upload_date: string;
+  document_date?: string;
+  category: string;
+}
+
 interface HomeComponent {
   id: string;
   name: string;
@@ -39,6 +50,7 @@ interface HomeComponent {
   notes: string;
   images: Array<{ id: string; url: string }>;
   attachments: Attachment[];
+  documents: Document[];
   lastMaintenance: string;
   nextMaintenance: string;
   createdAt: string;
@@ -87,6 +99,7 @@ function convertAPIToFrontend(apiComponent: APIHomeComponent): HomeComponent {
     notes: apiComponent.notes || "",
     images: apiComponent.images || [],
     attachments: apiComponent.attachments || [],
+    documents: apiComponent.documents || [],
     lastMaintenance: apiComponent.last_maintenance || "",
     nextMaintenance: apiComponent.next_maintenance || "",
     createdAt: apiComponent.created_at,
@@ -707,6 +720,12 @@ export default function HomeComponents() {
                           <span className="badge badge-ghost">
                             <DocumentIcon className="h-3 w-3 mr-1" />
                             {component.attachments.length}
+                          </span>
+                        )}
+                        {component.documents.length > 0 && (
+                          <span className="badge badge-primary">
+                            <DocumentIcon className="h-3 w-3 mr-1" />
+                            Docs: {component.documents.length}
                           </span>
                         )}
                       </div>
@@ -1331,6 +1350,47 @@ export default function HomeComponents() {
                         </div>
                       )}
                     </div>
+
+                    {/* Associated Documents */}
+                    {editingComponent &&
+                      editingComponent.documents.length > 0 && (
+                        <div className="space-y-4">
+                          <h4 className="font-semibold text-base-content/80">
+                            Associated Documents
+                          </h4>
+                          <div className="space-y-2">
+                            {editingComponent.documents.map((doc) => (
+                              <div
+                                key={doc.id}
+                                className="flex items-center justify-between p-3 bg-base-200 rounded-lg"
+                              >
+                                <div className="flex items-center gap-3 flex-1 min-w-0">
+                                  <DocumentIcon className="h-5 w-5 text-base-content/70 flex-shrink-0" />
+                                  <div className="min-w-0 flex-1">
+                                    <p className="font-semibold text-sm truncate">
+                                      {doc.name}
+                                    </p>
+                                    <div className="flex gap-2 text-xs text-base-content/60">
+                                      <span>{doc.category}</span>
+                                      <span>•</span>
+                                      <span>{formatBytes(doc.file_size)}</span>
+                                    </div>
+                                  </div>
+                                </div>
+                                <a
+                                  href={doc.file_url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="btn btn-ghost btn-sm btn-circle flex-shrink-0"
+                                  title="View Document"
+                                >
+                                  <DocumentIcon className="h-4 w-4" />
+                                </a>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
 
                     {/* Actions */}
                     <div className="modal-action">

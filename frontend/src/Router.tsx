@@ -52,6 +52,9 @@ import Appointments from "./appointments/Appointments";
 import Tasks from "./tasks/Tasks";
 import HomeComponents from "./components/HomeComponents";
 import Documents from "./documents/Documents";
+import MaintenanceHistory from "./maintenance/MaintenanceHistory";
+import Contractors from "./contractors/Contractors";
+import HomeProfilePage from "./components/HomeProfile";
 import { Navigate } from "react-router-dom";
 
 function createRouter() {
@@ -77,6 +80,14 @@ function createRouter() {
           element: (
             <AuthenticatedRoute>
               <AskDex />
+            </AuthenticatedRoute>
+          ),
+        },
+        {
+          path: "/account/home-profile",
+          element: (
+            <AuthenticatedRoute>
+              <HomeProfilePage />
             </AuthenticatedRoute>
           ),
         },
@@ -117,6 +128,22 @@ function createRouter() {
           element: (
             <AuthenticatedRoute>
               <Documents />
+            </AuthenticatedRoute>
+          ),
+        },
+        {
+          path: "/account/maintenance",
+          element: (
+            <AuthenticatedRoute>
+              <MaintenanceHistory />
+            </AuthenticatedRoute>
+          ),
+        },
+        {
+          path: "/account/contractors",
+          element: (
+            <AuthenticatedRoute>
+              <Contractors />
             </AuthenticatedRoute>
           ),
         },
