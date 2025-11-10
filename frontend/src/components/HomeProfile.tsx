@@ -107,7 +107,7 @@ export default function HomeProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-base-200 p-4 lg:p-8">
+    <div className="min-h-screen bg-base-100 p-4 lg:p-8">
       <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="flex items-center gap-4 mb-8">

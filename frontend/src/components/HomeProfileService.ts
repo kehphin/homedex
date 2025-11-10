@@ -1,4 +1,5 @@
 import { config } from "../config";
+import { getCSRFToken } from "../auth/csrf";
 
 const API_BASE = `${config.appHost}/api/v1/owner`;
 
@@ -44,11 +45,18 @@ export async function createOrUpdateHomeProfile(
   profile: HomeProfile
 ): Promise<HomeProfile> {
   try {
+    const csrfToken = getCSRFToken();
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+    };
+
+    if (csrfToken) {
+      headers["X-CSRFToken"] = csrfToken;
+    }
+
     const response = await fetch(`${API_BASE}/home-profile/`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers,
       credentials: "include",
       body: JSON.stringify(profile),
     });

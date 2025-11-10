@@ -10,7 +10,6 @@ import {
   DocumentIcon,
   ArrowDownTrayIcon,
   EyeIcon,
-  FolderIcon,
 } from "@heroicons/react/24/outline";
 import * as DocumentsService from "./DocumentsService";
 import * as ComponentsService from "../components/ComponentsService";
@@ -314,15 +313,6 @@ export default function Documents() {
     return "📎";
   };
 
-  const stats = {
-    total: documents.length,
-    thisYear: documents.filter(
-      (d) => d.year === new Date().getFullYear().toString()
-    ).length,
-    categories: Array.from(new Set(documents.map((d) => d.category))).length,
-    totalSize: documents.reduce((sum, doc) => sum + doc.fileSize, 0),
-  };
-
   return (
     <div className="min-h-screen bg-base-100 p-6">
       <div className="max-w-7xl mx-auto">
@@ -366,61 +356,6 @@ export default function Documents() {
           </div>
         ) : (
           <>
-            {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-              <div className="card bg-base-100 shadow-lg">
-                <div className="card-body">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-base-content/60">
-                        Total Documents
-                      </p>
-                      <p className="text-3xl font-bold">{stats.total}</p>
-                    </div>
-                    <DocumentTextIcon className="h-10 w-10 text-base-content/30" />
-                  </div>
-                </div>
-              </div>
-
-              <div className="card bg-base-100 shadow-lg">
-                <div className="card-body">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-base-content/60">This Year</p>
-                      <p className="text-3xl font-bold text-primary">
-                        {stats.thisYear}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="card bg-base-100 shadow-lg">
-                <div className="card-body">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-base-content/60">Categories</p>
-                      <p className="text-3xl font-bold">{stats.categories}</p>
-                    </div>
-                    <FolderIcon className="h-10 w-10 text-base-content/30" />
-                  </div>
-                </div>
-              </div>
-
-              <div className="card bg-base-100 shadow-lg">
-                <div className="card-body">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-base-content/60">Total Size</p>
-                      <p className="text-3xl font-bold">
-                        {formatBytes(stats.totalSize)}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
             {/* Search and Filter */}
             <div className="card bg-base-100 shadow-lg mb-6">
               <div className="card-body">
@@ -512,6 +447,11 @@ export default function Documents() {
             </div>
 
             {/* Documents List */}
+            {sortedDocuments.length > 0 && (
+              <div className="mb-4 text-sm text-base-content/70">
+                Showing {sortedDocuments.length} of {documents.length} documents
+              </div>
+            )}
             {sortedDocuments.length === 0 ? (
               <div className="card bg-base-100 shadow-lg">
                 <div className="card-body text-center py-12">
