@@ -20,11 +20,7 @@ class HomeProfile(models.Model):
         ('forced_air', 'Forced Air'),
         ('radiant', 'Radiant'),
         ('baseboard', 'Baseboard'),
-        ('heat_pump', 'Heat Pump'),
-        ('boiler', 'Boiler'),
-        ('fireplace', 'Fireplace'),
         ('stove', 'Stove'),
-        ('none', 'None'),
     ]
 
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='home_profile')
@@ -36,6 +32,15 @@ class HomeProfile(models.Model):
     ac_type = models.CharField(max_length=50, choices=AC_TYPES, blank=True)
     heat = models.BooleanField(default=True)
     heat_type = models.CharField(max_length=50, choices=HEAT_TYPES, blank=True)
+
+    HEATING_SOURCE_CHOICES = [
+        ('natural_gas', 'Natural Gas'),
+        ('oil', 'Oil'),
+        ('electric', 'Electric'),
+        ('other', 'Other'),
+    ]
+    heating_source = models.CharField(max_length=50, choices=HEATING_SOURCE_CHOICES, blank=True)
+    is_septic = models.BooleanField(default=False, verbose_name="Septic System")
     year_built = models.IntegerField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -269,9 +274,23 @@ class Appointment(models.Model):
 
 
 class Contractor(models.Model):
+    CATEGORY_CHOICES = [
+        ('HVAC', 'HVAC'),
+        ('Plumbing', 'Plumbing'),
+        ('Electrical', 'Electrical'),
+        ('General Maintenance', 'General Maintenance'),
+        ('Landscaping', 'Landscaping'),
+        ('Roofing', 'Roofing'),
+        ('Painting', 'Painting'),
+        ('Carpentry', 'Carpentry'),
+        ('Flooring', 'Flooring'),
+        ('Other', 'Other'),
+    ]
+
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='contractors')
-    name = models.CharField(max_length=255)
-    company_name = models.CharField(max_length=255, blank=True)
+    name = models.CharField(max_length=255, blank=True)
+    company_name = models.CharField(max_length=255)
+    category = models.CharField(max_length=50, choices=CATEGORY_CHOICES, blank=True)
     email = models.EmailField(blank=True)
     website = models.URLField(blank=True)
     phone = models.CharField(max_length=20, blank=True)

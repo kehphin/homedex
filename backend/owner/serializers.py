@@ -7,7 +7,7 @@ class HomeProfileSerializer(serializers.ModelSerializer):
         model = HomeProfile
         fields = [
             'id', 'address', 'square_feet', 'bedrooms', 'bathrooms',
-            'ac', 'ac_type', 'heat', 'heat_type', 'year_built',
+            'ac', 'ac_type', 'heat', 'heat_type', 'heating_source', 'is_septic',
             'created_at', 'updated_at'
         ]
         read_only_fields = ['created_at', 'updated_at']
@@ -307,7 +307,7 @@ class ContractorSerializer(serializers.ModelSerializer):
     class Meta:
         model = Contractor
         fields = [
-            'id', 'name', 'company_name', 'email', 'website', 'phone',
+            'id', 'name', 'company_name', 'category', 'email', 'website', 'phone',
             'notes', 'created_at', 'updated_at', 'maintenance_count', 'total_spent'
         ]
         read_only_fields = ['created_at', 'updated_at', 'maintenance_count', 'total_spent']

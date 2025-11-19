@@ -114,6 +114,9 @@ export async function createMaintenanceRecord(
   if (data.home_component) {
     formData.append("home_component", data.home_component);
   }
+  if (data.contractor) {
+    formData.append("contractor", data.contractor);
+  }
   formData.append("price", data.price);
   if (data.notes) {
     formData.append("notes", data.notes);
@@ -157,6 +160,11 @@ export async function updateMaintenanceRecord(
   if (data.home_component !== undefined) {
     if (data.home_component) {
       formData.append("home_component", data.home_component);
+    }
+  }
+  if (data.contractor !== undefined) {
+    if (data.contractor) {
+      formData.append("contractor", data.contractor);
     }
   }
   if (data.price) formData.append("price", data.price);

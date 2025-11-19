@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { toast } from "react-toastify";
 import {
   PlusIcon,
   PencilIcon,
@@ -6,6 +7,7 @@ import {
   XMarkIcon,
   MagnifyingGlassIcon,
   UserGroupIcon,
+  ArrowPathIcon,
 } from "@heroicons/react/24/outline";
 import * as ContractorService from "./ContractorService";
 import type { ContractorDetail } from "./ContractorService";
@@ -14,6 +16,7 @@ interface ContractorLocal {
   id: string;
   name: string;
   company_name?: string;
+  category?: string;
   email?: string;
   website?: string;
   phone?: string;
@@ -41,6 +44,7 @@ export default function ContractorsPage() {
   const [formData, setFormData] = useState({
     name: "",
     company_name: "",
+    category: "",
     email: "",
     website: "",
     phone: "",
@@ -77,6 +81,7 @@ export default function ContractorsPage() {
       setFormData({
         name: contractor.name,
         company_name: contractor.company_name || "",
+        category: contractor.category || "",
         email: contractor.email || "",
         website: contractor.website || "",
         phone: contractor.phone || "",
@@ -87,6 +92,7 @@ export default function ContractorsPage() {
       setFormData({
         name: "",
         company_name: "",
+        category: "",
         email: "",
         website: "",
         phone: "",
@@ -109,6 +115,7 @@ export default function ContractorsPage() {
       const contractorData = {
         name: formData.name,
         company_name: formData.company_name || undefined,
+        category: formData.category || undefined,
         email: formData.email || undefined,
         website: formData.website || undefined,
         phone: formData.phone || undefined,
@@ -128,12 +135,14 @@ export default function ContractorsPage() {
               : contractor
           )
         );
+        toast.success("Contractor updated successfully!");
       } else {
         // Create new contractor
         const created = await ContractorService.createContractor(
           contractorData
         );
         setContractors([created as ContractorLocal, ...contractors]);
+        toast.success("Contractor added successfully!");
       }
 
       // Reload stats
@@ -143,7 +152,7 @@ export default function ContractorsPage() {
       handleCloseModal();
     } catch (err) {
       console.error("Failed to save contractor:", err);
-      alert("Failed to save contractor. Please try again.");
+      toast.error("Failed to save contractor. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -162,9 +171,10 @@ export default function ContractorsPage() {
       // Reload stats
       const updatedStats = await ContractorService.getContractorStats();
       setStats(updatedStats);
+      toast.success("Contractor deleted successfully!");
     } catch (err) {
       console.error("Failed to delete contractor:", err);
-      alert("Failed to delete contractor. Please try again.");
+      toast.error("Failed to delete contractor. Please try again.");
     }
   };
 
@@ -175,6 +185,19 @@ export default function ContractorsPage() {
     } catch (err) {
       console.error("Failed to fetch contractor details:", err);
       alert("Failed to load contractor details. Please try again.");
+    }
+  };
+
+  const handleRefreshDetails = async () => {
+    if (!selectedContractor) return;
+    try {
+      const details = await ContractorService.getContractor(
+        selectedContractor.id
+      );
+      setSelectedContractor(details);
+    } catch (err) {
+      console.error("Failed to refresh contractor details:", err);
+      alert("Failed to refresh contractor details. Please try again.");
     }
   };
 
@@ -310,11 +333,16 @@ export default function ContractorsPage() {
                       >
                         <div className="card-body p-4">
                           <h3 className="font-semibold text-sm">
-                            {contractor.name}
+                            {contractor.name || contractor.company_name}
                           </h3>
                           {contractor.company_name && (
                             <p className="text-xs opacity-75">
                               {contractor.company_name}
+                            </p>
+                          )}
+                          {contractor.category && (
+                            <p className="text-xs opacity-75">
+                              {contractor.category}
                             </p>
                           )}
                           <div className="text-xs mt-2 opacity-75">
@@ -336,15 +364,30 @@ export default function ContractorsPage() {
                       <div className="flex items-start justify-between mb-4">
                         <div>
                           <h2 className="text-2xl font-bold">
-                            {selectedContractor.name}
+                            {selectedContractor.name ||
+                              selectedContractor.company_name}
                           </h2>
                           {selectedContractor.company_name && (
                             <p className="text-base-content/70">
                               {selectedContractor.company_name}
                             </p>
                           )}
+                          {selectedContractor.category && (
+                            <p className="text-base-content/60 text-sm mt-1">
+                              <span className="badge badge-primary">
+                                {selectedContractor.category}
+                              </span>
+                            </p>
+                          )}
                         </div>
                         <div className="flex gap-2">
+                          <button
+                            onClick={handleRefreshDetails}
+                            className="btn btn-ghost btn-sm btn-circle"
+                            title="Refresh details"
+                          >
+                            <ArrowPathIcon className="h-4 w-4" />
+                          </button>
                           <button
                             onClick={() => handleOpenModal(selectedContractor)}
                             className="btn btn-ghost btn-sm btn-circle"
@@ -500,7 +543,7 @@ export default function ContractorsPage() {
                     {/* Name */}
                     <div>
                       <label className="label">
-                        <span className="label-text font-semibold">Name *</span>
+                        <span className="label-text font-semibold">Name</span>
                       </label>
                       <input
                         type="text"
@@ -510,7 +553,6 @@ export default function ContractorsPage() {
                         onChange={(e) =>
                           setFormData({ ...formData, name: e.target.value })
                         }
-                        required
                       />
                     </div>
 
@@ -518,7 +560,7 @@ export default function ContractorsPage() {
                     <div>
                       <label className="label">
                         <span className="label-text font-semibold">
-                          Company Name
+                          Company Name *
                         </span>
                       </label>
                       <input
@@ -532,7 +574,41 @@ export default function ContractorsPage() {
                             company_name: e.target.value,
                           })
                         }
+                        required
                       />
+                    </div>
+
+                    {/* Category */}
+                    <div>
+                      <label className="label">
+                        <span className="label-text font-semibold">
+                          Category
+                        </span>
+                      </label>
+                      <select
+                        className="select select-bordered w-full"
+                        value={formData.category}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            category: e.target.value,
+                          })
+                        }
+                      >
+                        <option value="">Select a category</option>
+                        <option value="HVAC">HVAC</option>
+                        <option value="Plumbing">Plumbing</option>
+                        <option value="Electrical">Electrical</option>
+                        <option value="General Maintenance">
+                          General Maintenance
+                        </option>
+                        <option value="Landscaping">Landscaping</option>
+                        <option value="Roofing">Roofing</option>
+                        <option value="Painting">Painting</option>
+                        <option value="Carpentry">Carpentry</option>
+                        <option value="Flooring">Flooring</option>
+                        <option value="Other">Other</option>
+                      </select>
                     </div>
 
                     {/* Email and Phone */}

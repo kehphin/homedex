@@ -1,4 +1,7 @@
 import React, { useState, useEffect } from "react";
+import { toast } from "react-toastify";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 import {
   PlusIcon,
   PencilIcon,
@@ -171,6 +174,7 @@ export default function MaintenanceHistoryPage() {
               : record
           )
         );
+        toast.success("Maintenance record updated successfully!");
       } else {
         // Create new record
         const created = await MaintenanceService.createMaintenanceRecord(
@@ -178,6 +182,7 @@ export default function MaintenanceHistoryPage() {
           attachmentFiles.length > 0 ? attachmentFiles : undefined
         );
         setRecords([convertAPIToFrontend(created), ...records]);
+        toast.success("Maintenance record created successfully!");
       }
 
       // Reload stats
@@ -187,7 +192,7 @@ export default function MaintenanceHistoryPage() {
       handleCloseModal();
     } catch (err) {
       console.error("Failed to save maintenance record:", err);
-      alert("Failed to save maintenance record. Please try again.");
+      toast.error("Failed to save maintenance record. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -209,9 +214,10 @@ export default function MaintenanceHistoryPage() {
       // Reload stats
       const updatedStats = await MaintenanceService.getMaintenanceStats();
       setStats(updatedStats);
+      toast.success("Maintenance record deleted successfully!");
     } catch (err) {
       console.error("Failed to delete maintenance record:", err);
-      alert("Failed to delete maintenance record. Please try again.");
+      toast.error("Failed to delete maintenance record. Please try again.");
     }
   };
 
@@ -563,13 +569,17 @@ export default function MaintenanceHistoryPage() {
                             Date *
                           </span>
                         </label>
-                        <input
-                          type="date"
-                          className="input input-bordered w-full"
-                          value={formData.date}
-                          onChange={(e) =>
-                            setFormData({ ...formData, date: e.target.value })
+                        <DatePicker
+                          selected={formData.date ? new Date(formData.date) : null}
+                          onChange={(date) =>
+                            setFormData({
+                              ...formData,
+                              date: date ? date.toISOString().split('T')[0] : '',
+                            })
                           }
+                          dateFormat="yyyy-MM-dd"
+                          className="input input-bordered w-full"
+                          placeholderText="Select a date"
                           required
                         />
                       </div>

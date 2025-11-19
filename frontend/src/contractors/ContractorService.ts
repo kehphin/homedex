@@ -5,6 +5,7 @@ const API_BASE = `${config.appHost}/api/v1/owner`;
 interface ContractorData {
   name: string;
   company_name?: string;
+  category?: string;
   email?: string;
   website?: string;
   phone?: string;

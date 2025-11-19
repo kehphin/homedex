@@ -5,6 +5,8 @@ import SideMenu from "./components/SideMenu";
 import { Outlet, useLocation } from "react-router-dom";
 import { FeedbackModal } from "./components/FeedbackModal";
 import { HomeProfileOnboardingCheck } from "./HomeProfileOnboarding";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 interface LayoutProps {
   children: ReactNode;
@@ -59,6 +61,17 @@ export default function Root() {
         onClose={toggleFeedbackModal}
       />
       <HomeProfileOnboardingCheck />
+      <ToastContainer
+        position="bottom-center"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
     </div>
   );
 }

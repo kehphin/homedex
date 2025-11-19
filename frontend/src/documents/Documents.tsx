@@ -1,4 +1,7 @@
 import React, { useState, useEffect } from "react";
+import { toast } from "react-toastify";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 import {
   DocumentTextIcon,
   PlusIcon,
@@ -215,10 +218,11 @@ export default function Documents() {
             doc.id === editingDocument.id ? convertAPIToFrontend(updated) : doc
           )
         );
+        toast.success("Document updated successfully!");
       } else {
         // Create new document
         if (!selectedFile) {
-          alert("Please select a file to upload");
+          toast.error("Please select a file to upload");
           setLoading(false);
           return;
         }
@@ -228,12 +232,13 @@ export default function Documents() {
           selectedFile
         );
         setDocuments([convertAPIToFrontend(created), ...documents]);
+        toast.success("Document uploaded successfully!");
       }
 
       handleCloseModal();
     } catch (err) {
       console.error("Failed to save document:", err);
-      alert("Failed to save document. Please try again.");
+      toast.error("Failed to save document. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -247,9 +252,10 @@ export default function Documents() {
     try {
       await DocumentsService.deleteDocument(id);
       setDocuments(documents.filter((doc) => doc.id !== id));
+      toast.success("Document deleted successfully!");
     } catch (err) {
       console.error("Failed to delete document:", err);
-      alert("Failed to delete document. Please try again.");
+      toast.error("Failed to delete document. Please try again.");
     }
   };
 
@@ -744,16 +750,17 @@ export default function Documents() {
                           Document Date
                         </span>
                       </label>
-                      <input
-                        type="date"
-                        className="input input-bordered w-full"
-                        value={formData.documentDate}
-                        onChange={(e) =>
+                      <DatePicker
+                        selected={formData.documentDate ? new Date(formData.documentDate) : null}
+                        onChange={(date) =>
                           setFormData({
                             ...formData,
-                            documentDate: e.target.value,
+                            documentDate: date ? date.toISOString().split('T')[0] : '',
                           })
                         }
+                        dateFormat="yyyy-MM-dd"
+                        className="input input-bordered w-full"
+                        placeholderText="Select a date"
                       />
                       <label className="label">
                         <span className="label-text-alt text-base-content/60">

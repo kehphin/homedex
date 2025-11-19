@@ -1,4 +1,7 @@
 import React, { useState, useEffect } from "react";
+import { toast } from "react-toastify";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 import {
   ClipboardDocumentListIcon,
   PlusIcon,
@@ -8,6 +11,7 @@ import {
   XMarkIcon,
   MagnifyingGlassIcon,
   FunnelIcon,
+  CalendarIcon,
 } from "@heroicons/react/24/outline";
 import { CheckCircleIcon as CheckCircleSolidIcon } from "@heroicons/react/24/solid";
 import * as TasksService from "./TasksService";
@@ -84,6 +88,8 @@ export default function Tasks() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [filterPriority, setFilterPriority] = useState<string>("all");
+  const [filterCategory, setFilterCategory] = useState<string>("all");
+  const [filterMonth, setFilterMonth] = useState<string>("all");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   // Form state
@@ -190,16 +196,18 @@ export default function Tasks() {
             task.id === editingTask.id ? convertAPIToFrontend(updated) : task
           )
         );
+        toast.success("Task updated successfully!");
       } else {
         // Create new task
         const created = await TasksService.createTask(taskData);
         setTasks([convertAPIToFrontend(created), ...tasks]);
+        toast.success("Task created successfully!");
       }
 
       handleCloseModal();
     } catch (err) {
       console.error("Failed to save task:", err);
-      alert("Failed to save task. Please try again.");
+      toast.error("Failed to save task. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -213,9 +221,10 @@ export default function Tasks() {
     try {
       await TasksService.deleteTask(id);
       setTasks(tasks.filter((task) => task.id !== id));
+      toast.success("Task deleted successfully!");
     } catch (err) {
       console.error("Failed to delete task:", err);
-      alert("Failed to delete task. Please try again.");
+      toast.error("Failed to delete task. Please try again.");
     }
   };
 
@@ -248,22 +257,34 @@ export default function Tasks() {
     const matchesPriority =
       filterPriority === "all" || task.priority === filterPriority;
 
-    return matchesSearch && matchesStatus && matchesPriority;
+    const matchesCategory =
+      filterCategory === "all" || task.category === filterCategory;
+
+    let matchesMonth = true;
+    if (filterMonth !== "all" && task.dueDate) {
+      const taskDate = new Date(task.dueDate);
+      const [year, month] = filterMonth.split("-");
+      matchesMonth =
+        taskDate.getFullYear().toString() === year &&
+        (taskDate.getMonth() + 1).toString().padStart(2, "0") === month;
+    }
+
+    return (
+      matchesSearch &&
+      matchesStatus &&
+      matchesPriority &&
+      matchesCategory &&
+      matchesMonth
+    );
   });
 
-  // Sort tasks: incomplete first, then by priority, then by due date
+  // Sort tasks: by due date (ascending), completed tasks last
   const sortedTasks = [...filteredTasks].sort((a, b) => {
     // Completed tasks go to the bottom
     if (a.status === "completed" && b.status !== "completed") return 1;
     if (a.status !== "completed" && b.status === "completed") return -1;
 
-    // Then by priority (high > medium > low)
-    const priorityOrder = { high: 3, medium: 2, low: 1 };
-    if (priorityOrder[a.priority] !== priorityOrder[b.priority]) {
-      return priorityOrder[b.priority] - priorityOrder[a.priority];
-    }
-
-    // Then by due date
+    // Then by due date (ascending)
     return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
   });
 
@@ -399,7 +420,10 @@ export default function Tasks() {
                   >
                     <FunnelIcon className="h-5 w-5" />
                     Filters
-                    {(filterStatus !== "all" || filterPriority !== "all") && (
+                    {(filterStatus !== "all" ||
+                      filterPriority !== "all" ||
+                      filterCategory !== "all" ||
+                      filterMonth !== "all") && (
                       <span className="badge badge-primary badge-sm">
                         Active
                       </span>
@@ -410,7 +434,7 @@ export default function Tasks() {
                 {/* Filter Options */}
                 {isFilterOpen && (
                   <div className="mt-4 pt-4 border-t border-base-300">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                       <div>
                         <label className="label">
                           <span className="label-text font-semibold">
@@ -446,14 +470,82 @@ export default function Tasks() {
                           <option value="low">Low</option>
                         </select>
                       </div>
+
+                      <div>
+                        <label className="label">
+                          <span className="label-text font-semibold">
+                            Category
+                          </span>
+                        </label>
+                        <select
+                          className="select select-bordered w-full"
+                          value={filterCategory}
+                          onChange={(e) => setFilterCategory(e.target.value)}
+                        >
+                          <option value="all">All Categories</option>
+                          {CATEGORIES.map((cat) => (
+                            <option key={cat} value={cat}>
+                              {cat}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="label">
+                          <span className="label-text font-semibold">
+                            Month
+                          </span>
+                        </label>
+                        <select
+                          className="select select-bordered w-full"
+                          value={filterMonth}
+                          onChange={(e) => setFilterMonth(e.target.value)}
+                        >
+                          <option value="all">All Months</option>
+                          {(() => {
+                            const now = new Date();
+                            const months = [];
+                            for (let i = 0; i < 12; i++) {
+                              const date = new Date(
+                                now.getFullYear(),
+                                now.getMonth() - i,
+                                1
+                              );
+                              const year = date.getFullYear();
+                              const month = (date.getMonth() + 1)
+                                .toString()
+                                .padStart(2, "0");
+                              const label = date.toLocaleString("default", {
+                                month: "long",
+                                year: "numeric",
+                              });
+                              months.push(
+                                <option
+                                  key={`${year}-${month}`}
+                                  value={`${year}-${month}`}
+                                >
+                                  {label}
+                                </option>
+                              );
+                            }
+                            return months;
+                          })()}
+                        </select>
+                      </div>
                     </div>
 
-                    {(filterStatus !== "all" || filterPriority !== "all") && (
+                    {(filterStatus !== "all" ||
+                      filterPriority !== "all" ||
+                      filterCategory !== "all" ||
+                      filterMonth !== "all") && (
                       <button
                         className="btn btn-ghost btn-sm mt-4"
                         onClick={() => {
                           setFilterStatus("all");
                           setFilterPriority("all");
+                          setFilterCategory("all");
+                          setFilterMonth("all");
                         }}
                       >
                         Clear Filters
@@ -476,13 +568,17 @@ export default function Tasks() {
                     <p className="text-base-content/60 mb-4">
                       {searchQuery ||
                       filterStatus !== "all" ||
-                      filterPriority !== "all"
+                      filterPriority !== "all" ||
+                      filterCategory !== "all" ||
+                      filterMonth !== "all"
                         ? "Try adjusting your search or filters"
                         : "Get started by creating your first task"}
                     </p>
                     {!searchQuery &&
                       filterStatus === "all" &&
-                      filterPriority === "all" && (
+                      filterPriority === "all" &&
+                      filterCategory === "all" &&
+                      filterMonth === "all" && (
                         <button
                           onClick={() => handleOpenModal()}
                           className="btn btn-primary gap-2 mx-auto"
@@ -724,16 +820,21 @@ export default function Tasks() {
                             Due Date *
                           </span>
                         </label>
-                        <input
-                          type="date"
-                          className="input input-bordered w-full"
-                          value={formData.dueDate}
-                          onChange={(e) =>
+                        <DatePicker
+                          selected={
+                            formData.dueDate ? new Date(formData.dueDate) : null
+                          }
+                          onChange={(date) =>
                             setFormData({
                               ...formData,
-                              dueDate: e.target.value,
+                              dueDate: date
+                                ? date.toISOString().split("T")[0]
+                                : "",
                             })
                           }
+                          dateFormat="yyyy-MM-dd"
+                          className="input input-bordered w-full"
+                          placeholderText="Select a date"
                           required
                         />
                       </div>
@@ -822,16 +923,23 @@ export default function Tasks() {
                                 Leave blank for indefinite recurrence
                               </span>
                             </label>
-                            <input
-                              type="date"
-                              className="input input-bordered w-full"
-                              value={formData.recurrenceEndDate}
-                              onChange={(e) =>
+                            <DatePicker
+                              selected={
+                                formData.recurrenceEndDate
+                                  ? new Date(formData.recurrenceEndDate)
+                                  : null
+                              }
+                              onChange={(date) =>
                                 setFormData({
                                   ...formData,
-                                  recurrenceEndDate: e.target.value,
+                                  recurrenceEndDate: date
+                                    ? date.toISOString().split("T")[0]
+                                    : "",
                                 })
                               }
+                              dateFormat="yyyy-MM-dd"
+                              className="input input-bordered w-full"
+                              placeholderText="Select a date (optional)"
                             />
                           </div>
                         </div>

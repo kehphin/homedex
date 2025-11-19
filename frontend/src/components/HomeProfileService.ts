@@ -13,7 +13,8 @@ export interface HomeProfile {
   ac_type?: string;
   heat: boolean;
   heat_type?: string;
-  year_built?: number;
+  heating_source?: string;
+  is_septic: boolean;
   created_at?: string;
   updated_at?: string;
 }

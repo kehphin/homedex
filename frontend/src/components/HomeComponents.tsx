@@ -1,4 +1,7 @@
 import React, { useState, useEffect } from "react";
+import { toast } from "react-toastify";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 import {
   PuzzlePieceIcon,
   PlusIcon,
@@ -349,6 +352,7 @@ export default function HomeComponents() {
               : comp
           )
         );
+        toast.success("Component updated successfully!");
       } else {
         // Create new component
         const created = await ComponentsService.createComponent(
@@ -359,12 +363,13 @@ export default function HomeComponents() {
             : undefined
         );
         setComponents([convertAPIToFrontend(created), ...components]);
+        toast.success("Component created successfully!");
       }
 
       handleCloseModal();
     } catch (err) {
       console.error("Failed to save component:", err);
-      alert("Failed to save component. Please try again.");
+      toast.error("Failed to save component. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -378,9 +383,10 @@ export default function HomeComponents() {
     try {
       await ComponentsService.deleteComponent(id);
       setComponents(components.filter((comp) => comp.id !== id));
+      toast.success("Component deleted successfully!");
     } catch (err) {
       console.error("Failed to delete component:", err);
-      alert("Failed to delete component. Please try again.");
+      toast.error("Failed to delete component. Please try again.");
     }
   };
 
@@ -1075,16 +1081,17 @@ export default function HomeComponents() {
                               Purchase Date
                             </span>
                           </label>
-                          <input
-                            type="date"
-                            className="input input-bordered w-full"
-                            value={formData.purchaseDate}
-                            onChange={(e) =>
+                          <DatePicker
+                            selected={formData.purchaseDate ? new Date(formData.purchaseDate) : null}
+                            onChange={(date) =>
                               setFormData({
                                 ...formData,
-                                purchaseDate: e.target.value,
+                                purchaseDate: date ? date.toISOString().split('T')[0] : '',
                               })
                             }
+                            dateFormat="yyyy-MM-dd"
+                            className="input input-bordered w-full"
+                            placeholderText="Select a date"
                           />
                         </div>
 
@@ -1119,16 +1126,17 @@ export default function HomeComponents() {
                               Warranty Expiration
                             </span>
                           </label>
-                          <input
-                            type="date"
-                            className="input input-bordered w-full"
-                            value={formData.warrantyExpiration}
-                            onChange={(e) =>
+                          <DatePicker
+                            selected={formData.warrantyExpiration ? new Date(formData.warrantyExpiration) : null}
+                            onChange={(date) =>
                               setFormData({
                                 ...formData,
-                                warrantyExpiration: e.target.value,
+                                warrantyExpiration: date ? date.toISOString().split('T')[0] : '',
                               })
                             }
+                            dateFormat="yyyy-MM-dd"
+                            className="input input-bordered w-full"
+                            placeholderText="Select a date"
                           />
                         </div>
                       </div>
@@ -1148,16 +1156,17 @@ export default function HomeComponents() {
                               Last Maintenance
                             </span>
                           </label>
-                          <input
-                            type="date"
-                            className="input input-bordered w-full"
-                            value={formData.lastMaintenance}
-                            onChange={(e) =>
+                          <DatePicker
+                            selected={formData.lastMaintenance ? new Date(formData.lastMaintenance) : null}
+                            onChange={(date) =>
                               setFormData({
                                 ...formData,
-                                lastMaintenance: e.target.value,
+                                lastMaintenance: date ? date.toISOString().split('T')[0] : '',
                               })
                             }
+                            dateFormat="yyyy-MM-dd"
+                            className="input input-bordered w-full"
+                            placeholderText="Select a date"
                           />
                         </div>
 
@@ -1167,16 +1176,17 @@ export default function HomeComponents() {
                               Next Maintenance
                             </span>
                           </label>
-                          <input
-                            type="date"
-                            className="input input-bordered w-full"
-                            value={formData.nextMaintenance}
-                            onChange={(e) =>
+                          <DatePicker
+                            selected={formData.nextMaintenance ? new Date(formData.nextMaintenance) : null}
+                            onChange={(date) =>
                               setFormData({
                                 ...formData,
-                                nextMaintenance: e.target.value,
+                                nextMaintenance: date ? date.toISOString().split('T')[0] : '',
                               })
                             }
+                            dateFormat="yyyy-MM-dd"
+                            className="input input-bordered w-full"
+                            placeholderText="Select a date"
                           />
                         </div>
                       </div>
