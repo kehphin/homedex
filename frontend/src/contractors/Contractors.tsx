@@ -218,7 +218,7 @@ export default function ContractorsPage() {
   });
 
   return (
-    <div className="min-h-screen bg-base-100 p-6">
+    <div className="min-h-screen bg-slate-100 p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
@@ -262,7 +262,7 @@ export default function ContractorsPage() {
           <>
             {/* Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-              <div className="card bg-base-100 shadow-lg">
+              <div className="card bg-base-100 rounded-box border border-gray-200">
                 <div className="card-body">
                   <div className="flex items-center justify-between">
                     <div>
@@ -276,7 +276,7 @@ export default function ContractorsPage() {
                 </div>
               </div>
 
-              <div className="card bg-base-100 shadow-lg">
+              <div className="card bg-base-100 rounded-box border border-gray-200">
                 <div className="card-body">
                   <div className="flex items-center justify-between">
                     <div>
@@ -310,7 +310,7 @@ export default function ContractorsPage() {
                 {/* Contractors List */}
                 <div className="space-y-2">
                   {filteredContractors.length === 0 ? (
-                    <div className="card bg-base-100 shadow-lg">
+                    <div className="card bg-base-100 rounded-box border border-gray-200">
                       <div className="card-body text-center py-8">
                         <UserGroupIcon className="h-12 w-12 mx-auto text-base-content/30 mb-2" />
                         <p className="text-base-content/60">
@@ -359,7 +359,7 @@ export default function ContractorsPage() {
               {/* Contractor Details */}
               <div className="lg:col-span-2">
                 {selectedContractor ? (
-                  <div className="card bg-base-100 shadow-lg">
+                  <div className="card bg-base-100 rounded-box border border-gray-200">
                     <div className="card-body">
                       <div className="flex items-start justify-between mb-4">
                         <div>
@@ -509,7 +509,7 @@ export default function ContractorsPage() {
                     </div>
                   </div>
                 ) : (
-                  <div className="card bg-base-100 shadow-lg">
+                  <div className="card bg-base-100 rounded-box border border-gray-200">
                     <div className="card-body text-center py-12">
                       <UserGroupIcon className="h-16 w-16 mx-auto text-base-content/30 mb-4" />
                       <p className="text-base-content/60">
@@ -524,7 +524,7 @@ export default function ContractorsPage() {
             {/* Modal */}
             {isModalOpen && (
               <div className="modal modal-open">
-                <div className="modal-box max-w-2xl">
+                <div className="modal-box max-w-2xl border border-slate-200 shadow-sm">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="font-bold text-lg">
                       {editingContractor

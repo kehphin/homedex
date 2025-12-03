@@ -94,7 +94,7 @@ export function HomeProfileOnboardingCheck() {
             To get started, we need some basic information about your home. This
             will help us provide you with better recommendations and insights.
           </p>
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+          <div className="bg-blue-50 border border-slate-200 shadow-sm rounded-lg p-3">
             <p className="text-sm text-blue-800">
               <strong>What we'll collect:</strong>
             </p>

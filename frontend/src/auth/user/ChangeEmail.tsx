@@ -135,11 +135,11 @@ const ChangeEmail: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-base-100 p-4 mx-auto">
+    <div className="min-h-screen bg-slate-100 p-4 mx-auto">
       <div className="mt-10">
         <h1 className="text-3xl font-bold mb-6">Change Email</h1>
 
-        <div className="bg-base-100 rounded-lg overflow-hidden mb-8">
+        <div className="bg-base-100 rounded-box border border-gray-200 overflow-hidden mb-8">
           <table className="table w-full">
             <thead>
               <tr>
@@ -188,7 +188,7 @@ const ChangeEmail: React.FC = () => {
           </table>
         </div>
 
-        <div className="bg-base-100 rounded-lg p-6">
+        <div className="bg-base-100 p-6 rounded-box border border-gray-200">
           <h2 className="text-2xl font-bold mb-4">Add Email</h2>
 
           <FormErrors errors={response.content.errors ?? []} />

@@ -1,12 +1,19 @@
 from rest_framework import serializers
-from .models import HomeProfile, HomeComponent, ComponentImage, ComponentAttachment, Document, Task, RecurringTaskInstance, Appointment, MaintenanceHistory, MaintenanceAttachment, Contractor
+from .models import HomeProfile, HomeLocation, HomeComponent, ComponentImage, ComponentAttachment, Document, Task, RecurringTaskInstance, Appointment, MaintenanceHistory, MaintenanceAttachment, Contractor
+
+
+class HomeLocationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = HomeLocation
+        fields = ['id', 'name', 'description', 'created_at', 'updated_at']
+        read_only_fields = ['created_at', 'updated_at']
 
 
 class HomeProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = HomeProfile
         fields = [
-            'id', 'address', 'square_feet', 'bedrooms', 'bathrooms',
+            'id', 'address', 'city', 'state', 'zip_code', 'square_feet', 'bedrooms', 'bathrooms',
             'ac', 'ac_type', 'heat', 'heat_type', 'heating_source', 'is_septic',
             'created_at', 'updated_at'
         ]
@@ -49,6 +56,7 @@ class HomeComponentSerializer(serializers.ModelSerializer):
     images = ComponentImageSerializer(many=True, read_only=True)
     attachments = ComponentAttachmentSerializer(many=True, read_only=True)
     documents = serializers.SerializerMethodField()
+    location_name = serializers.CharField(source='location_fk.name', read_only=True, allow_null=True)
     image_files = serializers.ListField(
         child=serializers.ImageField(),
         write_only=True,
@@ -65,12 +73,12 @@ class HomeComponentSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'name', 'category', 'brand', 'model', 'sku',
             'year_installed', 'purchase_date', 'purchase_price',
-            'warranty_expiration', 'location', 'condition', 'notes',
+            'warranty_expiration', 'location', 'location_fk', 'location_name', 'condition', 'notes',
             'last_maintenance', 'next_maintenance', 'created_at',
             'updated_at', 'images', 'attachments', 'documents', 'image_files',
             'attachment_files'
         ]
-        read_only_fields = ['created_at', 'updated_at']
+        read_only_fields = ['created_at', 'updated_at', 'location_name']
 
     def get_documents(self, obj):
         """Get documents associated with this component"""
@@ -126,15 +134,17 @@ class HomeComponentSerializer(serializers.ModelSerializer):
 
 
 class TaskSerializer(serializers.ModelSerializer):
+    home_component_name = serializers.CharField(source='home_component.name', read_only=True)
+
     class Meta:
         model = Task
         fields = [
             'id', 'title', 'description', 'category', 'priority',
             'status', 'due_date', 'is_recurring', 'recurrence_pattern',
             'recurrence_interval', 'recurrence_end_date', 'parent_task',
-            'created_at', 'updated_at'
+            'created_at', 'updated_at', 'home_component', 'home_component_name'
         ]
-        read_only_fields = ['created_at', 'updated_at', 'parent_task']
+        read_only_fields = ['created_at', 'updated_at', 'parent_task', 'home_component_name']
 
 
 class DocumentDetailSerializer(serializers.ModelSerializer):

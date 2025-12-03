@@ -1,6 +1,5 @@
 import React, { ReactNode, useState } from "react";
 import { useUser } from "./auth";
-import NavBar from "./NavBar";
 import SideMenu from "./components/SideMenu";
 import { Outlet, useLocation } from "react-router-dom";
 import { FeedbackModal } from "./components/FeedbackModal";
@@ -17,14 +16,14 @@ const AuthenticatedLayout: React.FC<LayoutProps> = ({
   children,
   toggleFeedbackModal,
 }) => (
-  <div className="flex flex-1 bg-base-100 pt-16">
+  <div className="flex flex-1 bg-slate-100">
     <SideMenu openFeedbackModal={toggleFeedbackModal} />
     <main className="lg:ml-64 flex-1 p-6">{children}</main>
   </div>
 );
 
 const DefaultLayout: React.FC<LayoutProps> = ({ children }) => (
-  <main className="flex-1 bg-base-100">{children}</main>
+  <main className="flex-1 bg-slate-100">{children}</main>
 );
 
 const isAuthenticatedRoute = (pathname: string): boolean => {
@@ -51,8 +50,10 @@ export default function Root() {
       : DefaultLayout;
 
   return (
-    <div className="flex flex-col min-h-screen bg-base-100">
-      <NavBar />
+    <div
+      className="flex flex-col min-h-screen bg-slate-100"
+      data-theme="homedex"
+    >
       <Layout toggleFeedbackModal={toggleFeedbackModal}>
         <Outlet />
       </Layout>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useUser, useConfig } from "../auth";
 import { Link, useLocation } from "react-router-dom";
+import { getAssetUrl } from "../lib/assetUtils";
 import {
   EnvelopeIcon,
   LockClosedIcon,
@@ -192,40 +193,58 @@ export default function SideMenu({
       {/* Side Menu */}
       <div
         className={`
-        fixed inset-y-0 left-0 z-50 w-64 bg-base-100 border-r border-gray-200 transition-transform duration-300 ease-in-out
+        fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-slate-200 shadow-sm transition-transform duration-300 ease-in-out
         ${isOpen ? "translate-x-0" : "-translate-x-full"}
-        lg:translate-x-0 lg:z-30 lg:top-16 lg:pt-8
+        lg:translate-x-0 lg:z-30 lg:top-0 lg:pt-0
       `}
       >
-        <div className="h-full flex flex-col overflow-y-auto">
-          <ul className="menu p-4 w-full">
-            {sections.map((section, sectionIndex) => (
-              <React.Fragment key={sectionIndex}>
-                <li className={`menu-title ${sectionIndex > 0 ? "mt-4" : ""}`}>
-                  <span className="text-neutral">{section.title}</span>
-                </li>
-                {section.items.map((item, itemIndex) => (
-                  <li key={`section-${sectionIndex}-item-${itemIndex}`}>
-                    <Link
-                      to={item.to}
-                      className={`flex items-center p-2 hover:bg-base-300 rounded-lg ${
-                        location.pathname === item.to
-                          ? "bg-base-300 text-primary"
-                          : ""
-                      }`}
-                      onClick={() =>
-                        window.innerWidth < 1024 && setIsOpen(false)
-                      }
-                    >
-                      <item.icon className="h-5 w-5 mr-2" />
-                      {item.name}
-                    </Link>
+        <div className="h-full flex flex-col py-2">
+          {/* Logo */}
+          <div className="flex justify-center items-center">
+            <Link to="/">
+              <img
+                src={getAssetUrl("assets/homedex_h.png")}
+                alt="Homedex"
+                className="h-20"
+              />
+            </Link>
+          </div>
+
+          {/* Menu */}
+          <div className="overflow-y-auto flex-1">
+            <ul className="menu px-4 w-full">
+              {sections.map((section, sectionIndex) => (
+                <React.Fragment key={sectionIndex}>
+                  <li
+                    className={`menu-title ${sectionIndex > 0 ? "mt-4" : ""}`}
+                  >
+                    <span className="text-neutral">{section.title}</span>
                   </li>
-                ))}
-              </React.Fragment>
-            ))}
-          </ul>
-          <div className="mt-auto p-4">
+                  {section.items.map((item, itemIndex) => (
+                    <li key={`section-${sectionIndex}-item-${itemIndex}`}>
+                      <Link
+                        to={item.to}
+                        className={`flex items-center p-2 rounded-lg transition-colors duration-200 ${
+                          location.pathname === item.to
+                            ? "bg-primary text-white shadow-md"
+                            : "hover:bg-primary hover:bg-opacity-50 text-base-content"
+                        }`}
+                        onClick={() =>
+                          window.innerWidth < 1024 && setIsOpen(false)
+                        }
+                      >
+                        <item.icon className="h-5 w-5 mr-2" />
+                        {item.name}
+                      </Link>
+                    </li>
+                  ))}
+                </React.Fragment>
+              ))}
+            </ul>
+          </div>
+
+          {/* Footer */}
+          <div className="border-t border-slate-200 p-4">
             <button
               className="btn btn-ghost btn-sm w-full h-16 text-xs"
               onClick={openFeedbackModal}

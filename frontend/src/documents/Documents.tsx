@@ -320,7 +320,7 @@ export default function Documents() {
   };
 
   return (
-    <div className="min-h-screen bg-base-100 p-6">
+    <div className="min-h-screen bg-slate-100 p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
@@ -363,7 +363,7 @@ export default function Documents() {
         ) : (
           <>
             {/* Search and Filter */}
-            <div className="card bg-base-100 shadow-lg mb-6">
+            <div className="card bg-base-100 rounded-box border border-gray-200 mb-6">
               <div className="card-body">
                 <div className="flex flex-col md:flex-row gap-4">
                   {/* Search */}
@@ -395,7 +395,7 @@ export default function Documents() {
 
                 {/* Filter Options */}
                 {isFilterOpen && (
-                  <div className="mt-4 pt-4 border-t border-base-300">
+                  <div className="mt-4 pt-4 border-t border-slate-200 shadow-sm">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <label className="label">
@@ -490,7 +490,7 @@ export default function Documents() {
                 {sortedDocuments.map((document) => (
                   <div
                     key={document.id}
-                    className="card bg-base-100 shadow-lg hover:shadow-xl transition-shadow"
+                    className="card bg-base-100 rounded-box border border-gray-200 hover:shadow-lg transition-shadow"
                   >
                     <div className="card-body">
                       <div className="flex items-start gap-4">
@@ -599,7 +599,7 @@ export default function Documents() {
             {/* Modal */}
             {isModalOpen && (
               <div className="modal modal-open">
-                <div className="modal-box max-w-2xl">
+                <div className="modal-box max-w-2xl border border-slate-200 shadow-sm">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="font-bold text-lg">
                       {editingDocument ? "Edit Document" : "Upload Document"}
@@ -751,11 +751,17 @@ export default function Documents() {
                         </span>
                       </label>
                       <DatePicker
-                        selected={formData.documentDate ? new Date(formData.documentDate) : null}
+                        selected={
+                          formData.documentDate
+                            ? new Date(formData.documentDate)
+                            : null
+                        }
                         onChange={(date) =>
                           setFormData({
                             ...formData,
-                            documentDate: date ? date.toISOString().split('T')[0] : '',
+                            documentDate: date
+                              ? date.toISOString().split("T")[0]
+                              : "",
                           })
                         }
                         dateFormat="yyyy-MM-dd"

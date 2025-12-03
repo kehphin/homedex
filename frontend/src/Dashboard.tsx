@@ -1,6 +1,6 @@
 // @ts-nocheck
 // Ignoring TS as this is mainly for demo/styling purposes
-import React, { useState, useEffect, useRef } from "react";
+import React from "react";
 import { useUser } from "./auth";
 import {
   LineChart,
@@ -21,52 +21,20 @@ import {
   CheckCircleIcon,
 } from "@heroicons/react/24/outline";
 
+// Homedex theme colors
+const HOMEDEX_COLORS = {
+  primary: "#088116",
+  primaryFocus: "#1daf8b",
+  baseContent: "#1e2734",
+  base: "#ffffff",
+};
+
 const Dashboard = () => {
   const user = useUser();
-  const [colors, setColors] = useState({});
-  const colorRef = useRef();
-
-  const updateColors = () => {
-    if (colorRef.current) {
-      const primaryColor = window.getComputedStyle(
-        colorRef.current.querySelector(".primary")
-      ).backgroundColor;
-      const baseContentColor = window.getComputedStyle(
-        colorRef.current.querySelector(".base-content")
-      ).backgroundColor;
-      const baseColor = window.getComputedStyle(
-        colorRef.current.querySelector(".base")
-      ).backgroundColor;
-      setColors({ primaryColor, baseContentColor, baseColor });
-    }
-  };
-
-  useEffect(() => {
-    updateColors();
-
-    const observer = new MutationObserver(() => {
-      updateColors();
-    });
-
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ["data-theme"],
-    });
-
-    return () => {
-      observer.disconnect();
-    };
-  }, []);
+  const colors = HOMEDEX_COLORS;
 
   return (
-    <div className="p-6 bg-base-100 min-h-screen">
-      {/* Hidden elements to fetch colors */}
-      <div ref={colorRef} className="hidden">
-        <div className="primary bg-primary"></div>
-        <div className="base-content bg-base-content"></div>
-        <div className="base bg-base"></div>
-      </div>
-
+    <div className="p-6 bg-slate-100 min-h-screen">
       {/* Top Bar */}
       <div className="flex justify-between items-center mb-8">
         <div className="flex items-center space-x-4">
@@ -134,7 +102,7 @@ const Dashboard = () => {
         ].map((stat, index) => (
           <div
             key={index}
-            className="bg-base-100 p-6 rounded-box border border-gray-200"
+            className="bg-white p-6 rounded-box border border-gray-200"
           >
             <div className="flex justify-between items-start">
               <div>
@@ -168,7 +136,7 @@ const Dashboard = () => {
 
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-        <div className="bg-base-100 p-6 rounded-box border border-gray-200">
+        <div className="bg-white p-6 rounded-box border border-gray-200">
           <h2 className="text-2xl font-extrabold mb-6 text-base-content">
             Home Value Appreciation
           </h2>
@@ -225,7 +193,7 @@ const Dashboard = () => {
           </ResponsiveContainer>
         </div>
 
-        <div className="bg-base-100 p-6 rounded-box border border-gray-200">
+        <div className="bg-white p-6 rounded-box border border-gray-200">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-2xl font-extrabold text-base-content">
               Energy Consumption (kWh)
@@ -281,7 +249,7 @@ const Dashboard = () => {
 
       {/* Recent Transactions and Top Products */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div className="bg-base-100 p-6 rounded-box border border-gray-200">
+        <div className="bg-white p-6 rounded-box border border-gray-200">
           <h2 className="text-2xl font-extrabold mb-6 text-base-content">
             Recent Maintenance
           </h2>
@@ -308,7 +276,7 @@ const Dashboard = () => {
             ].map((transaction, index) => (
               <div
                 key={index}
-                className="flex justify-between items-center p-4 bg-base-100 rounded-box"
+                className="flex justify-between items-center p-4 bg-white rounded-box"
               >
                 <div className="flex items-center space-x-4">
                   <div
@@ -335,7 +303,7 @@ const Dashboard = () => {
           </div>
         </div>
 
-        <div className="bg-base-100 p-6 rounded-box border border-gray-200">
+        <div className="bg-white p-6 rounded-box border border-gray-200">
           <h2 className="text-2xl font-extrabold mb-6 text-base-content">
             Expense Breakdown
           </h2>

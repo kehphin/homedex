@@ -267,7 +267,7 @@ export default function MaintenanceHistoryPage() {
   );
 
   return (
-    <div className="min-h-screen bg-base-100 p-6">
+    <div className="min-h-screen bg-slate-100 p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
@@ -311,7 +311,7 @@ export default function MaintenanceHistoryPage() {
           <>
             {/* Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-              <div className="card bg-base-100 shadow-lg">
+              <div className="card bg-base-100 rounded-box border border-gray-200">
                 <div className="card-body">
                   <div className="flex items-center justify-between">
                     <div>
@@ -325,7 +325,7 @@ export default function MaintenanceHistoryPage() {
                 </div>
               </div>
 
-              <div className="card bg-base-100 shadow-lg">
+              <div className="card bg-base-100 rounded-box border border-gray-200">
                 <div className="card-body">
                   <div className="flex items-center justify-between">
                     <div>
@@ -338,7 +338,7 @@ export default function MaintenanceHistoryPage() {
                 </div>
               </div>
 
-              <div className="card bg-base-100 shadow-lg">
+              <div className="card bg-base-100 rounded-box border border-gray-200">
                 <div className="card-body">
                   <div className="flex items-center justify-between">
                     <div>
@@ -355,7 +355,7 @@ export default function MaintenanceHistoryPage() {
             </div>
 
             {/* Search and Filter */}
-            <div className="card bg-base-100 shadow-lg mb-6">
+            <div className="card bg-base-100 rounded-box border border-gray-200 mb-6">
               <div className="card-body">
                 <div className="flex flex-col md:flex-row gap-4">
                   {/* Search */}
@@ -382,7 +382,7 @@ export default function MaintenanceHistoryPage() {
 
                 {/* Filter Options */}
                 {isFilterOpen && (
-                  <div className="mt-4 pt-4 border-t border-base-300">
+                  <div className="mt-4 pt-4 border-t border-slate-200 shadow-sm">
                     <button
                       className="btn btn-ghost btn-sm"
                       onClick={() => {
@@ -426,7 +426,7 @@ export default function MaintenanceHistoryPage() {
                 sortedRecords.map((record) => (
                   <div
                     key={record.id}
-                    className="card bg-base-100 shadow-lg hover:shadow-xl transition-shadow"
+                    className="card bg-base-100 rounded-box border border-gray-200 hover:shadow-lg transition-shadow"
                   >
                     <div className="card-body">
                       <div className="flex items-start gap-4">
@@ -479,7 +479,7 @@ export default function MaintenanceHistoryPage() {
 
                           {/* Attachments */}
                           {record.attachments.length > 0 && (
-                            <div className="mt-3 pt-3 border-t border-base-300">
+                            <div className="mt-3 pt-3 border-t border-slate-200 shadow-sm">
                               <p className="text-sm font-semibold mb-2 flex items-center gap-2">
                                 <PaperClipIcon className="h-4 w-4" />
                                 Attachments ({record.attachments.length})
@@ -526,7 +526,7 @@ export default function MaintenanceHistoryPage() {
             {/* Modal */}
             {isModalOpen && (
               <div className="modal modal-open">
-                <div className="modal-box max-w-2xl">
+                <div className="modal-box max-w-2xl border border-slate-200 shadow-sm">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="font-bold text-lg">
                       {editingRecord
@@ -570,11 +570,15 @@ export default function MaintenanceHistoryPage() {
                           </span>
                         </label>
                         <DatePicker
-                          selected={formData.date ? new Date(formData.date) : null}
+                          selected={
+                            formData.date ? new Date(formData.date) : null
+                          }
                           onChange={(date) =>
                             setFormData({
                               ...formData,
-                              date: date ? date.toISOString().split('T')[0] : '',
+                              date: date
+                                ? date.toISOString().split("T")[0]
+                                : "",
                             })
                           }
                           dateFormat="yyyy-MM-dd"

@@ -16,7 +16,10 @@ import {
   ListBulletIcon,
 } from "@heroicons/react/24/outline";
 import * as ComponentsService from "./ComponentsService";
-import type { HomeComponent as APIHomeComponent } from "./ComponentsService";
+import type {
+  HomeComponent as APIHomeComponent,
+  HomeLocation,
+} from "./ComponentsService";
 
 interface Attachment {
   id: string;
@@ -48,7 +51,8 @@ interface HomeComponent {
   purchaseDate: string;
   purchasePrice: string;
   warrantyExpiration: string;
-  location: string;
+  location: string | null; // ID of HomeLocation or null
+  locationName: string; // Display name of the location
   condition: "excellent" | "good" | "fair" | "poor";
   notes: string;
   images: Array<{ id: string; url: string }>;
@@ -97,7 +101,8 @@ function convertAPIToFrontend(apiComponent: APIHomeComponent): HomeComponent {
     purchaseDate: apiComponent.purchase_date || "",
     purchasePrice: apiComponent.purchase_price || "",
     warrantyExpiration: apiComponent.warranty_expiration || "",
-    location: apiComponent.location || "",
+    location: apiComponent.location || null,
+    locationName: (apiComponent as any).location_name || "",
     condition: apiComponent.condition,
     notes: apiComponent.notes || "",
     images: apiComponent.images || [],
@@ -134,6 +139,9 @@ export default function HomeComponents() {
   const [existingAttachments, setExistingAttachments] = useState<Attachment[]>(
     []
   );
+  const [locations, setLocations] = useState<HomeLocation[]>([]);
+  const [isAddingNewLocation, setIsAddingNewLocation] = useState(false);
+  const [newLocationInput, setNewLocationInput] = useState("");
 
   // Form state
   const [formData, setFormData] = useState({
@@ -153,9 +161,10 @@ export default function HomeComponents() {
     nextMaintenance: "",
   });
 
-  // Load components on mount
+  // Load components and locations on mount
   useEffect(() => {
     loadComponents();
+    loadLocations();
   }, []);
 
   const loadComponents = async () => {
@@ -172,6 +181,15 @@ export default function HomeComponents() {
     }
   };
 
+  const loadLocations = async () => {
+    try {
+      const data = await ComponentsService.getLocations();
+      setLocations(data);
+    } catch (err) {
+      console.error("Failed to load locations:", err);
+    }
+  };
+
   const handleOpenModal = (component?: HomeComponent) => {
     if (component) {
       setEditingComponent(component);
@@ -185,7 +203,7 @@ export default function HomeComponents() {
         purchaseDate: component.purchaseDate,
         purchasePrice: component.purchasePrice,
         warrantyExpiration: component.warrantyExpiration,
-        location: component.location,
+        location: component.location || "",
         condition: component.condition,
         notes: component.notes,
         lastMaintenance: component.lastMaintenance,
@@ -220,12 +238,16 @@ export default function HomeComponents() {
       setSelectedImagePreviews([]);
       setSelectedAttachmentFiles([]);
     }
+    setIsAddingNewLocation(false);
+    setNewLocationInput("");
     setIsModalOpen(true);
   };
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setEditingComponent(null);
+    setIsAddingNewLocation(false);
+    setNewLocationInput("");
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -397,7 +419,7 @@ export default function HomeComponents() {
       component.brand.toLowerCase().includes(searchQuery.toLowerCase()) ||
       component.model.toLowerCase().includes(searchQuery.toLowerCase()) ||
       component.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      component.location.toLowerCase().includes(searchQuery.toLowerCase());
+      component.locationName.toLowerCase().includes(searchQuery.toLowerCase());
 
     const matchesCategory =
       filterCategory === "all" || component.category === filterCategory;
@@ -427,7 +449,7 @@ export default function HomeComponents() {
   };
 
   return (
-    <div className="min-h-screen bg-base-100 p-6">
+    <div className="min-h-screen bg-slate-100 p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
@@ -471,7 +493,7 @@ export default function HomeComponents() {
           <>
             {/* Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-              <div className="card bg-base-100 shadow-lg">
+              <div className="card bg-base-100 rounded-box border border-gray-200">
                 <div className="card-body">
                   <div className="flex items-center justify-between">
                     <div>
@@ -485,7 +507,7 @@ export default function HomeComponents() {
                 </div>
               </div>
 
-              <div className="card bg-base-100 shadow-lg">
+              <div className="card bg-base-100 rounded-box border border-gray-200">
                 <div className="card-body">
                   <div className="flex items-center justify-between">
                     <div>
@@ -500,7 +522,7 @@ export default function HomeComponents() {
                 </div>
               </div>
 
-              <div className="card bg-base-100 shadow-lg">
+              <div className="card bg-base-100 rounded-box border border-gray-200">
                 <div className="card-body">
                   <div className="flex items-center justify-between">
                     <div>
@@ -517,7 +539,7 @@ export default function HomeComponents() {
             </div>
 
             {/* Search and Filter */}
-            <div className="card bg-base-100 shadow-lg mb-6">
+            <div className="card bg-base-100 rounded-box border border-gray-200 mb-6">
               <div className="card-body">
                 <div className="flex flex-col md:flex-row gap-4">
                   {/* Search */}
@@ -570,7 +592,7 @@ export default function HomeComponents() {
 
                 {/* Filter Options */}
                 {isFilterOpen && (
-                  <div className="mt-4 pt-4 border-t border-base-300">
+                  <div className="mt-4 pt-4 border-t border-slate-200 shadow-sm">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <label className="label">
@@ -663,7 +685,7 @@ export default function HomeComponents() {
                 {filteredComponents.map((component) => (
                   <div
                     key={component.id}
-                    className="card bg-base-100 shadow-lg hover:shadow-xl transition-shadow"
+                    className="card bg-base-100 rounded-box border border-gray-200 hover:shadow-lg transition-shadow"
                   >
                     {/* Image */}
                     <figure className="h-48 bg-base-300 relative">
@@ -707,7 +729,7 @@ export default function HomeComponents() {
                             Location:
                           </span>
                           <span className="font-semibold">
-                            {component.location}
+                            {component.locationName}
                           </span>
                         </div>
                         <div className="flex justify-between">
@@ -760,7 +782,7 @@ export default function HomeComponents() {
                 {filteredComponents.map((component) => (
                   <div
                     key={component.id}
-                    className="card bg-base-100 shadow-lg hover:shadow-xl transition-shadow"
+                    className="card bg-base-100 rounded-box border border-gray-200 hover:shadow-lg transition-shadow"
                   >
                     <div className="card-body">
                       <div className="flex items-start gap-4">
@@ -820,7 +842,7 @@ export default function HomeComponents() {
                                 Location
                               </p>
                               <p className="font-semibold">
-                                {component.location}
+                                {component.locationName}
                               </p>
                             </div>
                             <div>
@@ -875,7 +897,7 @@ export default function HomeComponents() {
             {/* Modal */}
             {isModalOpen && (
               <div className="modal modal-open">
-                <div className="modal-box max-w-4xl max-h-[90vh] overflow-y-auto">
+                <div className="modal-box max-w-4xl max-h-[90vh] overflow-y-auto border border-slate-200 shadow-sm">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="font-bold text-lg">
                       {editingComponent
@@ -947,18 +969,131 @@ export default function HomeComponents() {
                               Location
                             </span>
                           </label>
-                          <input
-                            type="text"
-                            placeholder="e.g., Backyard, Kitchen"
-                            className="input input-bordered w-full"
-                            value={formData.location}
-                            onChange={(e) =>
-                              setFormData({
-                                ...formData,
-                                location: e.target.value,
-                              })
-                            }
-                          />
+                          <div className="space-y-2">
+                            {!isAddingNewLocation ? (
+                              <div className="flex gap-2">
+                                <select
+                                  className="select select-bordered w-full"
+                                  value={formData.location}
+                                  onChange={(e) =>
+                                    setFormData({
+                                      ...formData,
+                                      location: e.target.value,
+                                    })
+                                  }
+                                >
+                                  <option value="">Select a location...</option>
+                                  {locations.map((loc) => (
+                                    <option key={loc.id} value={loc.id}>
+                                      {loc.name}
+                                    </option>
+                                  ))}
+                                </select>
+                                <button
+                                  type="button"
+                                  onClick={() => setIsAddingNewLocation(true)}
+                                  className="btn btn-outline"
+                                  title="Add new location"
+                                >
+                                  <PlusIcon className="h-5 w-5" />
+                                </button>
+                              </div>
+                            ) : (
+                              <div className="flex gap-2">
+                                <input
+                                  type="text"
+                                  placeholder="e.g., Backyard, Kitchen"
+                                  className="input input-bordered w-full"
+                                  value={newLocationInput}
+                                  onChange={(e) =>
+                                    setNewLocationInput(e.target.value)
+                                  }
+                                  autoFocus
+                                  onKeyDown={async (e) => {
+                                    if (
+                                      e.key === "Enter" &&
+                                      newLocationInput.trim()
+                                    ) {
+                                      try {
+                                        const newLocation =
+                                          await ComponentsService.createLocation(
+                                            {
+                                              name: newLocationInput.trim(),
+                                            }
+                                          );
+                                        setLocations([
+                                          ...locations,
+                                          newLocation,
+                                        ]);
+                                        setFormData({
+                                          ...formData,
+                                          location: newLocation.id,
+                                        });
+                                        setNewLocationInput("");
+                                        setIsAddingNewLocation(false);
+                                        toast.success("Location created!");
+                                      } catch (err) {
+                                        console.error(
+                                          "Failed to create location:",
+                                          err
+                                        );
+                                        toast.error(
+                                          "Failed to create location"
+                                        );
+                                      }
+                                    }
+                                  }}
+                                />
+                                <button
+                                  type="button"
+                                  onClick={async () => {
+                                    if (newLocationInput.trim()) {
+                                      try {
+                                        const newLocation =
+                                          await ComponentsService.createLocation(
+                                            {
+                                              name: newLocationInput.trim(),
+                                            }
+                                          );
+                                        setLocations([
+                                          ...locations,
+                                          newLocation,
+                                        ]);
+                                        setFormData({
+                                          ...formData,
+                                          location: newLocation.id,
+                                        });
+                                        setNewLocationInput("");
+                                        setIsAddingNewLocation(false);
+                                        toast.success("Location created!");
+                                      } catch (err) {
+                                        console.error(
+                                          "Failed to create location:",
+                                          err
+                                        );
+                                        toast.error(
+                                          "Failed to create location"
+                                        );
+                                      }
+                                    }
+                                  }}
+                                  className="btn btn-primary"
+                                >
+                                  Save
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setNewLocationInput("");
+                                    setIsAddingNewLocation(false);
+                                  }}
+                                  className="btn btn-ghost"
+                                >
+                                  <XMarkIcon className="h-5 w-5" />
+                                </button>
+                              </div>
+                            )}
+                          </div>
                         </div>
 
                         <div>
@@ -1082,11 +1217,17 @@ export default function HomeComponents() {
                             </span>
                           </label>
                           <DatePicker
-                            selected={formData.purchaseDate ? new Date(formData.purchaseDate) : null}
+                            selected={
+                              formData.purchaseDate
+                                ? new Date(formData.purchaseDate)
+                                : null
+                            }
                             onChange={(date) =>
                               setFormData({
                                 ...formData,
-                                purchaseDate: date ? date.toISOString().split('T')[0] : '',
+                                purchaseDate: date
+                                  ? date.toISOString().split("T")[0]
+                                  : "",
                               })
                             }
                             dateFormat="yyyy-MM-dd"
@@ -1127,11 +1268,17 @@ export default function HomeComponents() {
                             </span>
                           </label>
                           <DatePicker
-                            selected={formData.warrantyExpiration ? new Date(formData.warrantyExpiration) : null}
+                            selected={
+                              formData.warrantyExpiration
+                                ? new Date(formData.warrantyExpiration)
+                                : null
+                            }
                             onChange={(date) =>
                               setFormData({
                                 ...formData,
-                                warrantyExpiration: date ? date.toISOString().split('T')[0] : '',
+                                warrantyExpiration: date
+                                  ? date.toISOString().split("T")[0]
+                                  : "",
                               })
                             }
                             dateFormat="yyyy-MM-dd"
@@ -1157,11 +1304,17 @@ export default function HomeComponents() {
                             </span>
                           </label>
                           <DatePicker
-                            selected={formData.lastMaintenance ? new Date(formData.lastMaintenance) : null}
+                            selected={
+                              formData.lastMaintenance
+                                ? new Date(formData.lastMaintenance)
+                                : null
+                            }
                             onChange={(date) =>
                               setFormData({
                                 ...formData,
-                                lastMaintenance: date ? date.toISOString().split('T')[0] : '',
+                                lastMaintenance: date
+                                  ? date.toISOString().split("T")[0]
+                                  : "",
                               })
                             }
                             dateFormat="yyyy-MM-dd"
@@ -1177,11 +1330,17 @@ export default function HomeComponents() {
                             </span>
                           </label>
                           <DatePicker
-                            selected={formData.nextMaintenance ? new Date(formData.nextMaintenance) : null}
+                            selected={
+                              formData.nextMaintenance
+                                ? new Date(formData.nextMaintenance)
+                                : null
+                            }
                             onChange={(date) =>
                               setFormData({
                                 ...formData,
-                                nextMaintenance: date ? date.toISOString().split('T')[0] : '',
+                                nextMaintenance: date
+                                  ? date.toISOString().split("T")[0]
+                                  : "",
                               })
                             }
                             dateFormat="yyyy-MM-dd"

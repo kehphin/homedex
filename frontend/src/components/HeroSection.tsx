@@ -58,7 +58,7 @@ const HeroSection = () => {
                   {[1, 2, 3, 4].map((item) => (
                     <div
                       key={item}
-                      className="bg-base-100 rounded-2xl p-6 border border-base-300 transition-all duration-300 hover:border-primary"
+                      className="bg-base-100 rounded-2xl p-6 border border-slate-200 shadow-sm transition-all duration-300 hover:border-primary"
                     >
                       <div className="w-12 h-12 bg-primary bg-opacity-10 rounded-full flex items-center justify-center mb-4">
                         <svg

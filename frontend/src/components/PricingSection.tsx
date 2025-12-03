@@ -87,7 +87,7 @@ const PricingSection = () => {
           {plans.map((plan, index) => (
             <div
               key={index}
-              className={`card w-96 bg-base-100 border border-gray-200 ${
+              className={`card w-96 bg-base-100 border border-slate-200 shadow-sm ${
                 plan.popular ? "border-2 border-primary" : ""
               }`}
             >

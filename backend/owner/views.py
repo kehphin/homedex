@@ -11,8 +11,8 @@ from payments.permissions import HasPurchasedProduct, HasAnyActiveSubscription, 
 from rest_framework import permissions
 import os
 
-from .models import ContactUs, HomeProfile, HomeComponent, ComponentImage, ComponentAttachment, Document, Task, RecurringTaskInstance, Appointment, MaintenanceHistory, MaintenanceAttachment, Contractor
-from .serializers import HomeProfileSerializer, HomeComponentSerializer, DocumentSerializer, TaskSerializer, AppointmentSerializer, MaintenanceHistorySerializer, ContractorSerializer, ContractorDetailSerializer
+from .models import ContactUs, HomeProfile, HomeLocation, HomeComponent, ComponentImage, ComponentAttachment, Document, Task, RecurringTaskInstance, Appointment, MaintenanceHistory, MaintenanceAttachment, Contractor
+from .serializers import HomeProfileSerializer, HomeLocationSerializer, HomeComponentSerializer, DocumentSerializer, TaskSerializer, AppointmentSerializer, MaintenanceHistorySerializer, ContractorSerializer, ContractorDetailSerializer
 from .recurring_tasks import get_recurring_task_stats
 from django.core.mail import send_mail
 
@@ -134,6 +134,22 @@ class HomeProfileViewSet(viewsets.ViewSet):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except HomeProfile.DoesNotExist:
             return Response({'error': 'Home profile not found'}, status=status.HTTP_404_NOT_FOUND)
+
+
+class HomeLocationViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet for managing home locations
+    """
+    serializer_class = HomeLocationSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        # Users can only see their own locations
+        return HomeLocation.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        # Automatically set the user when creating
+        serializer.save(user=self.request.user)
 
 
 class HomeComponentViewSet(viewsets.ModelViewSet):

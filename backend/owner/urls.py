@@ -5,6 +5,7 @@ from owner import views
 
 router = DefaultRouter()
 router.register(r'home-profile', views.HomeProfileViewSet, basename='homeprofile')
+router.register(r'locations', views.HomeLocationViewSet, basename='homelocation')
 router.register(r'components', views.HomeComponentViewSet, basename='homecomponent')
 router.register(r'documents', views.DocumentViewSet, basename='document')
 router.register(r'tasks', views.TaskViewSet, basename='task')

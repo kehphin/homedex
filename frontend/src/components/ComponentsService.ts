@@ -54,6 +54,14 @@ interface ComponentStats {
   under_warranty: number;
 }
 
+interface HomeLocation {
+  id: string;
+  name: string;
+  description: string;
+  created_at: string;
+  updated_at: string;
+}
+
 /**
  * Get CSRF token from cookie
  */
@@ -289,4 +297,80 @@ export async function getComponentStats(): Promise<ComponentStats> {
   return await response.json();
 }
 
-export type { HomeComponent, ComponentData, ComponentStats };
+/**
+ * Fetch all locations for the authenticated user
+ */
+export async function getLocations(): Promise<HomeLocation[]> {
+  const response = await fetch(`${API_BASE}/locations/`, {
+    method: "GET",
+    credentials: "include",
+    headers: buildHeaders(),
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch locations");
+  }
+
+  return await response.json();
+}
+
+/**
+ * Create a new location
+ */
+export async function createLocation(data: {
+  name: string;
+  description?: string;
+}): Promise<HomeLocation> {
+  const response = await fetch(`${API_BASE}/locations/`, {
+    method: "POST",
+    credentials: "include",
+    headers: buildHeaders(),
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.detail || "Failed to create location");
+  }
+
+  return await response.json();
+}
+
+/**
+ * Update a location
+ */
+export async function updateLocation(
+  id: string,
+  data: Partial<{ name: string; description: string }>
+): Promise<HomeLocation> {
+  const response = await fetch(`${API_BASE}/locations/${id}/`, {
+    method: "PATCH",
+    credentials: "include",
+    headers: buildHeaders(),
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.detail || "Failed to update location");
+  }
+
+  return await response.json();
+}
+
+/**
+ * Delete a location
+ */
+export async function deleteLocation(id: string): Promise<void> {
+  const response = await fetch(`${API_BASE}/locations/${id}/`, {
+    method: "DELETE",
+    credentials: "include",
+    headers: buildHeaders(),
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to delete location");
+  }
+}
+
+export type { HomeComponent, ComponentData, ComponentStats, HomeLocation };

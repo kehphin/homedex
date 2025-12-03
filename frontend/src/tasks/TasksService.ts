@@ -13,6 +13,7 @@ interface TaskData {
   recurrence_pattern?: "daily" | "weekly" | "monthly" | "yearly" | null;
   recurrence_interval?: number;
   recurrence_end_date?: string | null;
+  home_component?: string | null;
 }
 
 interface Task extends TaskData {
@@ -20,6 +21,7 @@ interface Task extends TaskData {
   created_at: string;
   updated_at: string;
   parent_task?: string | null;
+  home_component_name?: string | null;
 }
 
 interface TaskStats {

@@ -25,6 +25,9 @@ class HomeProfile(models.Model):
 
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='home_profile')
     address = models.CharField(max_length=255)
+    city = models.CharField(max_length=100, blank=True)
+    state = models.CharField(max_length=50, blank=True)
+    zip_code = models.CharField(max_length=20, blank=True)
     square_feet = models.IntegerField(null=True, blank=True)
     bedrooms = models.IntegerField(null=True, blank=True)
     bathrooms = models.DecimalField(max_digits=3, decimal_places=1, null=True, blank=True)
@@ -63,6 +66,24 @@ class ContactUs(models.Model):
         return self.name
 
 
+class HomeLocation(models.Model):
+    """
+    Represents a location in the user's home where components are installed.
+    """
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='home_locations')
+    name = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['name']
+        unique_together = ['user', 'name']
+
+    def __str__(self):
+        return f"{self.name}"
+
+
 class HomeComponent(models.Model):
     CONDITION_CHOICES = [
         ('excellent', 'Excellent'),
@@ -97,7 +118,8 @@ class HomeComponent(models.Model):
     purchase_date = models.DateField(null=True, blank=True)
     purchase_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     warranty_expiration = models.DateField(null=True, blank=True)
-    location = models.CharField(max_length=255, blank=True)
+    location = models.CharField(max_length=255, blank=True)  # Legacy: kept for backwards compatibility
+    location_fk = models.ForeignKey(HomeLocation, on_delete=models.SET_NULL, null=True, blank=True, related_name='components')
     condition = models.CharField(max_length=20, choices=CONDITION_CHOICES, default='good')
     notes = models.TextField(blank=True)
     last_maintenance = models.DateField(null=True, blank=True)
@@ -212,6 +234,7 @@ class Task(models.Model):
     priority = models.CharField(max_length=20, choices=PRIORITY_CHOICES, default='medium')
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     due_date = models.DateField()
+    home_component = models.ForeignKey(HomeComponent, on_delete=models.SET_NULL, null=True, blank=True, related_name='tasks')
 
     # Recurring task fields
     is_recurring = models.BooleanField(default=False)

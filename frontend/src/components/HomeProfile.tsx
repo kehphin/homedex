@@ -7,6 +7,9 @@ import type { HomeProfile as HomeProfileData } from "./HomeProfileService";
 export default function HomeProfilePage() {
   const [profile, setProfile] = useState<HomeProfileData>({
     address: "",
+    city: "",
+    state: "",
+    zip_code: "",
     square_feet: undefined,
     bedrooms: undefined,
     bathrooms: undefined,
@@ -105,7 +108,7 @@ export default function HomeProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-base-100 p-4 lg:p-8">
+    <div className="min-h-screen bg-slate-100 p-4 lg:p-8">
       <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="flex items-center gap-4 mb-8">
@@ -123,7 +126,7 @@ export default function HomeProfilePage() {
         {/* Form Card */}
         <form
           onSubmit={handleSubmit}
-          className="bg-white rounded-lg shadow-lg p-6 space-y-6"
+          className="bg-white rounded-lg border border-slate-200 shadow-sm p-6 space-y-6"
         >
           {/* Error Message */}
           {error && (
@@ -152,6 +155,51 @@ export default function HomeProfilePage() {
             />
           </div>
 
+          {/* City, State, Zip Code */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="form-control w-full">
+              <label className="label">
+                <span className="label-text font-semibold">City</span>
+              </label>
+              <input
+                type="text"
+                name="city"
+                value={profile.city || ""}
+                onChange={handleChange}
+                placeholder="New York"
+                className="input input-bordered w-full"
+              />
+            </div>
+
+            <div className="form-control w-full">
+              <label className="label">
+                <span className="label-text font-semibold">State</span>
+              </label>
+              <input
+                type="text"
+                name="state"
+                value={profile.state || ""}
+                onChange={handleChange}
+                placeholder="NY"
+                className="input input-bordered w-full"
+              />
+            </div>
+
+            <div className="form-control w-full">
+              <label className="label">
+                <span className="label-text font-semibold">Zip Code</span>
+              </label>
+              <input
+                type="text"
+                name="zip_code"
+                value={profile.zip_code || ""}
+                onChange={handleChange}
+                placeholder="10001"
+                className="input input-bordered w-full"
+              />
+            </div>
+          </div>
+
           {/* Square Feet */}
           <div className="form-control w-full">
             <label className="label">
@@ -162,7 +210,7 @@ export default function HomeProfilePage() {
               name="square_feet"
               value={profile.square_feet || ""}
               onChange={handleChange}
-              placeholder="e.g., 2500"
+              placeholder="2500"
               className="input input-bordered w-full"
               min="0"
             />
@@ -179,7 +227,7 @@ export default function HomeProfilePage() {
                 name="bedrooms"
                 value={profile.bedrooms || ""}
                 onChange={handleChange}
-                placeholder="e.g., 3"
+                placeholder="3"
                 className="input input-bordered w-full"
                 min="0"
               />
@@ -194,7 +242,7 @@ export default function HomeProfilePage() {
                 name="bathrooms"
                 value={profile.bathrooms || ""}
                 onChange={handleDecimalChange}
-                placeholder="e.g., 2.5"
+                placeholder="2.5"
                 className="input input-bordered w-full"
                 min="0"
                 step="0.5"

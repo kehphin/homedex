@@ -6,6 +6,9 @@ const API_BASE = `${config.appHost}/api/v1/owner`;
 export interface HomeProfile {
   id?: string;
   address: string;
+  city?: string;
+  state?: string;
+  zip_code?: string;
   square_feet?: number;
   bedrooms?: number;
   bathrooms?: number;

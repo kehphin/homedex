@@ -37,7 +37,7 @@ export const FeedbackModal = ({
       id="feedback_modal"
       className={`modal ${isOpen ? "modal-open" : ""}`}
     >
-      <div className="modal-box">
+      <div className="modal-box border border-slate-200 shadow-sm">
         <h3 className="font-bold text-lg">Submit Feedback</h3>
         <p className="py-4">Got a bug or issue to report? Let us know!</p>
         {error && <div className="alert alert-error">{error}</div>}

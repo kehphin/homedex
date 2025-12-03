@@ -99,9 +99,9 @@ export default function AskDex() {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-120px)] bg-base-200">
+    <div className="flex flex-col h-[calc(100vh-40px)]">
       {/* Header */}
-      <div className="bg-base-100 border-b border-base-300 px-6 py-4">
+      <div className="bg-base-100 border-b bg-base-200 border border-gray-200 shadow-sm px-6 py-4">
         <div className="flex items-center gap-3">
           <div className="avatar placeholder">
             <div className="bg-gradient-to-br from-primary to-secondary text-neutral-content rounded-full w-10">
@@ -231,7 +231,7 @@ export default function AskDex() {
       </div>
 
       {/* Input Area */}
-      <div className="bg-base-100 border-t border-base-300 px-4 py-4">
+      <div className="bg-base-100 border-t  border border-gray-200 px-4 py-4">
         <form onSubmit={handleSubmit} className="max-w-4xl mx-auto">
           <div className="relative flex items-end gap-2">
             <textarea

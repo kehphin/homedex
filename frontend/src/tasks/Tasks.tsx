@@ -16,6 +16,8 @@ import {
 import { CheckCircleIcon as CheckCircleSolidIcon } from "@heroicons/react/24/solid";
 import * as TasksService from "./TasksService";
 import type { Task as APITask } from "./TasksService";
+import * as ComponentsService from "../components/ComponentsService";
+import type { HomeComponent } from "../components/ComponentsService";
 
 interface Task {
   id: string;
@@ -31,6 +33,8 @@ interface Task {
   recurrenceInterval?: number;
   recurrenceEndDate?: string | null;
   parentTask?: string | null;
+  homeComponent?: string | null;
+  homeComponentName?: string | null;
 }
 
 const CATEGORIES = [
@@ -76,11 +80,14 @@ function convertAPIToFrontend(apiTask: APITask): Task {
     recurrenceInterval: apiTask.recurrence_interval || 1,
     recurrenceEndDate: apiTask.recurrence_end_date || null,
     parentTask: apiTask.parent_task || null,
+    homeComponent: apiTask.home_component || null,
+    homeComponentName: apiTask.home_component_name || null,
   };
 }
 
 export default function Tasks() {
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [homeComponents, setHomeComponents] = useState<HomeComponent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -104,6 +111,7 @@ export default function Tasks() {
     recurrencePattern: "weekly" as "daily" | "weekly" | "monthly" | "yearly",
     recurrenceInterval: 1,
     recurrenceEndDate: "",
+    homeComponent: "",
   });
 
   // Load tasks on mount
@@ -115,8 +123,12 @@ export default function Tasks() {
     try {
       setLoading(true);
       setError(null);
-      const data = await TasksService.getTasks();
-      setTasks(data.map(convertAPIToFrontend));
+      const [tasksData, componentsData] = await Promise.all([
+        TasksService.getTasks(),
+        ComponentsService.getComponents(),
+      ]);
+      setTasks(tasksData.map(convertAPIToFrontend));
+      setHomeComponents(componentsData);
     } catch (err) {
       console.error("Failed to load tasks:", err);
       setError("Failed to load tasks. Please try again.");
@@ -139,6 +151,7 @@ export default function Tasks() {
         recurrencePattern: task.recurrencePattern || "weekly",
         recurrenceInterval: task.recurrenceInterval || 1,
         recurrenceEndDate: task.recurrenceEndDate || "",
+        homeComponent: task.homeComponent || "",
       });
     } else {
       setEditingTask(null);
@@ -153,6 +166,7 @@ export default function Tasks() {
         recurrencePattern: "weekly",
         recurrenceInterval: 1,
         recurrenceEndDate: "",
+        homeComponent: "",
       });
     }
     setIsModalOpen(true);
@@ -186,6 +200,7 @@ export default function Tasks() {
           formData.isRecurring && formData.recurrenceEndDate
             ? formData.recurrenceEndDate
             : null,
+        home_component: formData.homeComponent || null,
       };
 
       if (editingTask) {
@@ -296,7 +311,7 @@ export default function Tasks() {
   };
 
   return (
-    <div className="min-h-screen bg-base-100 p-6">
+    <div className="min-h-screen bg-slate-100 p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
@@ -340,7 +355,7 @@ export default function Tasks() {
           <>
             {/* Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-              <div className="card bg-base-100 shadow-lg">
+              <div className="card bg-base-100 rounded-box border border-gray-200">
                 <div className="card-body">
                   <div className="flex items-center justify-between">
                     <div>
@@ -354,7 +369,7 @@ export default function Tasks() {
                 </div>
               </div>
 
-              <div className="card bg-base-100 shadow-lg">
+              <div className="card bg-base-100 rounded-box border border-gray-200">
                 <div className="card-body">
                   <div className="flex items-center justify-between">
                     <div>
@@ -367,7 +382,7 @@ export default function Tasks() {
                 </div>
               </div>
 
-              <div className="card bg-base-100 shadow-lg">
+              <div className="card bg-base-100 rounded-box border border-gray-200">
                 <div className="card-body">
                   <div className="flex items-center justify-between">
                     <div>
@@ -382,7 +397,7 @@ export default function Tasks() {
                 </div>
               </div>
 
-              <div className="card bg-base-100 shadow-lg">
+              <div className="card bg-base-100 rounded-box border border-gray-200">
                 <div className="card-body">
                   <div className="flex items-center justify-between">
                     <div>
@@ -398,7 +413,7 @@ export default function Tasks() {
             </div>
 
             {/* Search and Filter */}
-            <div className="card bg-base-100 shadow-lg mb-6">
+            <div className="card bg-base-100 rounded-box border border-gray-200 mb-6">
               <div className="card-body">
                 <div className="flex flex-col md:flex-row gap-4">
                   {/* Search */}
@@ -593,7 +608,7 @@ export default function Tasks() {
                 sortedTasks.map((task) => (
                   <div
                     key={task.id}
-                    className={`card bg-base-100 shadow-lg hover:shadow-xl transition-shadow ${
+                    className={`card bg-base-100 rounded-box border border-gray-200 hover:shadow-lg transition-shadow ${
                       task.status === "completed" ? "opacity-60" : ""
                     }`}
                   >
@@ -667,6 +682,11 @@ export default function Tasks() {
                             <span className="badge badge-ghost">
                               Due: {new Date(task.dueDate).toLocaleDateString()}
                             </span>
+                            {task.homeComponentName && (
+                              <span className="badge badge-neutral">
+                                {task.homeComponentName}
+                              </span>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -679,7 +699,7 @@ export default function Tasks() {
             {/* Modal */}
             {isModalOpen && (
               <div className="modal modal-open">
-                <div className="modal-box max-w-2xl">
+                <div className="modal-box max-w-2xl border border-slate-200 shadow-sm">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="font-bold text-lg">
                       {editingTask ? "Edit Task" : "Create New Task"}
@@ -840,8 +860,34 @@ export default function Tasks() {
                       </div>
                     </div>
 
+                    {/* Home Component */}
+                    <div>
+                      <label className="label">
+                        <span className="label-text font-semibold">
+                          Related Component
+                        </span>
+                      </label>
+                      <select
+                        className="select select-bordered w-full"
+                        value={formData.homeComponent}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            homeComponent: e.target.value,
+                          })
+                        }
+                      >
+                        <option value="">None</option>
+                        {homeComponents.map((component) => (
+                          <option key={component.id} value={component.id}>
+                            {component.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
                     {/* Recurring Task Options */}
-                    <div className="border-t border-base-300 pt-4">
+                    <div className="border-t border-slate-200 shadow-sm pt-4">
                       <label className="label cursor-pointer">
                         <span className="label-text font-semibold">
                           Make this a recurring task
