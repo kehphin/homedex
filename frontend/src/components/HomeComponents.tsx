@@ -124,6 +124,7 @@ export default function HomeComponents() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterCategory, setFilterCategory] = useState<string>("all");
   const [filterCondition, setFilterCondition] = useState<string>("all");
+  const [filterLocation, setFilterLocation] = useState<string>("all");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [selectedImageFiles, setSelectedImageFiles] = useState<File[]>([]);
@@ -427,7 +428,10 @@ export default function HomeComponents() {
     const matchesCondition =
       filterCondition === "all" || component.condition === filterCondition;
 
-    return matchesSearch && matchesCategory && matchesCondition;
+    const matchesLocation =
+      filterLocation === "all" || component.location === filterLocation;
+
+    return matchesSearch && matchesCategory && matchesCondition && matchesLocation;
   });
 
   const formatBytes = (bytes: number) => {
@@ -582,7 +586,8 @@ export default function HomeComponents() {
                     <FunnelIcon className="h-5 w-5" />
                     Filters
                     {(filterCategory !== "all" ||
-                      filterCondition !== "all") && (
+                      filterCondition !== "all" ||
+                      filterLocation !== "all") && (
                       <span className="badge badge-primary badge-sm">
                         Active
                       </span>
@@ -593,7 +598,7 @@ export default function HomeComponents() {
                 {/* Filter Options */}
                 {isFilterOpen && (
                   <div className="mt-4 pt-4 border-t border-slate-200 shadow-sm">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div>
                         <label className="label">
                           <span className="label-text font-semibold">
@@ -632,15 +637,37 @@ export default function HomeComponents() {
                           <option value="poor">Poor</option>
                         </select>
                       </div>
+
+                      <div>
+                        <label className="label">
+                          <span className="label-text font-semibold">
+                            Location
+                          </span>
+                        </label>
+                        <select
+                          className="select select-bordered w-full"
+                          value={filterLocation}
+                          onChange={(e) => setFilterLocation(e.target.value)}
+                        >
+                          <option value="all">All Locations</option>
+                          {locations.map((loc) => (
+                            <option key={loc.id} value={loc.id}>
+                              {loc.name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
                     </div>
 
                     {(filterCategory !== "all" ||
-                      filterCondition !== "all") && (
+                      filterCondition !== "all" ||
+                      filterLocation !== "all") && (
                       <button
                         className="btn btn-ghost btn-sm mt-4"
                         onClick={() => {
                           setFilterCategory("all");
                           setFilterCondition("all");
+                          setFilterLocation("all");
                         }}
                       >
                         Clear Filters
@@ -662,13 +689,15 @@ export default function HomeComponents() {
                   <p className="text-base-content/60 mb-4">
                     {searchQuery ||
                     filterCategory !== "all" ||
-                    filterCondition !== "all"
+                    filterCondition !== "all" ||
+                    filterLocation !== "all"
                       ? "Try adjusting your search or filters"
                       : "Get started by adding your first home component"}
                   </p>
                   {!searchQuery &&
                     filterCategory === "all" &&
-                    filterCondition === "all" && (
+                    filterCondition === "all" &&
+                    filterLocation === "all" && (
                       <button
                         onClick={() => handleOpenModal()}
                         className="btn btn-primary gap-2 mx-auto"
