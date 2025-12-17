@@ -16,6 +16,18 @@ echo "Database connection verified."
 
 echo "Running migrations..."
 
+# Change to the directory that contains manage.py
+if [ -f /code/manage.py ]; then
+  cd /code
+elif [ -f /code/backend/manage.py ]; then
+  cd /code/backend
+else
+  echo "Could not find manage.py in /code or /code/backend"
+  echo "Contents of /code:"
+  ls -la /code || true
+  exit 1
+fi
+
 # Let Django handle migration order based on dependencies
 python manage.py migrate --noinput
 

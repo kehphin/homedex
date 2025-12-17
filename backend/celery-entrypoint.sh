@@ -9,11 +9,20 @@ until PGPASSWORD=$POSTGRES_PASSWORD psql -h "$DB_HOST" -U "$POSTGRES_USER" -d "$
 done
 >&2 echo "Postgres is up - continuing"
 
-# Change to code directory
-cd /code
+# Change to the directory that contains manage.py
+if [ -f /code/manage.py ]; then
+    cd /code
+elif [ -f /code/backend/manage.py ]; then
+    cd /code/backend
+else
+    echo "Could not find manage.py in /code or /code/backend"
+    echo "Contents of /code:"
+    ls -la /code || true
+    exit 1
+fi
 
 # Set Django settings
-export DJANGO_SETTINGS_MODULE=backend.settings
+export DJANGO_SETTINGS_MODULE=${DJANGO_SETTINGS_MODULE:-backend.settings}
 
 # For celery_worker, run worker
 if [ "$CELERY_MODE" = "worker" ]; then
