@@ -58,7 +58,7 @@ services:
     build:
       context: ./backend/
       dockerfile: Dockerfile
-    command: ["sh", "-c", "cd /code && celery -A backend worker -l info"]
+    entrypoint: /usr/local/bin/celery-entrypoint.sh
     volumes:
       - ./backend:/code/
     depends_on:
@@ -67,9 +67,7 @@ services:
     environment:
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
-      - PYTHONPATH=/code
-      - DJANGO_SETTINGS_MODULE=backend.settings
-    entrypoint: ""
+      - CELERY_MODE=worker
 
   celery_beat:
     env_file:
@@ -77,7 +75,7 @@ services:
     build:
       context: ./backend/
       dockerfile: Dockerfile
-    command: ["sh", "-c", "cd /code && celery -A backend beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler"]
+    entrypoint: /usr/local/bin/celery-entrypoint.sh
     volumes:
       - ./backend:/code/
     depends_on:
@@ -86,9 +84,7 @@ services:
     environment:
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
-      - PYTHONPATH=/code
-      - DJANGO_SETTINGS_MODULE=backend.settings
-    entrypoint: ""
+      - CELERY_MODE=beat
 
 volumes:
   postgres_data:

@@ -19,7 +19,8 @@ EXPOSE 8000
 COPY wait-for-postgres.sh /usr/local/bin/wait-for-postgres.sh
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 COPY migrate-entrypoint.sh /usr/local/bin/migrate-entrypoint.sh
-RUN chmod +x /usr/local/bin/wait-for-postgres.sh /usr/local/bin/entrypoint.sh /usr/local/bin/migrate-entrypoint.sh
+COPY celery-entrypoint.sh /usr/local/bin/celery-entrypoint.sh
+RUN chmod +x /usr/local/bin/wait-for-postgres.sh /usr/local/bin/entrypoint.sh /usr/local/bin/migrate-entrypoint.sh /usr/local/bin/celery-entrypoint.sh
 
 # Set the entrypoint
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
