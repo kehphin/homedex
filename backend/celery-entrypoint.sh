@@ -16,6 +16,9 @@ cd /code
 export PYTHONPATH=/code
 export DJANGO_SETTINGS_MODULE=backend.settings
 
+# Test if we can import the celery app
+python -c "from backend.celery import app; print('Celery app imported successfully')"
+
 # For celery_worker, run worker
 if [ "$CELERY_MODE" = "worker" ]; then
     echo "Starting Celery worker..."
