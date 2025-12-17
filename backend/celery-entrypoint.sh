@@ -12,18 +12,20 @@ done
 # Change to code directory
 cd /code
 
-# Set Python path
+# Set Python path and Django settings
 export PYTHONPATH=/code
+export DJANGO_SETTINGS_MODULE=backend.settings
 
 # For celery_worker, run worker
 if [ "$CELERY_MODE" = "worker" ]; then
     echo "Starting Celery worker..."
-    exec celery -A backend worker -l info
+    exec python -m celery -A backend worker -l info
 elif [ "$CELERY_MODE" = "beat" ]; then
     echo "Starting Celery beat..."
-    exec celery -A backend beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
+    exec python -m celery -A backend beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
 else
     echo "Unknown CELERY_MODE: $CELERY_MODE"
     exit 1
 fi
+
 
