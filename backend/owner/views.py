@@ -167,6 +167,36 @@ class HomeComponentViewSet(viewsets.ModelViewSet):
         # Automatically set the user when creating
         serializer.save(user=self.request.user)
 
+    @action(detail=True, methods=['post'])
+    def reorder_images(self, request, pk=None):
+        """Reorder images for a component"""
+        component = self.get_object()
+        image_ids = request.data.get('image_ids', [])
+
+        if not isinstance(image_ids, list):
+            return Response(
+                {'error': 'image_ids must be a list'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            # Update order for each image
+            for order, image_id in enumerate(image_ids):
+                ComponentImage.objects.filter(
+                    id=image_id,
+                    component=component
+                ).update(order=order)
+
+            # Refresh and serialize the component
+            component.refresh_from_db()
+            serializer = self.get_serializer(component)
+            return Response(serializer.data)
+        except Exception as e:
+            return Response(
+                {'error': str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
     @action(detail=True, methods=['delete'], url_path='images/(?P<image_id>[^/.]+)')
     def delete_image(self, request, pk=None, image_id=None):
         """Delete a specific image from a component"""

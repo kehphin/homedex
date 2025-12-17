@@ -209,4 +209,44 @@ export async function getDocumentStats(): Promise<DocumentStats> {
   return await response.json();
 }
 
+/**
+ * Create a document from a component attachment
+ * This converts a file into a proper document and associates it with a component
+ */
+export async function createDocumentFromAttachment(
+  file: File,
+  componentId: string,
+  componentName: string
+): Promise<Document> {
+  const formData = new FormData();
+
+  // Create default document data from file
+  const fileName = file.name.replace(/\.[^/.]+$/, ""); // Remove extension
+  const category = "Manuals"; // Default category for component attachments
+
+  formData.append("name", fileName);
+  formData.append("category", category);
+  formData.append("file", file);
+  formData.append("home_component", componentId);
+  formData.append("year", new Date().getFullYear().toString());
+
+  const response = await fetch(`${API_BASE}/documents/`, {
+    method: "POST",
+    credentials: "include",
+    headers: {
+      "X-CSRFToken": getCSRFToken() || "",
+    },
+    body: formData,
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(
+      error.detail || "Failed to create document from attachment"
+    );
+  }
+
+  return await response.json();
+}
+
 export type { Document, DocumentData, DocumentStats };

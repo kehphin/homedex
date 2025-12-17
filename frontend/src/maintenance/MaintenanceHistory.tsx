@@ -26,6 +26,7 @@ interface MaintenanceHistoryRecord {
   id: string;
   name: string;
   date: string;
+  category: string;
   homeComponentId: string;
   componentName: string;
   contractorId: string;
@@ -46,6 +47,7 @@ function convertAPIToFrontend(
     id: apiRecord.id,
     name: apiRecord.name,
     date: apiRecord.date,
+    category: apiRecord.category || "",
     homeComponentId: apiRecord.home_component || "",
     componentName: apiRecord.component_name || "No component",
     contractorId: apiRecord.contractor || "",
@@ -79,6 +81,7 @@ export default function MaintenanceHistoryPage() {
   const [formData, setFormData] = useState({
     name: "",
     date: new Date().toISOString().split("T")[0],
+    category: "",
     homeComponentId: "",
     contractorId: "",
     price: "",
@@ -120,6 +123,7 @@ export default function MaintenanceHistoryPage() {
       setFormData({
         name: record.name,
         date: record.date,
+        category: record.category,
         homeComponentId: record.homeComponentId,
         contractorId: record.contractorId,
         price: record.price,
@@ -130,6 +134,7 @@ export default function MaintenanceHistoryPage() {
       setFormData({
         name: "",
         date: new Date().toISOString().split("T")[0],
+        category: "",
         homeComponentId: "",
         contractorId: "",
         price: "",
@@ -154,6 +159,7 @@ export default function MaintenanceHistoryPage() {
       const recordData = {
         name: formData.name,
         date: formData.date,
+        category: formData.category,
         home_component: formData.homeComponentId || null,
         contractor: formData.contractorId || null,
         price: formData.price,
@@ -470,6 +476,11 @@ export default function MaintenanceHistoryPage() {
                             <span className="badge badge-primary">
                               ${parseFloat(record.price).toFixed(2)}
                             </span>
+                            {record.category && (
+                              <span className="badge badge-secondary">
+                                {record.category}
+                              </span>
+                            )}
                             {record.contractorName && (
                               <span className="badge badge-info">
                                 {record.contractorName}
@@ -525,7 +536,10 @@ export default function MaintenanceHistoryPage() {
 
             {/* Modal */}
             {isModalOpen && (
-              <div className="modal modal-open">
+              <div
+                className="modal modal-open"
+                key={editingRecord?.id || "new"}
+              >
                 <div className="modal-box max-w-2xl border border-slate-200 shadow-sm">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="font-bold text-lg">
@@ -606,6 +620,31 @@ export default function MaintenanceHistoryPage() {
                           required
                         />
                       </div>
+                    </div>
+
+                    {/* Category */}
+                    <div>
+                      <label className="label">
+                        <span className="label-text font-semibold">
+                          Category
+                        </span>
+                      </label>
+                      <select
+                        className="select select-bordered w-full"
+                        value={formData.category}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            category: e.target.value,
+                          })
+                        }
+                      >
+                        <option value="">Select a category</option>
+                        <option value="Regular maintenance">
+                          Regular maintenance
+                        </option>
+                        <option value="Repair">Repair</option>
+                      </select>
                     </div>
 
                     {/* Home Component */}

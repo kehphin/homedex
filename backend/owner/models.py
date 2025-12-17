@@ -137,7 +137,11 @@ class HomeComponent(models.Model):
 class ComponentImage(models.Model):
     component = models.ForeignKey(HomeComponent, on_delete=models.CASCADE, related_name='images')
     image = models.ImageField(upload_to='component_images/')
+    order = models.IntegerField(default=0)
     uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['order', 'uploaded_at']
 
     def __str__(self):
         return f"Image for {self.component.name}"
@@ -329,9 +333,15 @@ class Contractor(models.Model):
 
 
 class MaintenanceHistory(models.Model):
+    CATEGORY_CHOICES = [
+        ('Regular maintenance', 'Regular maintenance'),
+        ('Repair', 'Repair'),
+    ]
+
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='maintenance_histories')
     name = models.CharField(max_length=255)
     date = models.DateField()
+    category = models.CharField(max_length=50, choices=CATEGORY_CHOICES, blank=True)
     home_component = models.ForeignKey(HomeComponent, on_delete=models.SET_NULL, null=True, blank=True, related_name='maintenance_histories')
     contractor = models.ForeignKey(Contractor, on_delete=models.SET_NULL, null=True, blank=True, related_name='maintenance_histories')
     price = models.DecimalField(max_digits=10, decimal_places=2)

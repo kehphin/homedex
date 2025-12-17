@@ -46,3 +46,5 @@ sendgrid.env
 acme.json
 backend/staticfiles
 venv
+
+backend/media

@@ -267,7 +267,7 @@ class MaintenanceHistorySerializer(serializers.ModelSerializer):
     class Meta:
         model = MaintenanceHistory
         fields = [
-            'id', 'name', 'date', 'home_component', 'component_name', 'contractor',
+            'id', 'name', 'date', 'category', 'home_component', 'component_name', 'contractor',
             'contractor_name', 'price', 'notes', 'created_at', 'updated_at',
             'attachments', 'attachment_files'
         ]

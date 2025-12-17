@@ -239,6 +239,30 @@ export async function deleteComponent(id: string): Promise<void> {
 }
 
 /**
+ * Reorder images for a component
+ */
+export async function reorderComponentImages(
+  componentId: string,
+  imageIds: string[]
+): Promise<HomeComponent> {
+  const response = await fetch(
+    `${API_BASE}/components/${componentId}/reorder_images/`,
+    {
+      method: "POST",
+      credentials: "include",
+      headers: buildHeaders(),
+      body: JSON.stringify({ image_ids: imageIds }),
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error("Failed to reorder images");
+  }
+
+  return await response.json();
+}
+
+/**
  * Delete an image from a component
  */
 export async function deleteComponentImage(

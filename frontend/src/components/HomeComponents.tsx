@@ -16,6 +16,7 @@ import {
   ListBulletIcon,
 } from "@heroicons/react/24/outline";
 import * as ComponentsService from "./ComponentsService";
+import * as DocumentsService from "../documents/DocumentsService";
 import type {
   HomeComponent as APIHomeComponent,
   HomeLocation,
@@ -143,6 +144,16 @@ export default function HomeComponents() {
   const [locations, setLocations] = useState<HomeLocation[]>([]);
   const [isAddingNewLocation, setIsAddingNewLocation] = useState(false);
   const [newLocationInput, setNewLocationInput] = useState("");
+  const [draggedImageIndex, setDraggedImageIndex] = useState<number | null>(
+    null
+  );
+  const [draggedOverIndex, setDraggedOverIndex] = useState<number | null>(null);
+  const [imageSourceType, setImageSourceType] = useState<"existing" | "new">(
+    "existing"
+  );
+  const [imagePreviewComponent, setImagePreviewComponent] =
+    useState<HomeComponent | null>(null);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -269,6 +280,49 @@ export default function HomeComponents() {
     );
   };
 
+  const handleImageDragStart = (index: number, source: "existing" | "new") => {
+    setDraggedImageIndex(index);
+    setImageSourceType(source);
+  };
+
+  const handleImageDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    setDraggedOverIndex(index);
+  };
+
+  const handleImageDrop = (e: React.DragEvent, targetIndex: number) => {
+    e.preventDefault();
+    setDraggedOverIndex(null);
+
+    if (draggedImageIndex === null || draggedImageIndex === targetIndex) return;
+
+    if (imageSourceType === "existing") {
+      // Reorder existing images
+      const newExistingImages = [...existingImages];
+      const [draggedItem] = newExistingImages.splice(draggedImageIndex, 1);
+      newExistingImages.splice(targetIndex, 0, draggedItem);
+      setExistingImages(newExistingImages);
+    } else {
+      // Reorder new images
+      const newPreviews = [...selectedImagePreviews];
+      const newFiles = [...selectedImageFiles];
+      const [draggedPreview] = newPreviews.splice(draggedImageIndex, 1);
+      const [draggedFile] = newFiles.splice(draggedImageIndex, 1);
+      newPreviews.splice(targetIndex, 0, draggedPreview);
+      newFiles.splice(targetIndex, 0, draggedFile);
+      setSelectedImagePreviews(newPreviews);
+      setSelectedImageFiles(newFiles);
+    }
+
+    setDraggedImageIndex(null);
+    setImageSourceType("existing");
+  };
+
+  const handleImageDragEnd = () => {
+    setDraggedImageIndex(null);
+    setDraggedOverIndex(null);
+  };
+
   const handleRemoveExistingImage = async (imageId: string) => {
     if (!editingComponent) return;
 
@@ -360,7 +414,7 @@ export default function HomeComponents() {
 
       if (editingComponent) {
         // Update existing component
-        const updated = await ComponentsService.updateComponent(
+        let updated = await ComponentsService.updateComponent(
           editingComponent.id,
           componentData,
           selectedImageFiles.length > 0 ? selectedImageFiles : undefined,
@@ -368,6 +422,38 @@ export default function HomeComponents() {
             ? selectedAttachmentFiles
             : undefined
         );
+
+        // Reorder existing images if they were reordered
+        if (existingImages.length > 0) {
+          const existingImageIds = existingImages.map((img) => img.id);
+          updated = await ComponentsService.reorderComponentImages(
+            editingComponent.id,
+            existingImageIds
+          );
+        }
+
+        // Create documents for new attachments
+        if (selectedAttachmentFiles.length > 0) {
+          for (const file of selectedAttachmentFiles) {
+            try {
+              await DocumentsService.createDocumentFromAttachment(
+                file,
+                editingComponent.id,
+                formData.name
+              );
+            } catch (docErr) {
+              console.error(
+                "Failed to create document from attachment:",
+                docErr
+              );
+              // Don't fail the entire operation if document creation fails
+              toast.warn(
+                `File ${file.name} uploaded but may not be visible in Documents yet.`
+              );
+            }
+          }
+        }
+
         setComponents(
           components.map((comp) =>
             comp.id === editingComponent.id
@@ -385,6 +471,29 @@ export default function HomeComponents() {
             ? selectedAttachmentFiles
             : undefined
         );
+
+        // Create documents for attachments
+        if (selectedAttachmentFiles.length > 0) {
+          for (const file of selectedAttachmentFiles) {
+            try {
+              await DocumentsService.createDocumentFromAttachment(
+                file,
+                created.id,
+                formData.name
+              );
+            } catch (docErr) {
+              console.error(
+                "Failed to create document from attachment:",
+                docErr
+              );
+              // Don't fail the entire operation if document creation fails
+              toast.warn(
+                `File ${file.name} uploaded but may not be visible in Documents yet.`
+              );
+            }
+          }
+        }
+
         setComponents([convertAPIToFrontend(created), ...components]);
         toast.success("Component created successfully!");
       }
@@ -431,7 +540,9 @@ export default function HomeComponents() {
     const matchesLocation =
       filterLocation === "all" || component.location === filterLocation;
 
-    return matchesSearch && matchesCategory && matchesCondition && matchesLocation;
+    return (
+      matchesSearch && matchesCategory && matchesCondition && matchesLocation
+    );
   });
 
   const formatBytes = (bytes: number) => {
@@ -773,6 +884,18 @@ export default function HomeComponents() {
                         <span className="badge badge-outline">
                           {component.category}
                         </span>
+                        {component.images.length > 0 && (
+                          <button
+                            onClick={() => {
+                              setImagePreviewComponent(component);
+                              setCurrentImageIndex(0);
+                            }}
+                            className="badge badge-ghost cursor-pointer hover:badge-primary transition-colors"
+                          >
+                            <PhotoIcon className="h-3 w-3 mr-1" />
+                            {component.images.length}
+                          </button>
+                        )}
                         {component.attachments.length > 0 && (
                           <span className="badge badge-ghost">
                             <DocumentIcon className="h-3 w-3 mr-1" />
@@ -1420,8 +1543,23 @@ export default function HomeComponents() {
                         selectedImagePreviews.length > 0) && (
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                           {/* Existing Images */}
-                          {existingImages.map((image) => (
-                            <div key={image.id} className="relative">
+                          {existingImages.map((image, index) => (
+                            <div
+                              key={image.id}
+                              className={`relative cursor-move transition-all ${
+                                draggedOverIndex === index &&
+                                imageSourceType === "existing"
+                                  ? "opacity-50 ring-2 ring-primary"
+                                  : ""
+                              }`}
+                              draggable
+                              onDragStart={() =>
+                                handleImageDragStart(index, "existing")
+                              }
+                              onDragOver={(e) => handleImageDragOver(e, index)}
+                              onDrop={(e) => handleImageDrop(e, index)}
+                              onDragEnd={handleImageDragEnd}
+                            >
                               <img
                                 src={image.url}
                                 alt="Component"
@@ -1440,7 +1578,22 @@ export default function HomeComponents() {
                           ))}
                           {/* New Image Previews */}
                           {selectedImagePreviews.map((preview, index) => (
-                            <div key={`new-${index}`} className="relative">
+                            <div
+                              key={`new-${index}`}
+                              className={`relative cursor-move transition-all ${
+                                draggedOverIndex === index &&
+                                imageSourceType === "new"
+                                  ? "opacity-50 ring-2 ring-primary"
+                                  : ""
+                              }`}
+                              draggable
+                              onDragStart={() =>
+                                handleImageDragStart(index, "new")
+                              }
+                              onDragOver={(e) => handleImageDragOver(e, index)}
+                              onDrop={(e) => handleImageDrop(e, index)}
+                              onDragEnd={handleImageDragEnd}
+                            >
                               <img
                                 src={preview}
                                 alt={`New ${index + 1}`}
@@ -1462,11 +1615,10 @@ export default function HomeComponents() {
                       )}
                     </div>
 
-                    {/* Attachments */}
                     <div className="divider"></div>
                     <div className="space-y-4">
                       <h4 className="font-semibold text-base-content/80">
-                        Attachments
+                        Documents
                       </h4>
                       <p className="text-sm text-base-content/60">
                         Upload manuals, warranties, receipts, or other documents
@@ -1613,6 +1765,109 @@ export default function HomeComponents() {
                 ></div>
               </div>
             )}
+
+            {/* Image Preview Modal */}
+            {imagePreviewComponent &&
+              imagePreviewComponent.images.length > 0 && (
+                <div className="modal modal-open">
+                  <div className="modal-box w-11/12 max-w-4xl bg-base-100">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="font-bold text-lg">
+                        {imagePreviewComponent.name} - Images
+                      </h3>
+                      <button
+                        onClick={() => setImagePreviewComponent(null)}
+                        className="btn btn-ghost btn-sm btn-circle"
+                      >
+                        <XMarkIcon className="h-5 w-5" />
+                      </button>
+                    </div>
+
+                    {/* Main Image */}
+                    <div className="flex justify-center mb-4">
+                      <img
+                        src={
+                          imagePreviewComponent.images[currentImageIndex].url
+                        }
+                        alt={`${imagePreviewComponent.name} ${
+                          currentImageIndex + 1
+                        }`}
+                        className="max-w-full max-h-96 rounded-lg"
+                      />
+                    </div>
+
+                    {/* Image Navigation */}
+                    {imagePreviewComponent.images.length > 1 && (
+                      <div className="flex items-center justify-between mb-4">
+                        <button
+                          onClick={() =>
+                            setCurrentImageIndex(
+                              (currentImageIndex -
+                                1 +
+                                imagePreviewComponent.images.length) %
+                                imagePreviewComponent.images.length
+                            )
+                          }
+                          className="btn btn-ghost btn-sm"
+                        >
+                          ← Previous
+                        </button>
+                        <span className="text-sm text-base-content/70">
+                          {currentImageIndex + 1} /{" "}
+                          {imagePreviewComponent.images.length}
+                        </span>
+                        <button
+                          onClick={() =>
+                            setCurrentImageIndex(
+                              (currentImageIndex + 1) %
+                                imagePreviewComponent.images.length
+                            )
+                          }
+                          className="btn btn-ghost btn-sm"
+                        >
+                          Next →
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Thumbnail Grid */}
+                    {imagePreviewComponent.images.length > 1 && (
+                      <div className="flex gap-2 overflow-x-auto pb-2">
+                        {imagePreviewComponent.images.map((image, index) => (
+                          <button
+                            key={image.id}
+                            onClick={() => setCurrentImageIndex(index)}
+                            className={`flex-shrink-0 ${
+                              index === currentImageIndex
+                                ? "ring-2 ring-primary"
+                                : "hover:ring-2 hover:ring-base-content/20"
+                            } rounded-lg transition-all`}
+                          >
+                            <img
+                              src={image.url}
+                              alt={`Thumbnail ${index + 1}`}
+                              className="w-20 h-20 object-cover rounded-lg"
+                            />
+                          </button>
+                        ))}
+                      </div>
+                    )}
+
+                    <div className="modal-action">
+                      <button
+                        onClick={() => setImagePreviewComponent(null)}
+                        className="btn btn-ghost"
+                      >
+                        Close
+                      </button>
+                    </div>
+                  </div>
+                  <div
+                    className="modal-backdrop"
+                    onClick={() => setImagePreviewComponent(null)}
+                  ></div>
+                </div>
+              )}
           </>
         )}
       </div>

@@ -5,6 +5,7 @@ const API_BASE = `${config.appHost}/api/v1/owner`;
 interface MaintenanceData {
   name: string;
   date: string;
+  category?: string;
   home_component?: string | null;
   contractor?: string | null;
   price: string;
@@ -111,6 +112,9 @@ export async function createMaintenanceRecord(
   const formData = new FormData();
   formData.append("name", data.name);
   formData.append("date", data.date);
+  if (data.category) {
+    formData.append("category", data.category);
+  }
   if (data.home_component) {
     formData.append("home_component", data.home_component);
   }
@@ -157,6 +161,8 @@ export async function updateMaintenanceRecord(
   const formData = new FormData();
   if (data.name) formData.append("name", data.name);
   if (data.date) formData.append("date", data.date);
+  if (data.category !== undefined)
+    formData.append("category", data.category || "");
   if (data.home_component !== undefined) {
     if (data.home_component) {
       formData.append("home_component", data.home_component);
