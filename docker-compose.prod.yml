@@ -19,14 +19,96 @@ services:
     env_file:
       - .env
 
+  redis:
+    image: redis:7-alpine
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  db:
+    image: postgres:17
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    env_file:
+      - .env
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $POSTGRES_USER -d $POSTGRES_DB"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  migrate:
+    env_file:
+      - .env
+    build:
+      context: ./backend/
+      dockerfile: Dockerfile
+    entrypoint: /usr/local/bin/migrate-entrypoint.sh
+    volumes:
+      - ./backend:/code/
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+
   backend:
     env_file:
       - .env
     build:
       context: ./backend/
       dockerfile: Dockerfile
+    entrypoint: []
+    command: gunicorn backend.wsgi:application --bind 0.0.0.0:8000
+    volumes:
+      - ./backend:/code/
     depends_on:
-      - db
+      migrate:
+        condition: service_completed_successfully
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+
+  celery_worker:
+    env_file:
+      - .env
+    build:
+      context: ./backend/
+      dockerfile: Dockerfile
+    command: celery -A backend worker -l info
+    volumes:
+      - ./backend:/code/
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    entrypoint: []
+
+  celery_beat:
+    env_file:
+      - .env
+    build:
+      context: ./backend/
+      dockerfile: Dockerfile
+    command: celery -A backend beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
+    volumes:
+      - ./backend:/code/
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    entrypoint: []
 
   # proxy:
   #   image: traefik:v3.4
@@ -40,12 +122,6 @@ services:
   #   env_file:
   #     - .env
 
-  db:
-    image: postgres:17
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    env_file:
-      - .env
-
 volumes:
   postgres_data:
+  redis_data:
