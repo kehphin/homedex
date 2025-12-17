@@ -58,7 +58,7 @@ services:
     build:
       context: ./backend/
       dockerfile: Dockerfile
-    command: ["sh", "-c", "celery -A backend worker -l info"]
+    command: ["sh", "-c", "cd /code && celery -A backend worker -l info"]
     volumes:
       - ./backend:/code/
     depends_on:
@@ -79,7 +79,7 @@ services:
       [
         "sh",
         "-c",
-        "celery -A backend beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler",
+        "cd /code && celery -A backend beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler",
       ]
     volumes:
       - ./backend:/code/
