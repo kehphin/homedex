@@ -11,7 +11,8 @@ import {
   XMarkIcon,
   MagnifyingGlassIcon,
   FunnelIcon,
-  CalendarIcon,
+  ArrowPathIcon,
+  Square3Stack3DIcon,
 } from "@heroicons/react/24/outline";
 import { CheckCircleIcon as CheckCircleSolidIcon } from "@heroicons/react/24/solid";
 import * as TasksService from "./TasksService";
@@ -31,6 +32,11 @@ interface Task {
   isRecurring?: boolean;
   recurrencePattern?: "daily" | "weekly" | "monthly" | "yearly";
   recurrenceInterval?: number;
+  recurrenceDaysOfWeek?: (string | number)[]; // For weekly recurrence
+  recurrenceDaysOfMonth?: (
+    | number
+    | { type: string; week: string; day: string }
+  )[]; // For monthly recurrence
   recurrenceEndDate?: string | null;
   parentTask?: string | null;
   homeComponent?: string | null;
@@ -78,11 +84,29 @@ function convertAPIToFrontend(apiTask: APITask): Task {
     isRecurring: apiTask.is_recurring || false,
     recurrencePattern: apiTask.recurrence_pattern || undefined,
     recurrenceInterval: apiTask.recurrence_interval || 1,
+    recurrenceDaysOfWeek: apiTask.recurrence_days_of_week || [],
+    recurrenceDaysOfMonth: apiTask.recurrence_days_of_month || [],
     recurrenceEndDate: apiTask.recurrence_end_date || null,
     parentTask: apiTask.parent_task || null,
     homeComponent: apiTask.home_component || null,
     homeComponentName: apiTask.home_component_name || null,
   };
+}
+
+/**
+ * Get the day of week (0-6) for a given date string
+ */
+function getDayOfWeek(dateStr: string): number {
+  const date = new Date(dateStr);
+  return date.getDay();
+}
+
+/**
+ * Get the day of month for a given date string
+ */
+function getDayOfMonth(dateStr: string): number {
+  const date = new Date(dateStr);
+  return date.getDate();
 }
 
 export default function Tasks() {
@@ -108,8 +132,14 @@ export default function Tasks() {
     status: "pending" as "pending" | "in-progress" | "completed",
     dueDate: "",
     isRecurring: false,
-    recurrencePattern: "weekly" as "daily" | "weekly" | "monthly" | "yearly",
+    recurrencePattern: "daily" as "daily" | "weekly" | "monthly" | "yearly",
     recurrenceInterval: 1,
+    recurrenceDaysOfWeek: [] as (string | number)[],
+    recurrenceDaysOfMonth: [] as (
+      | number
+      | { type: string; week: string; day: string }
+    )[],
+    recurrenceDaysOfMonthType: "absolute" as "absolute" | "relative", // Toggle between absolute days and relative weeks
     recurrenceEndDate: "",
     homeComponent: "",
   });
@@ -148,23 +178,37 @@ export default function Tasks() {
         status: task.status,
         dueDate: task.dueDate,
         isRecurring: task.isRecurring || false,
-        recurrencePattern: task.recurrencePattern || "weekly",
+        recurrencePattern: task.recurrencePattern || "daily",
         recurrenceInterval: task.recurrenceInterval || 1,
+        recurrenceDaysOfWeek: task.recurrenceDaysOfWeek || [],
+        recurrenceDaysOfMonth: task.recurrenceDaysOfMonth || [],
+        recurrenceDaysOfMonthType: task.recurrenceDaysOfMonth?.some(
+          (d) => typeof d === "object"
+        )
+          ? "relative"
+          : "absolute",
         recurrenceEndDate: task.recurrenceEndDate || "",
         homeComponent: task.homeComponent || "",
       });
     } else {
       setEditingTask(null);
+      const today = new Date().toISOString().split("T")[0];
+      const todayDayOfWeek = getDayOfWeek(today);
+      const todayDayOfMonth = getDayOfMonth(today);
+
       setFormData({
         title: "",
         description: "",
         category: "General Maintenance",
         priority: "medium",
         status: "pending",
-        dueDate: "",
+        dueDate: today,
         isRecurring: false,
-        recurrencePattern: "weekly",
+        recurrencePattern: "daily",
         recurrenceInterval: 1,
+        recurrenceDaysOfWeek: [todayDayOfWeek], // Default to current day of week
+        recurrenceDaysOfMonth: [todayDayOfMonth], // Default to current day of month
+        recurrenceDaysOfMonthType: "absolute",
         recurrenceEndDate: "",
         homeComponent: "",
       });
@@ -179,10 +223,40 @@ export default function Tasks() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validation
+    if (!formData.title.trim()) {
+      toast.error("Please enter a task title");
+      return;
+    }
+
+    if (!formData.dueDate) {
+      toast.error("Please select a due date");
+      return;
+    }
+
+    // Recurring task validation
+    if (formData.isRecurring) {
+      if (
+        formData.recurrencePattern === "weekly" &&
+        formData.recurrenceDaysOfWeek.length === 0
+      ) {
+        toast.error("Please select at least one day of the week");
+        return;
+      }
+      if (
+        formData.recurrencePattern === "monthly" &&
+        formData.recurrenceDaysOfMonth.length === 0
+      ) {
+        toast.error("Please select days for monthly recurrence");
+        return;
+      }
+    }
+
     setLoading(true);
 
     try {
-      const taskData = {
+      const taskData: any = {
         title: formData.title,
         description: formData.description,
         category: formData.category,
@@ -196,6 +270,14 @@ export default function Tasks() {
         recurrence_interval: formData.isRecurring
           ? formData.recurrenceInterval
           : 1,
+        recurrence_days_of_week:
+          formData.isRecurring && formData.recurrencePattern === "weekly"
+            ? formData.recurrenceDaysOfWeek
+            : [],
+        recurrence_days_of_month:
+          formData.isRecurring && formData.recurrencePattern === "monthly"
+            ? formData.recurrenceDaysOfMonth
+            : [],
         recurrence_end_date:
           formData.isRecurring && formData.recurrenceEndDate
             ? formData.recurrenceEndDate
@@ -355,34 +437,35 @@ export default function Tasks() {
           <>
             {/* Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-              <div className="card bg-base-100 rounded-box border border-gray-200">
+              <button
+                onClick={() => setFilterStatus("pending")}
+                className={`card rounded-box border border-gray-200 cursor-pointer transition-all ${
+                  filterStatus === "pending"
+                    ? "bg-base-300 border-gray-500"
+                    : "bg-base-100 hover:bg-base-200"
+                }`}
+              >
                 <div className="card-body">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm text-base-content/60">
-                        Total Tasks
-                      </p>
-                      <p className="text-3xl font-bold">{stats.total}</p>
-                    </div>
-                    <ClipboardDocumentListIcon className="h-10 w-10 text-base-content/30" />
-                  </div>
-                </div>
-              </div>
-
-              <div className="card bg-base-100 rounded-box border border-gray-200">
-                <div className="card-body">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-base-content/60">Pending</p>
+                      <p className="text-sm text-base-content/60">Active</p>
                       <p className="text-3xl font-bold text-gray-500">
                         {stats.pending}
                       </p>
                     </div>
+                    <ClipboardDocumentListIcon className="h-10 w-10 text-gray-500/30" />
                   </div>
                 </div>
-              </div>
+              </button>
 
-              <div className="card bg-base-100 rounded-box border border-gray-200">
+              <button
+                onClick={() => setFilterStatus("in-progress")}
+                className={`card rounded-box border border-gray-200 cursor-pointer transition-all ${
+                  filterStatus === "in-progress"
+                    ? "bg-base-300 border-primary"
+                    : "bg-base-100 hover:bg-base-200"
+                }`}
+              >
                 <div className="card-body">
                   <div className="flex items-center justify-between">
                     <div>
@@ -393,11 +476,19 @@ export default function Tasks() {
                         {stats.inProgress}
                       </p>
                     </div>
+                    <ArrowPathIcon className="h-10 w-10 text-primary/30" />
                   </div>
                 </div>
-              </div>
+              </button>
 
-              <div className="card bg-base-100 rounded-box border border-gray-200">
+              <button
+                onClick={() => setFilterStatus("completed")}
+                className={`card rounded-box border border-gray-200 cursor-pointer transition-all ${
+                  filterStatus === "completed"
+                    ? "bg-base-300 border-success"
+                    : "bg-base-100 hover:bg-base-200"
+                }`}
+              >
                 <div className="card-body">
                   <div className="flex items-center justify-between">
                     <div>
@@ -409,7 +500,28 @@ export default function Tasks() {
                     <CheckCircleSolidIcon className="h-10 w-10 text-success/30" />
                   </div>
                 </div>
-              </div>
+              </button>
+
+              <button
+                onClick={() => setFilterStatus("all")}
+                className={`card rounded-box border border-gray-200 cursor-pointer transition-all ${
+                  filterStatus === "all"
+                    ? "bg-base-300 border-primary"
+                    : "bg-base-100 hover:bg-base-200"
+                }`}
+              >
+                <div className="card-body">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-base-content/60">
+                        Total Tasks
+                      </p>
+                      <p className="text-3xl font-bold">{stats.total}</p>
+                    </div>
+                    <Square3Stack3DIcon className="h-10 w-10 text-base-content/30" />
+                  </div>
+                </div>
+              </button>
             </div>
 
             {/* Search and Filter */}
@@ -907,39 +1019,45 @@ export default function Tasks() {
 
                       {formData.isRecurring && (
                         <div className="space-y-4 mt-4 p-4 bg-base-200 rounded-lg">
-                          <div className="grid grid-cols-2 gap-4">
-                            <div>
-                              <label className="label">
-                                <span className="label-text font-semibold">
-                                  Recurrence Pattern *
-                                </span>
-                              </label>
-                              <select
-                                className="select select-bordered w-full"
-                                value={formData.recurrencePattern}
-                                onChange={(e) =>
-                                  setFormData({
-                                    ...formData,
-                                    recurrencePattern: e.target.value as
-                                      | "daily"
-                                      | "weekly"
-                                      | "monthly"
-                                      | "yearly",
-                                  })
-                                }
-                                required
-                              >
-                                <option value="daily">Daily</option>
-                                <option value="weekly">Weekly</option>
-                                <option value="monthly">Monthly</option>
-                                <option value="yearly">Yearly</option>
-                              </select>
-                            </div>
+                          {/* Recurrence Pattern Selection */}
+                          <div>
+                            <label className="label">
+                              <span className="label-text font-semibold">
+                                Recurrence Pattern *
+                              </span>
+                            </label>
+                            <select
+                              className="select select-bordered w-full"
+                              value={formData.recurrencePattern}
+                              onChange={(e) =>
+                                setFormData({
+                                  ...formData,
+                                  recurrencePattern: e.target.value as
+                                    | "daily"
+                                    | "weekly"
+                                    | "monthly"
+                                    | "yearly",
+                                  recurrenceInterval: 1,
+                                  recurrenceDaysOfWeek: [],
+                                  recurrenceDaysOfMonth: [],
+                                  recurrenceDaysOfMonthType: "absolute",
+                                })
+                              }
+                              required
+                            >
+                              <option value="daily">Daily</option>
+                              <option value="weekly">Weekly</option>
+                              <option value="monthly">Monthly</option>
+                              <option value="yearly">Yearly</option>
+                            </select>
+                          </div>
 
+                          {/* DAILY - Repeat every X days */}
+                          {formData.recurrencePattern === "daily" && (
                             <div>
                               <label className="label">
                                 <span className="label-text font-semibold">
-                                  Repeat Every N {formData.recurrencePattern} *
+                                  Repeat Every X Days *
                                 </span>
                               </label>
                               <input
@@ -958,15 +1076,334 @@ export default function Tasks() {
                                 required
                               />
                             </div>
-                          </div>
+                          )}
 
+                          {/* WEEKLY - Repeat every X weeks on specific days */}
+                          {formData.recurrencePattern === "weekly" && (
+                            <>
+                              <div>
+                                <label className="label">
+                                  <span className="label-text font-semibold">
+                                    Repeat Every X Weeks *
+                                  </span>
+                                </label>
+                                <input
+                                  type="number"
+                                  min="1"
+                                  max="52"
+                                  className="input input-bordered w-full"
+                                  value={formData.recurrenceInterval}
+                                  onChange={(e) =>
+                                    setFormData({
+                                      ...formData,
+                                      recurrenceInterval:
+                                        parseInt(e.target.value) || 1,
+                                    })
+                                  }
+                                  required
+                                />
+                              </div>
+                              <div>
+                                <label className="label">
+                                  <span className="label-text font-semibold">
+                                    Days of Week *
+                                  </span>
+                                </label>
+                                <div className="grid grid-cols-4 gap-2">
+                                  {[
+                                    { value: 0, label: "Sun" },
+                                    { value: 1, label: "Mon" },
+                                    { value: 2, label: "Tue" },
+                                    { value: 3, label: "Wed" },
+                                    { value: 4, label: "Thu" },
+                                    { value: 5, label: "Fri" },
+                                    { value: 6, label: "Sat" },
+                                  ].map((day) => (
+                                    <label
+                                      key={day.value}
+                                      className="flex items-center gap-2 cursor-pointer"
+                                    >
+                                      <input
+                                        type="checkbox"
+                                        className="checkbox checkbox-sm"
+                                        checked={formData.recurrenceDaysOfWeek.includes(
+                                          day.value
+                                        )}
+                                        onChange={(e) => {
+                                          const days =
+                                            formData.recurrenceDaysOfWeek || [];
+                                          if (e.target.checked) {
+                                            setFormData({
+                                              ...formData,
+                                              recurrenceDaysOfWeek: [
+                                                ...days,
+                                                day.value,
+                                              ],
+                                            });
+                                          } else {
+                                            setFormData({
+                                              ...formData,
+                                              recurrenceDaysOfWeek: days.filter(
+                                                (d) => d !== day.value
+                                              ),
+                                            });
+                                          }
+                                        }}
+                                      />
+                                      <span className="text-sm">
+                                        {day.label}
+                                      </span>
+                                    </label>
+                                  ))}
+                                </div>
+                              </div>
+                            </>
+                          )}
+
+                          {/* MONTHLY - Choice between absolute and relative */}
+                          {formData.recurrencePattern === "monthly" && (
+                            <>
+                              <div>
+                                <label className="label">
+                                  <span className="label-text font-semibold">
+                                    Repeat Every X Months *
+                                  </span>
+                                </label>
+                                <input
+                                  type="number"
+                                  min="1"
+                                  max="12"
+                                  className="input input-bordered w-full"
+                                  value={formData.recurrenceInterval}
+                                  onChange={(e) =>
+                                    setFormData({
+                                      ...formData,
+                                      recurrenceInterval:
+                                        parseInt(e.target.value) || 1,
+                                    })
+                                  }
+                                  required
+                                />
+                              </div>
+                              <div>
+                                <label className="label">
+                                  <span className="label-text font-semibold">
+                                    Days Pattern *
+                                  </span>
+                                </label>
+                                <div className="flex gap-2 mb-3">
+                                  <button
+                                    type="button"
+                                    className={`btn btn-sm ${
+                                      formData.recurrenceDaysOfMonthType ===
+                                      "absolute"
+                                        ? "btn-primary"
+                                        : "btn-outline"
+                                    }`}
+                                    onClick={() =>
+                                      setFormData({
+                                        ...formData,
+                                        recurrenceDaysOfMonthType: "absolute",
+                                        recurrenceDaysOfMonth: [],
+                                      })
+                                    }
+                                  >
+                                    Specific Days (1-31)
+                                  </button>
+                                  <button
+                                    type="button"
+                                    className={`btn btn-sm ${
+                                      formData.recurrenceDaysOfMonthType ===
+                                      "relative"
+                                        ? "btn-primary"
+                                        : "btn-outline"
+                                    }`}
+                                    onClick={() =>
+                                      setFormData({
+                                        ...formData,
+                                        recurrenceDaysOfMonthType: "relative",
+                                        recurrenceDaysOfMonth: [],
+                                      })
+                                    }
+                                  >
+                                    Relative (e.g., First Monday)
+                                  </button>
+                                </div>
+
+                                {/* Absolute: Days of Month */}
+                                {formData.recurrenceDaysOfMonthType ===
+                                  "absolute" && (
+                                  <div className="grid grid-cols-5 gap-2">
+                                    {Array.from(
+                                      { length: 31 },
+                                      (_, i) => i + 1
+                                    ).map((day) => (
+                                      <label
+                                        key={day}
+                                        className="flex items-center gap-2 cursor-pointer"
+                                      >
+                                        <input
+                                          type="checkbox"
+                                          className="checkbox checkbox-sm"
+                                          checked={formData.recurrenceDaysOfMonth.includes(
+                                            day
+                                          )}
+                                          onChange={(e) => {
+                                            const days =
+                                              formData.recurrenceDaysOfMonth ||
+                                              [];
+                                            if (e.target.checked) {
+                                              setFormData({
+                                                ...formData,
+                                                recurrenceDaysOfMonth: [
+                                                  ...days.filter(
+                                                    (d) => typeof d === "number"
+                                                  ),
+                                                  day,
+                                                ],
+                                              });
+                                            } else {
+                                              setFormData({
+                                                ...formData,
+                                                recurrenceDaysOfMonth:
+                                                  days.filter((d) => d !== day),
+                                              });
+                                            }
+                                          }}
+                                        />
+                                        <span className="text-xs">{day}</span>
+                                      </label>
+                                    ))}
+                                  </div>
+                                )}
+
+                                {/* Relative: Week and Day */}
+                                {formData.recurrenceDaysOfMonthType ===
+                                  "relative" && (
+                                  <div className="space-y-3">
+                                    <div>
+                                      <label className="label">
+                                        <span className="label-text text-sm">
+                                          Week of Month
+                                        </span>
+                                      </label>
+                                      <select
+                                        className="select select-bordered select-sm w-full"
+                                        value={
+                                          (
+                                            formData
+                                              .recurrenceDaysOfMonth?.[0] as any
+                                          )?.week || "first"
+                                        }
+                                        onChange={(e) =>
+                                          setFormData({
+                                            ...formData,
+                                            recurrenceDaysOfMonth: [
+                                              {
+                                                type: "relative",
+                                                week: e.target.value,
+                                                day:
+                                                  (
+                                                    formData
+                                                      .recurrenceDaysOfMonth?.[0] as any
+                                                  )?.day || "Monday",
+                                              },
+                                            ],
+                                          })
+                                        }
+                                      >
+                                        <option value="first">First</option>
+                                        <option value="second">Second</option>
+                                        <option value="third">Third</option>
+                                        <option value="fourth">Fourth</option>
+                                        <option value="fifth">Fifth</option>
+                                        <option value="last">Last</option>
+                                      </select>
+                                    </div>
+                                    <div>
+                                      <label className="label">
+                                        <span className="label-text text-sm">
+                                          Day
+                                        </span>
+                                      </label>
+                                      <select
+                                        className="select select-bordered select-sm w-full"
+                                        value={
+                                          (
+                                            formData
+                                              .recurrenceDaysOfMonth?.[0] as any
+                                          )?.day || "Monday"
+                                        }
+                                        onChange={(e) =>
+                                          setFormData({
+                                            ...formData,
+                                            recurrenceDaysOfMonth: [
+                                              {
+                                                type: "relative",
+                                                week:
+                                                  (
+                                                    formData
+                                                      .recurrenceDaysOfMonth?.[0] as any
+                                                  )?.week || "first",
+                                                day: e.target.value,
+                                              },
+                                            ],
+                                          })
+                                        }
+                                      >
+                                        <option value="day">Day</option>
+                                        <option value="Sunday">Sunday</option>
+                                        <option value="Monday">Monday</option>
+                                        <option value="Tuesday">Tuesday</option>
+                                        <option value="Wednesday">
+                                          Wednesday
+                                        </option>
+                                        <option value="Thursday">
+                                          Thursday
+                                        </option>
+                                        <option value="Friday">Friday</option>
+                                        <option value="Saturday">
+                                          Saturday
+                                        </option>
+                                      </select>
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            </>
+                          )}
+
+                          {/* YEARLY - Repeat every X years */}
+                          {formData.recurrencePattern === "yearly" && (
+                            <div>
+                              <label className="label">
+                                <span className="label-text font-semibold">
+                                  Repeat Every X Years *
+                                </span>
+                              </label>
+                              <input
+                                type="number"
+                                min="1"
+                                max="10"
+                                className="input input-bordered w-full"
+                                value={formData.recurrenceInterval}
+                                onChange={(e) =>
+                                  setFormData({
+                                    ...formData,
+                                    recurrenceInterval:
+                                      parseInt(e.target.value) || 1,
+                                  })
+                                }
+                                required
+                              />
+                            </div>
+                          )}
+
+                          {/* End Date (common for all patterns) */}
                           <div>
                             <label className="label">
                               <span className="label-text font-semibold">
                                 End Date (Optional)
-                              </span>
-                              <span className="label-text-alt">
-                                Leave blank for indefinite recurrence
                               </span>
                             </label>
                             <DatePicker

@@ -244,6 +244,10 @@ class Task(models.Model):
     is_recurring = models.BooleanField(default=False)
     recurrence_pattern = models.CharField(max_length=20, choices=RECURRENCE_CHOICES, null=True, blank=True)
     recurrence_interval = models.IntegerField(default=1, help_text="Repeat every N days/weeks/months/years")
+    # For weekly: stores JSON like ["0", "3", "5"] (day indices 0=Sunday)
+    recurrence_days_of_week = models.JSONField(default=list, blank=True, help_text="Selected days of week for weekly recurrence")
+    # For monthly: stores JSON like [1, 15, 20] (day of month) OR {"type": "relative", "week": "first", "day": "Monday"}
+    recurrence_days_of_month = models.JSONField(default=list, blank=True, help_text="Selected days of month or relative day pattern for monthly recurrence")
     recurrence_end_date = models.DateField(null=True, blank=True, help_text="Date when recurring task stops (null = never)")
     parent_task = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='recurring_instances')
 

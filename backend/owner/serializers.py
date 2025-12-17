@@ -141,7 +141,8 @@ class TaskSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'title', 'description', 'category', 'priority',
             'status', 'due_date', 'is_recurring', 'recurrence_pattern',
-            'recurrence_interval', 'recurrence_end_date', 'parent_task',
+            'recurrence_interval', 'recurrence_days_of_week', 'recurrence_days_of_month',
+            'recurrence_end_date', 'parent_task',
             'created_at', 'updated_at', 'home_component', 'home_component_name'
         ]
         read_only_fields = ['created_at', 'updated_at', 'parent_task', 'home_component_name']

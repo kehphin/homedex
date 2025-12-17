@@ -29,6 +29,48 @@ services:
       - CHOKIDAR_USEPOLLING=true
       - WATCHPACK_POLLING=true
 
+  redis:
+    image: redis:7-alpine
+    ports:
+      - 6379:6379
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  db:
+    image: postgres:17
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    env_file:
+      - .env
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $POSTGRES_USER -d $POSTGRES_DB"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  migrate:
+    env_file:
+      - .env
+    build:
+      context: ./backend/
+      dockerfile: Dockerfile
+    entrypoint: /usr/local/bin/migrate-entrypoint.sh
+    volumes:
+      - ./backend:/code/
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+
   backend:
     env_file:
       - .env
@@ -37,11 +79,51 @@ services:
     build:
       context: ./backend/
       dockerfile: Dockerfile
+    entrypoint: []
+    command: gunicorn backend.wsgi:application --bind 0.0.0.0:8000
     volumes:
       - ./backend/backend:/code/backend/
       - ./backend:/code/
     depends_on:
-      - db
+      migrate:
+        condition: service_completed_successfully
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+
+  celery_worker:
+    env_file:
+      - .env
+    build:
+      context: ./backend/
+      dockerfile: Dockerfile
+    command: celery -A backend worker -l info
+    volumes:
+      - ./backend:/code/
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    entrypoint: []
+
+  celery_beat:
+    env_file:
+      - .env
+    build:
+      context: ./backend/
+      dockerfile: Dockerfile
+    command: celery -A backend beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
+    volumes:
+      - ./backend:/code/
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    entrypoint: []
 
   # proxy:
   #   image: traefik:v3.4
@@ -61,30 +143,24 @@ services:
       - 1080:1080
       - 1025:1025
 
-  stripe:
-    env_file:
-      - .env
-    image: stripe/stripe-cli:v1.7.4
-    command:
-      [
-        "listen",
-        "-H",
-        "x-djstripe-webhook-secret: ${STRIPE_WEBHOOK_SECRET}",
-        "--forward-to",
-        "http://backend:8000/stripe/webhook/",
-      ]
-    depends_on:
-      - backend
-      # - proxy
-    environment:
-      - STRIPE_API_KEY=${STRIPE_API_KEY_TEST}
-
-  db:
-    image: postgres:17
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    env_file:
-      - .env
+  # stripe:
+  #   env_file:
+  #     - .env
+  #   image: stripe/stripe-cli:v1.7.4
+  #   command:
+  #     [
+  #       "listen",
+  #       "-H",
+  #       "x-djstripe-webhook-secret: ${STRIPE_WEBHOOK_SECRET}",
+  #       "--forward-to",
+  #       "http://backend:8000/stripe/webhook/",
+  #     ]
+  #   depends_on:
+  #     - backend
+  #     # - proxy
+  #   environment:
+  #     - STRIPE_API_KEY=${STRIPE_API_KEY_TEST}
 
 volumes:
   postgres_data:
+  redis_data:

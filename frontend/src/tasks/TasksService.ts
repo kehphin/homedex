@@ -12,6 +12,11 @@ interface TaskData {
   is_recurring?: boolean;
   recurrence_pattern?: "daily" | "weekly" | "monthly" | "yearly" | null;
   recurrence_interval?: number;
+  recurrence_days_of_week?: (string | number)[]; // For weekly recurrence
+  recurrence_days_of_month?: (
+    | number
+    | { type: string; week: string; day: string }
+  )[]; // For monthly recurrence
   recurrence_end_date?: string | null;
   home_component?: string | null;
 }

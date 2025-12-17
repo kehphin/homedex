@@ -10,42 +10,232 @@ from django.utils import timezone
 from .models import Task, RecurringTaskInstance
 
 
-def calculate_next_due_date(current_due_date, recurrence_pattern, recurrence_interval):
+def get_next_weekday(current_date, target_day_of_week):
     """
-    Calculate the next due date based on recurrence pattern and interval.
+    Get the next occurrence of a specific day of the week.
 
     Args:
-        current_due_date: datetime.date object of the current task
-        recurrence_pattern: 'daily', 'weekly', 'monthly', or 'yearly'
-        recurrence_interval: Number of periods between recurrences
+        current_date: datetime.date object
+        target_day_of_week: 0-6 (0=Sunday, 6=Saturday)
 
     Returns:
-        datetime.date object for the next due date
+        datetime.date object for the next occurrence
     """
-    current = current_due_date
+    current_dow = current_date.weekday()
+    # Convert Django weekday (0=Monday) to standard weekday (0=Sunday)
+    django_target = (target_day_of_week + 6) % 7
 
-    if recurrence_pattern == 'daily':
-        return current + timedelta(days=recurrence_interval)
-    elif recurrence_pattern == 'weekly':
-        return current + timedelta(weeks=recurrence_interval)
-    elif recurrence_pattern == 'monthly':
-        # Add months by calculating the month offset
-        month = current.month + recurrence_interval
-        year = current.year
+    days_ahead = django_target - current_dow
+    if days_ahead <= 0:  # Target day already happened this week
+        days_ahead += 7
 
-        while month > 12:
-            month -= 12
-            year += 1
+    return current_date + timedelta(days=days_ahead)
 
-        # Handle day overflow (e.g., Jan 31 + 1 month)
-        max_day = (datetime(year, month % 12 or 12, 1) - timedelta(days=1)).day
-        day = min(current.day, max_day)
 
-        return datetime(year, month, day).date()
-    elif recurrence_pattern == 'yearly':
-        return current.replace(year=current.year + recurrence_interval)
+def get_relative_day_of_month(year, month, week, day_name):
+    """
+    Get the specific date for a relative monthly pattern.
 
-    return current
+    Args:
+        year: int
+        month: int (1-12)
+        week: str ('first', 'second', 'third', 'fourth', 'fifth', 'last')
+        day_name: str ('day', 'Sunday', 'Monday', ..., 'Saturday')
+
+    Returns:
+        datetime.date object or None if invalid
+    """
+    from calendar import monthcalendar, monthrange
+
+    # Get the calendar for the month
+    cal = monthcalendar(year, month)
+
+    if day_name == 'day':
+        # Find the Nth day of the month (1st, 2nd, etc.)
+        week_map = {'first': 0, 'second': 1, 'third': 2, 'fourth': 3, 'fifth': 4, 'last': -1}
+        week_index = week_map.get(week)
+
+        if week_index is None:
+            return None
+
+        # Get all days of the month
+        days = [day for week_cal in cal for day in week_cal if day != 0]
+
+        try:
+            if week_index == -1:
+                target_day = days[-1]
+            else:
+                target_day = days[week_index]
+            return datetime(year, month, target_day).date()
+        except IndexError:
+            return None
+    else:
+        # Find the Nth occurrence of a specific weekday
+        day_map = {'Sunday': 6, 'Monday': 0, 'Tuesday': 1, 'Wednesday': 2,
+                   'Thursday': 3, 'Friday': 4, 'Saturday': 5}
+        target_weekday = day_map.get(day_name)
+
+        if target_weekday is None:
+            return None
+
+        week_map = {'first': 0, 'second': 1, 'third': 2, 'fourth': 3, 'fifth': 4, 'last': -1}
+        week_index = week_map.get(week)
+
+        if week_index is None:
+            return None
+
+        # Find all occurrences of the target weekday in this month
+        occurrences = []
+        for week_cal in cal:
+            # week_cal is [Monday, Tuesday, ..., Sunday]
+            # We need to map to standard weekday (0=Sunday)
+            for day_idx, day in enumerate(week_cal):
+                if day == 0:
+                    continue
+                django_dow = day_idx
+                standard_dow = (django_dow + 1) % 7
+
+                if standard_dow == target_weekday:
+                    occurrences.append(day)
+
+        if not occurrences:
+            return None
+
+        try:
+            if week_index == -1:
+                target_day = occurrences[-1]
+            else:
+                target_day = occurrences[week_index]
+            return datetime(year, month, target_day).date()
+        except IndexError:
+            return None
+
+
+def calculate_next_due_date(task):
+    """
+    Calculate the next due date based on recurrence pattern and task configuration.
+
+    Args:
+        task: Task object with recurrence settings
+
+    Returns:
+        datetime.date object for the next due date, or None if recurrence should stop
+    """
+    today = timezone.now().date()
+
+    # Find the latest instance of this recurring task
+    latest_instance = RecurringTaskInstance.objects.filter(
+        recurring_task=task
+    ).select_related('instance_task').order_by('-instance_task__due_date').first()
+
+    if latest_instance:
+        current_date = latest_instance.instance_task.due_date
+    else:
+        current_date = task.due_date
+
+    # Start from tomorrow or later
+    candidate_date = current_date + timedelta(days=1)
+
+    if task.recurrence_pattern == 'daily':
+        # Add the interval
+        return candidate_date + timedelta(days=task.recurrence_interval - 1)
+
+    elif task.recurrence_pattern == 'weekly':
+        # Find the next occurrence of the selected days
+        days_of_week = task.recurrence_days_of_week or []
+
+        if not days_of_week:
+            # Fallback to current day of week if none specified
+            days_of_week = [(current_date.weekday() + 1) % 7]  # Convert Django weekday to standard
+
+        # Convert to standard weekday format if needed
+        days_of_week = [int(d) for d in days_of_week]
+
+        # Find the next matching day
+        search_date = candidate_date
+        weeks_searched = 0
+        max_weeks = (task.recurrence_interval or 1) * 2 + 2
+
+        while weeks_searched < max_weeks:
+            django_dow = search_date.weekday()
+            standard_dow = (django_dow + 1) % 7
+
+            if standard_dow in days_of_week:
+                # Check if this is the right week (interval)
+                if latest_instance:
+                    # Calculate weeks difference
+                    days_diff = (search_date - current_date).days
+                    if days_diff > 0 and days_diff % (7 * (task.recurrence_interval or 1)) < 7:
+                        return search_date
+                else:
+                    return search_date
+
+            search_date += timedelta(days=1)
+            if search_date.weekday() == (current_date.weekday()):
+                weeks_searched += 1
+
+        # Fallback - return the first matching day of the interval
+        for i in range(7 * (task.recurrence_interval or 1)):
+            check_date = candidate_date + timedelta(days=i)
+            standard_dow = (check_date.weekday() + 1) % 7
+            if standard_dow in days_of_week:
+                return check_date
+
+        return candidate_date
+
+    elif task.recurrence_pattern == 'monthly':
+        days_of_month = task.recurrence_days_of_month or []
+
+        if not days_of_month:
+            # Fallback to current day of month if none specified
+            days_of_month = [current_date.day]
+
+        search_date = candidate_date
+
+        for _ in range(365):  # Search up to a year
+            current_month_start = datetime(search_date.year, search_date.month, 1).date()
+
+            if isinstance(days_of_month[0], dict):
+                # Relative pattern: {"type": "relative", "week": "first", "day": "Monday"}
+                pattern = days_of_month[0]
+                target_date = get_relative_day_of_month(
+                    search_date.year,
+                    search_date.month,
+                    pattern.get('week', 'first'),
+                    pattern.get('day', 'day')
+                )
+
+                if target_date and target_date >= search_date:
+                    return target_date
+            else:
+                # Absolute pattern: list of days [1, 15, 20]
+                for day in days_of_month:
+                    try:
+                        target_date = datetime(search_date.year, search_date.month, int(day)).date()
+                        if target_date >= search_date:
+                            return target_date
+                    except ValueError:
+                        # Invalid day for this month (e.g., Feb 30)
+                        continue
+
+            # Move to next month
+            if search_date.month == 12:
+                search_date = datetime(search_date.year + 1, 1, 1).date()
+            else:
+                search_date = datetime(search_date.year, search_date.month + 1, 1).date()
+
+        return candidate_date
+
+    elif task.recurrence_pattern == 'yearly':
+        # Add years
+        try:
+            return current_date.replace(year=current_date.year + task.recurrence_interval)
+        except ValueError:
+            # Handle leap year edge case (Feb 29)
+            return current_date.replace(year=current_date.year + task.recurrence_interval, day=28)
+
+    return candidate_date
+
 
 
 def create_recurring_task_instances(dry_run=False):
@@ -67,22 +257,11 @@ def create_recurring_task_instances(dry_run=False):
 
     for task in recurring_tasks:
         try:
-            # Find the latest instance of this recurring task
-            latest_instance = RecurringTaskInstance.objects.filter(
-                recurring_task=task
-            ).select_related('instance_task').order_by('-instance_task__due_date').first()
+            # Calculate the next due date based on the task's recurrence settings
+            next_due_date = calculate_next_due_date(task)
 
-            # Determine the next due date
-            if latest_instance:
-                last_due_date = latest_instance.instance_task.due_date
-                next_due_date = calculate_next_due_date(
-                    last_due_date,
-                    task.recurrence_pattern,
-                    task.recurrence_interval
-                )
-            else:
-                # First instance - use the task's original due date
-                next_due_date = task.due_date
+            if next_due_date is None:
+                continue
 
             # Check if we should create a new instance
             should_create = False

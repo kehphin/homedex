@@ -65,14 +65,14 @@ export default function SideMenu({
       title: "My Home",
       items: [
         {
-          to: "/account/home-profile",
-          icon: HomeIcon,
-          name: "Home Profile",
-        },
-        {
           to: "/account/tasks",
           icon: ClipboardDocumentListIcon,
           name: "Tasks",
+        },
+        {
+          to: "/account/home-profile",
+          icon: HomeIcon,
+          name: "Home Profile",
         },
         {
           to: "/account/maintenance",

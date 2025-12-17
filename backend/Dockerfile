@@ -18,7 +18,8 @@ EXPOSE 8000
 # Copy the wait-for-postgres script
 COPY wait-for-postgres.sh /usr/local/bin/wait-for-postgres.sh
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
-RUN chmod +x /usr/local/bin/wait-for-postgres.sh /usr/local/bin/entrypoint.sh
+COPY migrate-entrypoint.sh /usr/local/bin/migrate-entrypoint.sh
+RUN chmod +x /usr/local/bin/wait-for-postgres.sh /usr/local/bin/entrypoint.sh /usr/local/bin/migrate-entrypoint.sh
 
 # Set the entrypoint
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
