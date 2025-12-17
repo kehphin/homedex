@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import HomeProfile, HomeLocation, HomeComponent, ComponentImage, ComponentAttachment, Document, Task, RecurringTaskInstance, Appointment, MaintenanceHistory, MaintenanceAttachment, Contractor
+from .models import HomeProfile, HomeLocation, HomeComponent, ComponentImage, ComponentAttachment, Document, Task, RecurringTaskInstance, Appointment, MaintenanceHistory, MaintenanceAttachment, Contractor, Notification, NotificationPreference
 
 
 class HomeLocationSerializer(serializers.ModelSerializer):
@@ -350,3 +350,28 @@ class ContractorDetailSerializer(ContractorSerializer):
             }
             for record in records
         ]
+
+
+class NotificationSerializer(serializers.ModelSerializer):
+    task_title = serializers.CharField(source='task.title', read_only=True)
+    task_due_date = serializers.DateField(source='task.due_date', read_only=True)
+
+    class Meta:
+        model = Notification
+        fields = [
+            'id', 'task', 'task_title', 'task_due_date', 'notification_type',
+            'title', 'message', 'is_read', 'created_at', 'read_at'
+        ]
+        read_only_fields = ['id', 'created_at', 'read_at']
+
+
+class NotificationPreferenceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = NotificationPreference
+        fields = [
+            'id', 'email_overdue_tasks', 'email_due_soon_tasks', 'email_frequency',
+            'inapp_overdue_tasks', 'inapp_due_soon_tasks', 'last_email_sent',
+            'created_at', 'updated_at'
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at', 'last_email_sent']
+

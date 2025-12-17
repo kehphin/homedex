@@ -28,6 +28,14 @@ app.conf.beat_schedule = {
         'task': 'owner.tasks.create_recurring_task_instances_task',
         'schedule': crontab(hour=0, minute=0),  # Every day at 12:00 AM UTC
     },
+    'create-notifications': {
+        'task': 'owner.tasks.create_notifications_task',
+        'schedule': crontab(hour=6, minute=0),  # Every day at 6:00 AM UTC
+    },
+    'send-weekly-email-notifications': {
+        'task': 'owner.tasks.send_weekly_email_notifications_task',
+        'schedule': crontab(day_of_week=1, hour=9, minute=0),  # Every Monday at 9:00 AM UTC
+    },
 }
 
 # Timezone for Celery Beat

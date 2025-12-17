@@ -12,6 +12,8 @@ router.register(r'tasks', views.TaskViewSet, basename='task')
 router.register(r'appointments', views.AppointmentViewSet, basename='appointment')
 router.register(r'maintenance', views.MaintenanceHistoryViewSet, basename='maintenance')
 router.register(r'contractors', views.ContractorViewSet, basename='contractor')
+router.register(r'notifications', views.NotificationViewSet, basename='notification')
+router.register(r'notification-preferences', views.NotificationPreferenceViewSet, basename='notification-preference')
 
 urlpatterns = [
     # These samples are for demonstration purposes only

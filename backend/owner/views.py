@@ -11,8 +11,8 @@ from payments.permissions import HasPurchasedProduct, HasAnyActiveSubscription, 
 from rest_framework import permissions
 import os
 
-from .models import ContactUs, HomeProfile, HomeLocation, HomeComponent, ComponentImage, ComponentAttachment, Document, Task, RecurringTaskInstance, Appointment, MaintenanceHistory, MaintenanceAttachment, Contractor
-from .serializers import HomeProfileSerializer, HomeLocationSerializer, HomeComponentSerializer, DocumentSerializer, TaskSerializer, AppointmentSerializer, MaintenanceHistorySerializer, ContractorSerializer, ContractorDetailSerializer
+from .models import ContactUs, HomeProfile, HomeLocation, HomeComponent, ComponentImage, ComponentAttachment, Document, Task, RecurringTaskInstance, Appointment, MaintenanceHistory, MaintenanceAttachment, Contractor, Notification, NotificationPreference
+from .serializers import HomeProfileSerializer, HomeLocationSerializer, HomeComponentSerializer, DocumentSerializer, TaskSerializer, AppointmentSerializer, MaintenanceHistorySerializer, ContractorSerializer, ContractorDetailSerializer, NotificationSerializer, NotificationPreferenceSerializer
 from .recurring_tasks import get_recurring_task_stats
 from django.core.mail import send_mail
 
@@ -477,3 +477,86 @@ class ContractorViewSet(viewsets.ModelViewSet):
             'total': total,
             'total_spent': float(total_spent)
         })
+
+
+class NotificationViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet for managing notifications
+    """
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = NotificationSerializer
+
+    def get_queryset(self):
+        # Users can only see their own notifications
+        return Notification.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        # Automatically set the user when creating
+        serializer.save(user=self.request.user)
+
+    @action(detail=False, methods=['get'])
+    def unread_count(self, request):
+        """Get count of unread notifications"""
+        count = self.get_queryset().filter(is_read=False).count()
+        return Response({'unread_count': count})
+
+    @action(detail=False, methods=['get'])
+    def summary(self, request):
+        """Get summary of notifications (overdue, due today, due soon)"""
+        from django.utils import timezone
+        from datetime import timedelta
+
+        queryset = self.get_queryset()
+
+        overdue = queryset.filter(notification_type='overdue', is_read=False).count()
+        due_today = queryset.filter(notification_type='due_today', is_read=False).count()
+        due_soon = queryset.filter(notification_type='due_soon', is_read=False).count()
+
+        return Response({
+            'overdue': overdue,
+            'due_today': due_today,
+            'due_soon': due_soon,
+            'total': overdue + due_today + due_soon
+        })
+
+    @action(detail=True, methods=['post'])
+    def mark_as_read(self, request, pk=None):
+        """Mark a notification as read"""
+        from django.utils import timezone
+        notification = self.get_object()
+        notification.is_read = True
+        notification.read_at = timezone.now()
+        notification.save()
+        serializer = self.get_serializer(notification)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['post'])
+    def mark_all_as_read(self, request):
+        """Mark all notifications as read"""
+        from django.utils import timezone
+        queryset = self.get_queryset().filter(is_read=False)
+        updated_count = queryset.update(is_read=True, read_at=timezone.now())
+        return Response({'updated_count': updated_count})
+
+
+class NotificationPreferenceViewSet(viewsets.ViewSet):
+    """
+    ViewSet for managing notification preferences
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def list(self, request):
+        """Get notification preferences for current user"""
+        preference, created = NotificationPreference.objects.get_or_create(user=request.user)
+        serializer = NotificationPreferenceSerializer(preference)
+        return Response(serializer.data)
+
+    def create(self, request):
+        """Create or update notification preferences"""
+        preference, created = NotificationPreference.objects.get_or_create(user=request.user)
+        serializer = NotificationPreferenceSerializer(preference, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+

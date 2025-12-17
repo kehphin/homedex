@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import ContactUs, HomeComponent, ComponentImage, ComponentAttachment, Document, Task, Appointment
+from .models import ContactUs, HomeComponent, ComponentImage, ComponentAttachment, Document, Task, Appointment, Notification, NotificationPreference
 
 
 class ComponentImageInline(admin.TabularInline):
@@ -114,3 +114,44 @@ class AppointmentAdmin(admin.ModelAdmin):
         }),
     )
 
+
+@admin.register(Notification)
+class NotificationAdmin(admin.ModelAdmin):
+    list_display = ['title', 'user', 'notification_type', 'is_read', 'created_at']
+    list_filter = ['notification_type', 'is_read', 'created_at']
+    search_fields = ['title', 'message', 'user__email']
+    readonly_fields = ['created_at', 'read_at']
+
+    fieldsets = (
+        ('Notification Information', {
+            'fields': ('user', 'task', 'notification_type', 'title', 'message')
+        }),
+        ('Status', {
+            'fields': ('is_read', 'read_at')
+        }),
+        ('Timestamps', {
+            'fields': ('created_at',),
+            'classes': ('collapse',)
+        }),
+    )
+
+
+@admin.register(NotificationPreference)
+class NotificationPreferenceAdmin(admin.ModelAdmin):
+    list_display = ['user', 'email_frequency', 'last_email_sent']
+    list_filter = ['email_frequency', 'created_at']
+    search_fields = ['user__email']
+    readonly_fields = ['created_at', 'updated_at']
+
+    fieldsets = (
+        ('Email Preferences', {
+            'fields': ('user', 'email_overdue_tasks', 'email_due_soon_tasks', 'email_frequency', 'last_email_sent')
+        }),
+        ('In-App Preferences', {
+            'fields': ('inapp_overdue_tasks', 'inapp_due_soon_tasks')
+        }),
+        ('Timestamps', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )

@@ -55,6 +55,7 @@ import Documents from "./documents/Documents";
 import MaintenanceHistory from "./maintenance/MaintenanceHistory";
 import Contractors from "./contractors/Contractors";
 import HomeProfilePage from "./components/HomeProfile";
+import Notifications from "./notifications/Notifications";
 import { Navigate } from "react-router-dom";
 
 function createRouter() {
@@ -112,6 +113,14 @@ function createRouter() {
           element: (
             <AuthenticatedRoute>
               <Tasks />
+            </AuthenticatedRoute>
+          ),
+        },
+        {
+          path: "/account/notifications",
+          element: (
+            <AuthenticatedRoute>
+              <Notifications />
             </AuthenticatedRoute>
           ),
         },

@@ -20,8 +20,11 @@ import {
   PuzzlePieceIcon,
   DocumentTextIcon,
   DocumentArrowDownIcon,
+  BellIcon,
 } from "@heroicons/react/24/outline";
 import { HeartIcon } from "@heroicons/react/24/solid";
+import NotificationCenter from "../notifications/NotificationCenter";
+import * as NotificationsService from "../notifications/NotificationsService";
 
 export default function SideMenu({
   openFeedbackModal,
@@ -29,9 +32,26 @@ export default function SideMenu({
   openFeedbackModal?: () => void;
 }) {
   const [isOpen, setIsOpen] = useState(false);
+  const [notificationCount, setNotificationCount] = useState(0);
   const user = useUser();
   const config = useConfig();
   const location = useLocation();
+
+  // Load notification summary on mount and poll every 30 seconds
+  useEffect(() => {
+    const loadNotificationSummary = async () => {
+      try {
+        const data = await NotificationsService.getNotificationSummary();
+        setNotificationCount(data.total || 0);
+      } catch (error) {
+        console.error("Failed to load notification summary:", error);
+      }
+    };
+
+    loadNotificationSummary();
+    const interval = setInterval(loadNotificationSummary, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   const sections = [
     {
@@ -39,6 +59,7 @@ export default function SideMenu({
       items: [
         { to: "/account/dashboard", icon: HomeIcon, name: "Dashboard" },
         { to: "/account/dex", icon: SparklesIcon, name: "Ask Dex™" },
+        { to: "/account/notifications", icon: BellIcon, name: "Notifications" },
       ],
     },
     // {
@@ -166,13 +187,16 @@ export default function SideMenu({
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  if (!user) return null;
-
   return (
     <>
+      {/* Top bar with notification center */}
+      <div className="fixed top-0 right-0 z-50 lg:relative lg:z-0 p-4">
+        <NotificationCenter />
+      </div>
+
       {/* Mobile menu button */}
       <button
-        className="lg:hidden fixed bottom-4 right-4 z-50 btn btn-primary btn-circle"
+        className="lg:hidden fixed bottom-4 right-4 z-40 btn btn-primary btn-circle"
         onClick={() => setIsOpen(!isOpen)}
       >
         {isOpen ? (
@@ -224,7 +248,7 @@ export default function SideMenu({
                     <li key={`section-${sectionIndex}-item-${itemIndex}`}>
                       <Link
                         to={item.to}
-                        className={`flex items-center p-2 rounded-lg transition-colors duration-200 ${
+                        className={`flex items-center justify-between p-2 rounded-lg transition-colors duration-200 ${
                           location.pathname === item.to
                             ? "bg-primary text-white shadow-md"
                             : "hover:bg-primary hover:bg-opacity-50 text-base-content"
@@ -233,8 +257,22 @@ export default function SideMenu({
                           window.innerWidth < 1024 && setIsOpen(false)
                         }
                       >
-                        <item.icon className="h-5 w-5 mr-2" />
-                        {item.name}
+                        <div className="flex items-center">
+                          <item.icon className="h-5 w-5 mr-2" />
+                          {item.name}
+                        </div>
+                        {item.name === "Notifications" &&
+                          notificationCount > 0 && (
+                            <span
+                              className={`inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none rounded-full ${
+                                location.pathname === item.to
+                                  ? "bg-white text-red-600"
+                                  : "bg-red-600 text-white"
+                              }`}
+                            >
+                              {notificationCount}
+                            </span>
+                          )}
                       </Link>
                     </li>
                   ))}

@@ -370,3 +370,56 @@ class MaintenanceAttachment(models.Model):
 
     def __str__(self):
         return f"{self.name} - {self.maintenance.name}"
+
+
+class Notification(models.Model):
+    """
+    Stores in-app notifications for users about upcoming/overdue tasks
+    """
+    NOTIFICATION_TYPES = [
+        ('overdue', 'Overdue Task'),
+        ('due_today', 'Due Today'),
+        ('due_soon', 'Due Soon (Next 7 Days)'),
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
+    task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name='notifications')
+    notification_type = models.CharField(max_length=20, choices=NOTIFICATION_TYPES)
+    title = models.CharField(max_length=255)
+    message = models.TextField()
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    read_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        unique_together = ['user', 'task', 'notification_type']
+
+    def __str__(self):
+        return f"{self.get_notification_type_display()} - {self.user.email} - {self.task.title}"
+
+
+class NotificationPreference(models.Model):
+    """
+    Stores user preferences for notifications
+    """
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='notification_preference')
+    # Email preferences
+    email_overdue_tasks = models.BooleanField(default=True)
+    email_due_soon_tasks = models.BooleanField(default=True)
+    email_frequency = models.CharField(
+        max_length=20,
+        choices=[('daily', 'Daily'), ('weekly', 'Weekly'), ('never', 'Never')],
+        default='weekly',
+        help_text="How often to send email notifications"
+    )
+    # In-app notification preferences
+    inapp_overdue_tasks = models.BooleanField(default=True)
+    inapp_due_soon_tasks = models.BooleanField(default=True)
+    # Last email sent timestamp
+    last_email_sent = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Notification Preferences for {self.user.email}"
