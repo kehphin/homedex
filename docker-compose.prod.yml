@@ -91,7 +91,7 @@ services:
     environment:
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
-    entrypoint: []
+    entrypoint: null
 
   celery_beat:
     env_file:
@@ -108,7 +108,7 @@ services:
     environment:
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
-    entrypoint: []
+    entrypoint: null
 
   # proxy:
   #   image: traefik:v3.4
