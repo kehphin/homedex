@@ -43,13 +43,14 @@ services:
       retries: 10
       start_period: 15s
 
-  migrate:
+  backend:
     env_file:
       - .env
     build:
       context: ./backend/
       dockerfile: Dockerfile
-    entrypoint: /usr/local/bin/migrate-entrypoint.sh
+    entrypoint: /usr/local/bin/entrypoint.sh
+    command: gunicorn backend.wsgi:application --bind 0.0.0.0:8000
     volumes:
       - ./backend:/code/
     depends_on:
@@ -57,23 +58,6 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-    environment:
-      - CELERY_BROKER_URL=redis://redis:6379/0
-      - CELERY_RESULT_BACKEND=redis://redis:6379/0
-
-  backend:
-    env_file:
-      - .env
-    build:
-      context: ./backend/
-      dockerfile: Dockerfile
-    entrypoint: null
-    command: gunicorn backend.wsgi:application --bind 0.0.0.0:8000
-    volumes:
-      - ./backend:/code/
-    depends_on:
-      migrate:
-        condition: service_completed_successfully
     environment:
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
@@ -88,8 +72,10 @@ services:
     volumes:
       - ./backend:/code/
     depends_on:
-      migrate:
-        condition: service_completed_successfully
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     environment:
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
@@ -105,8 +91,10 @@ services:
     volumes:
       - ./backend:/code/
     depends_on:
-      migrate:
-        condition: service_completed_successfully
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     environment:
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
