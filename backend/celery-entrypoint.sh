@@ -9,6 +9,12 @@ until PGPASSWORD=$POSTGRES_PASSWORD psql -h "$DB_HOST" -U "$POSTGRES_USER" -d "$
 done
 >&2 echo "Postgres is up - continuing"
 
+# Change to code directory
+cd /code
+
+# Set Python path
+export PYTHONPATH=/code
+
 # For celery_worker, run worker
 if [ "$CELERY_MODE" = "worker" ]; then
     echo "Starting Celery worker..."
@@ -20,3 +26,4 @@ else
     echo "Unknown CELERY_MODE: $CELERY_MODE"
     exit 1
 fi
+
