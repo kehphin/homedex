@@ -9,6 +9,8 @@ until PGPASSWORD=$POSTGRES_PASSWORD psql -h "$DB_HOST" -U "$POSTGRES_USER" -d "$
 done
 >&2 echo "Postgres is up - continuing"
 
+export DJANGO_SETTINGS_MODULE=${DJANGO_SETTINGS_MODULE:-backend.settings}
+
 # Verify database connection and print version
 echo "Verifying database connection..."
 PGPASSWORD=$POSTGRES_PASSWORD psql -h "$DB_HOST" -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "SELECT version();" || echo "Warning: Could not query database"
@@ -16,20 +18,21 @@ echo "Database connection verified."
 
 echo "Running migrations..."
 
-# Change to the directory that contains manage.py
+# Prefer manage.py when available; otherwise use `python -m django`.
 if [ -f /code/manage.py ]; then
   cd /code
+  DJANGO_CMD="python manage.py"
 elif [ -f /code/backend/manage.py ]; then
   cd /code/backend
+  DJANGO_CMD="python manage.py"
 else
-  echo "Could not find manage.py in /code or /code/backend"
-  echo "Contents of /code:"
-  ls -la /code || true
-  exit 1
+  cd /code
+  DJANGO_CMD="python -m django"
+  echo "Warning: manage.py not found; using 'python -m django'"
 fi
 
 # Let Django handle migration order based on dependencies
-python manage.py migrate --noinput
+${DJANGO_CMD} migrate --noinput
 
 # echo "Setting up Stripe API keys..."
 # python manage.py shell <<EOF
@@ -47,12 +50,12 @@ echo "Syncing DJ-Stripe models..."
 
 # collect static
 echo "Collecting static files..."
-python manage.py collectstatic --noinput
+${DJANGO_CMD} collectstatic --noinput
 
 # We are handling the gunicorn server here instead of creating a Dockerfile.prod file.
 if [ "$DEBUG" = "True" ]; then
     echo "Starting development server..."
-    exec python manage.py runserver 0.0.0.0:8000
+  exec ${DJANGO_CMD} runserver 0.0.0.0:8000
 else
     echo "Starting Gunicorn server..."
     exec gunicorn --bind 0.0.0.0:8000 backend.wsgi:application

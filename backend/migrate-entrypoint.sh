@@ -11,20 +11,24 @@ done
 
 echo "Running migrations..."
 
-# Change to the directory that contains manage.py
+export DJANGO_SETTINGS_MODULE=${DJANGO_SETTINGS_MODULE:-backend.settings}
+
+# Prefer manage.py when available; otherwise use `python -m django`.
 if [ -f /code/manage.py ]; then
   cd /code
+  DJANGO_CMD="python manage.py"
 elif [ -f /code/backend/manage.py ]; then
   cd /code/backend
+  DJANGO_CMD="python manage.py"
 else
-  echo "Could not find manage.py in /code or /code/backend"
-  echo "Contents of /code:"
-  ls -la /code || true
-  exit 1
+  cd /code
+  DJANGO_CMD="python -m django"
+  echo "Warning: manage.py not found; using 'python -m django'"
 fi
-python manage.py migrate --noinput
+
+${DJANGO_CMD} migrate --noinput
 
 echo "Collecting static files..."
-python manage.py collectstatic --noinput
+${DJANGO_CMD} collectstatic --noinput
 
 echo "✅ Migrations and setup completed successfully!"
