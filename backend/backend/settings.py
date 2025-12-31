@@ -72,6 +72,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "djstripe",
     "django_celery_beat",  # Celery Beat for scheduled tasks
+    "import_export",  # Import/Export functionality for admin
     "user_auth",
     "payments",
     "owner"
@@ -221,7 +222,10 @@ else:
 
 ACCOUNT_EMAIL_SUBJECT_PREFIX = ''
 
-AUTHENTICATION_BACKENDS = ("allauth.account.auth_backends.AuthenticationBackend",)
+AUTHENTICATION_BACKENDS = (
+    "django.contrib.auth.backends.ModelBackend",  # Django admin backend
+    "allauth.account.auth_backends.AuthenticationBackend",
+)
 
 ACCOUNT_EMAIL_VERIFICATION = "mandatory"
 ACCOUNT_LOGIN_METHODS = {'email'}

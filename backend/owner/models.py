@@ -278,6 +278,139 @@ class RecurringTaskInstance(models.Model):
         return f"Instance of {self.recurring_task.title} - {self.instance_task.due_date}"
 
 
+class TaskTemplate(models.Model):
+    """
+    Template for maintenance tasks that can be matched to HomeComponents.
+    When a HomeComponent matches a template, a TaskRegistration is created.
+    """
+    SEASON_CHOICES = [
+        ('all', 'All Seasons'),
+        ('spring', 'Spring'),
+        ('summer', 'Summer'),
+        ('fall', 'Fall'),
+        ('winter', 'Winter'),
+    ]
+
+    REGION_CHOICES = [
+        ('all', 'All Regions'),
+        ('northeast', 'Northeast'),
+        ('southeast', 'Southeast'),
+        ('midwest', 'Midwest'),
+        ('southwest', 'Southwest'),
+        ('west', 'West'),
+        ('pacific', 'Pacific'),
+    ]
+
+    # === MATCHING FIELDS ===
+    # Category must match HomeComponent.CATEGORY_CHOICES
+    category = models.CharField(max_length=50, choices=HomeComponent.CATEGORY_CHOICES)
+    subcategory = models.CharField(max_length=100, blank=True, help_text="More specific type, e.g., 'Furnace', 'Water Heater (Tank)'")
+    match_keywords = models.JSONField(default=list, blank=True, help_text="Keywords to match against component name, brand, model")
+    match_brands = models.JSONField(default=list, blank=True, help_text="Specific brands this applies to (empty = all brands)")
+
+    # === TASK DETAILS ===
+    title = models.CharField(max_length=255)
+    description = models.TextField()
+    importance = models.TextField(blank=True, help_text="Why this maintenance task matters")
+
+    # === SCHEDULING ===
+    frequency_months = models.IntegerField(help_text="How often this task should be performed (in months)")
+    season = models.CharField(max_length=20, choices=SEASON_CHOICES, default='all')
+    region = models.CharField(max_length=20, choices=REGION_CHOICES, default='all')
+
+    # === EXECUTION INFO ===
+    skill_level = models.IntegerField(
+        default=1,
+        help_text="Skill level required (1-5, where 1 is easiest)"
+    )
+    time_estimate_minutes = models.IntegerField(help_text="Estimated time to complete in minutes")
+    tools_needed = models.JSONField(default=list, blank=True)
+    safety_warning = models.TextField(blank=True)
+    contractor_type = models.CharField(max_length=100, blank=True, help_text="Type of contractor if professional help needed")
+
+    # === COST INFO ===
+    estimated_cost = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, help_text="Estimated cost to perform this task")
+    estimated_deferred_cost = models.CharField(max_length=100, blank=True, help_text="Estimated cost if maintenance is deferred, e.g., '$4,000–$12,000'")
+
+    # === VISUAL AIDS ===
+    image_cues = models.TextField(blank=True, help_text="Description of visual cues to identify the component/task")
+    symptom_tags = models.JSONField(default=list, blank=True, help_text="User-facing troubleshooting keywords")
+
+    # === METADATA ===
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['category', 'subcategory', 'title']
+
+    def __str__(self):
+        return f"{self.title} ({self.category} - {self.subcategory})"
+
+    def matches_component(self, component):
+        """
+        Check if this template matches a given HomeComponent.
+        Returns True if the component matches the template's criteria.
+        """
+        # Category must match
+        if self.category != component.category:
+            return False
+
+        # Check brand matching (if brands specified)
+        if self.match_brands:
+            component_brand = (component.brand or '').lower()
+            if not any(brand.lower() in component_brand for brand in self.match_brands):
+                return False
+
+        # Check keyword matching (if keywords specified)
+        if self.match_keywords:
+            # Build searchable text from component
+            searchable = ' '.join([
+                component.name or '',
+                component.brand or '',
+                component.model or '',
+                component.notes or '',
+            ]).lower()
+
+            # At least one keyword must match
+            if not any(keyword.lower() in searchable for keyword in self.match_keywords):
+                return False
+
+        return True
+
+
+class TaskRegistration(models.Model):
+    """
+    Links a HomeComponent to a TaskTemplate and tracks task generation.
+    Created when a HomeComponent matches a TaskTemplate.
+    """
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='task_registrations')
+    home_component = models.ForeignKey(HomeComponent, on_delete=models.CASCADE, related_name='task_registrations')
+    task_template = models.ForeignKey(TaskTemplate, on_delete=models.CASCADE, related_name='registrations')
+
+    # Override defaults from template if needed
+    frequency_months = models.IntegerField(null=True, blank=True, help_text="Override template frequency (null = use template default)")
+    is_active = models.BooleanField(default=True, help_text="Whether tasks should be generated from this registration")
+
+    # Task generation tracking
+    last_task_generated = models.DateField(null=True, blank=True)
+    next_task_due = models.DateField(null=True, blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        unique_together = ['home_component', 'task_template']
+
+    def __str__(self):
+        return f"{self.task_template.title} for {self.home_component.name}"
+
+    def get_frequency_months(self):
+        """Returns the effective frequency, using override if set."""
+        return self.frequency_months if self.frequency_months is not None else self.task_template.frequency_months
+
+
 class Appointment(models.Model):
     STATUS_CHOICES = [
         ('pending', 'Pending'),
