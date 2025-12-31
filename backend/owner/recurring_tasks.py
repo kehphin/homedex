@@ -273,6 +273,13 @@ def create_recurring_task_instances(dry_run=False):
 
             if should_create:
                 if not dry_run:
+                    # Dismiss previous active tasks of the same parent task
+                    previous_instances = Task.objects.filter(
+                        parent_task=task,
+                        status__in=['pending', 'in-progress']
+                    )
+                    previous_instances.update(status='dismissed')
+
                     # Create new task instance
                     new_task = Task.objects.create(
                         user=task.user,
