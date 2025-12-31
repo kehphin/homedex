@@ -26,7 +26,7 @@ interface Task {
   description: string;
   category: string;
   priority: "low" | "medium" | "high";
-  status: "pending" | "in-progress" | "completed";
+  status: "pending" | "in-progress" | "completed" | "dismissed";
   dueDate: string;
   createdAt: string;
   isRecurring?: boolean;
@@ -66,6 +66,7 @@ const STATUS_COLORS = {
   pending: "badge-ghost",
   "in-progress": "badge-primary",
   completed: "badge-success",
+  dismissed: "badge-warning",
 };
 
 /**
@@ -129,7 +130,7 @@ export default function Tasks() {
     description: "",
     category: "General Maintenance",
     priority: "medium" as "low" | "medium" | "high",
-    status: "pending" as "pending" | "in-progress" | "completed",
+    status: "pending" as "pending" | "in-progress" | "completed" | "dismissed",
     dueDate: "",
     isRecurring: false,
     recurrencePattern: "daily" as "daily" | "weekly" | "monthly" | "yearly",
@@ -338,6 +339,20 @@ export default function Tasks() {
     } catch (err) {
       console.error("Failed to update task status:", err);
       alert("Failed to update task status. Please try again.");
+    }
+  };
+
+  const handleDismiss = async (task: Task) => {
+    try {
+      const updated = await TasksService.updateTask(task.id, {
+        status: "dismissed",
+      });
+      setTasks(
+        tasks.map((t) => (t.id === task.id ? convertAPIToFrontend(updated) : t))
+      );
+    } catch (err) {
+      console.error("Failed to dismiss task:", err);
+      alert("Failed to dismiss task. Please try again.");
     }
   };
 
@@ -726,17 +741,35 @@ export default function Tasks() {
                   >
                     <div className="card-body">
                       <div className="flex items-start gap-4">
-                        {/* Checkbox */}
-                        <button
-                          onClick={() => handleToggleComplete(task)}
-                          className="mt-1"
-                        >
-                          {task.status === "completed" ? (
-                            <CheckCircleSolidIcon className="h-6 w-6 text-success" />
-                          ) : (
-                            <CheckCircleIcon className="h-6 w-6 text-base-content/30 hover:text-success" />
+                        {/* Checkbox and Dismiss button */}
+                        <div className="flex flex-col items-center gap-y-4">
+                          <button
+                            onClick={() => handleToggleComplete(task)}
+                            className="mt-1 tooltip"
+                            data-tip={
+                              task.status === "completed"
+                                ? "Mark as incomplete"
+                                : "Mark as complete"
+                            }
+                          >
+                            {task.status === "completed" ? (
+                              <CheckCircleSolidIcon className="h-6 w-6 text-success" />
+                            ) : (
+                              <CheckCircleIcon className="h-6 w-6 text-base-content/30 hover:text-success" />
+                            )}
+                          </button>
+
+                          {/* Dismiss button for recurring tasks */}
+                          {task.isRecurring && (
+                            <button
+                              onClick={() => handleDismiss(task)}
+                              className="tooltip"
+                              data-tip="Dismiss this recurring task"
+                            >
+                              <XMarkIcon className="h-5 w-5 text-base-content/30 hover:text-warning" />
+                            </button>
                           )}
-                        </button>
+                        </div>
 
                         {/* Content */}
                         <div className="flex-1">

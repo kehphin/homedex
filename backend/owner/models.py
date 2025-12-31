@@ -209,6 +209,7 @@ class Task(models.Model):
         ('pending', 'Pending'),
         ('in-progress', 'In Progress'),
         ('completed', 'Completed'),
+        ('dismissed', 'Dismissed'),
     ]
 
     CATEGORY_CHOICES = [

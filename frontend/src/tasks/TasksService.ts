@@ -7,7 +7,7 @@ interface TaskData {
   description?: string;
   category: string;
   priority: "low" | "medium" | "high";
-  status: "pending" | "in-progress" | "completed";
+  status: "pending" | "in-progress" | "completed" | "dismissed";
   due_date: string;
   is_recurring?: boolean;
   recurrence_pattern?: "daily" | "weekly" | "monthly" | "yearly" | null;
