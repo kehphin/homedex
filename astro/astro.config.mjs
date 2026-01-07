@@ -7,7 +7,7 @@ import sitemap from "@astrojs/sitemap";
 // https://astro.build/config
 export default defineConfig({
   site: "http://localhost/",
-  integrations: [tailwind(), react(), mdx(), sitemap()],
+  integrations: [tailwind(), react(), mdx()],
   server: {
     host: true,
     // This is needed to access the server from outside the container
