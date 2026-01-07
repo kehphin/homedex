@@ -3,14 +3,11 @@ Utilities for handling recurring tasks.
 This module manages automatic creation and email notifications for recurring tasks.
 """
 
-import logging
 from datetime import datetime, timedelta
 from django.conf import settings
 from django.core.mail import send_mail
 from django.utils import timezone
-from .models import Task, RecurringTaskInstance, TaskRegistration, HomeComponent
-
-logger = logging.getLogger(__name__)
+from .models import Task, RecurringTaskInstance
 
 
 def get_next_weekday(current_date, target_day_of_week):
@@ -408,102 +405,4 @@ def get_recurring_task_stats(user):
         'total_recurring': recurring_tasks.count(),
         'active_recurring': active_count.count(),
         'inactive_recurring': recurring_tasks.count() - active_count.count(),
-    }
-
-
-def create_tasks_from_registrations(registrations=None):
-    """
-    Create tasks from TaskRegistrations that are due.
-
-    Args:
-        registrations: QuerySet of TaskRegistrations to process.
-                      If None, processes all active registrations.
-
-    Returns:
-        Dictionary with 'created', 'skipped', 'errors', and 'total' counts.
-    """
-    if registrations is None:
-        # Get all active task registrations
-        registrations = TaskRegistration.objects.filter(is_active=True).select_related(
-            'task_template', 'home_component', 'user'
-        )
-    else:
-        # Ensure proper prefetching for efficiency
-        registrations = registrations.select_related(
-            'task_template', 'home_component', 'user'
-        )
-
-    created_count = 0
-    skipped_count = 0
-    error_count = 0
-
-    for registration in registrations:
-        try:
-            # Get the effective frequency (override or template default)
-            frequency_months = registration.get_frequency_months()
-
-            # Find the most recent task for this registration
-            recent_task = Task.objects.filter(
-                user=registration.user,
-                home_component=registration.home_component,
-                title=registration.task_template.title,
-            ).order_by('-due_date').first()
-
-            should_create = False
-            reason = ""
-
-            if recent_task is None:
-                # No previous task exists
-                should_create = True
-                reason = "No previous task found"
-            else:
-                # Check if previous task is older than frequency
-                days_elapsed = (timezone.now().date() - recent_task.due_date).days
-                days_threshold = frequency_months * 30  # Approximate month as 30 days
-
-                if days_elapsed >= days_threshold:
-                    should_create = True
-                    reason = f"Last task due on {recent_task.due_date} ({days_elapsed} days ago)"
-
-            if should_create:
-                # Create new task
-                new_due_date = timezone.now().date() + timedelta(days=7)
-
-                task = Task.objects.create(
-                    user=registration.user,
-                    title=registration.task_template.title,
-                    description=registration.task_template.description,
-                    category=registration.task_template.category,
-                    priority='medium',  # Default priority from template could be added if needed
-                    status='pending',
-                    due_date=new_due_date,
-                    home_component=registration.home_component,
-                    is_recurring=False,
-                )
-
-                # Update registration tracking
-                registration.last_task_generated = timezone.now().date()
-                registration.next_task_due = new_due_date
-                registration.save()
-
-                created_count += 1
-                logger.info(
-                    f"✓ Created task '{task.title}' for {registration.home_component.name} "
-                    f"({reason})"
-                )
-            else:
-                skipped_count += 1
-
-        except Exception as e:
-            error_count += 1
-            logger.error(
-                f"✗ Error creating task for registration {registration.id}: {str(e)}",
-                exc_info=True
-            )
-
-    return {
-        'created': created_count,
-        'skipped': skipped_count,
-        'errors': error_count,
-        'total': created_count + skipped_count + error_count,
     }

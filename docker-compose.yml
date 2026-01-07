@@ -125,11 +125,41 @@ services:
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
     entrypoint: []
 
+  # proxy:
+  #   image: traefik:v3.4
+  #   ports:
+  #     - ${HTTP_PORT:-80}:80
+  #     - ${HTTPS_PORT:-443}:443
+  #   volumes:
+  #     - ./traefik.toml:/etc/traefik/traefik.toml:ro
+  #     - ./dynamic_conf.toml:/etc/traefik/dynamic_conf.toml:ro
+  #     - ./acme.json:/acme.json
+  #   env_file:
+  #     - .env
+
   mail:
     image: schickling/mailcatcher
     ports:
       - 1080:1080
       - 1025:1025
+
+  # stripe:
+  #   env_file:
+  #     - .env
+  #   image: stripe/stripe-cli:v1.7.4
+  #   command:
+  #     [
+  #       "listen",
+  #       "-H",
+  #       "x-djstripe-webhook-secret: ${STRIPE_WEBHOOK_SECRET}",
+  #       "--forward-to",
+  #       "http://backend:8000/stripe/webhook/",
+  #     ]
+  #   depends_on:
+  #     - backend
+  #     # - proxy
+  #   environment:
+  #     - STRIPE_API_KEY=${STRIPE_API_KEY_TEST}
 
 volumes:
   postgres_data:

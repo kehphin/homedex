@@ -96,24 +96,24 @@ export default function SideMenu({
           name: "Home Profile",
         },
         {
-          to: "/account/components",
-          icon: PuzzlePieceIcon,
-          name: "Home Components",
-        },
-        {
           to: "/account/maintenance",
           icon: DocumentArrowDownIcon,
           name: "Maintenance History",
         },
         {
-          to: "/account/documents",
-          icon: DocumentTextIcon,
-          name: "Documents",
-        },
-        {
           to: "/account/contractors",
           icon: UserGroupIcon,
           name: "Contractors",
+        },
+        {
+          to: "/account/components",
+          icon: PuzzlePieceIcon,
+          name: "Home Components",
+        },
+        {
+          to: "/account/documents",
+          icon: DocumentTextIcon,
+          name: "Documents",
         },
       ],
     },
