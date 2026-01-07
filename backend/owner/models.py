@@ -374,9 +374,13 @@ class TaskTemplate(models.Model):
 
             # At least one keyword must match
             if not any(keyword.lower() in searchable for keyword in self.match_keywords):
-                return False
+                # Last effort: try to match just the component name against keywords
+                component_name = (component.name or '').lower()
+                if not any(keyword.lower() in component_name for keyword in self.match_keywords):
+                    return False
 
         return True
+
 
 
 class TaskRegistration(models.Model):
