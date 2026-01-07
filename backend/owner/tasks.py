@@ -1,19 +1,21 @@
 """
 Celery tasks for the owner app
 """
+import logging
 from celery import shared_task
-from .recurring_tasks import create_recurring_task_instances
+from django.contrib.auth import get_user_model
+from django.core.mail import send_mail
+from django.conf import settings
+from .recurring_tasks import create_recurring_task_instances, create_tasks_from_registrations
 from .notification_service import (
     create_notifications_for_user,
     should_send_email_notification,
     get_email_notification_content,
     update_email_sent_timestamp
 )
-from django.contrib.auth import get_user_model
-from django.core.mail import send_mail
-from django.conf import settings
 
 User = get_user_model()
+logger = logging.getLogger(__name__)
 
 
 @shared_task
@@ -85,3 +87,21 @@ def send_weekly_email_notifications_task():
         'sent_count': sent_count,
         'error_count': error_count,
     }
+
+
+@shared_task
+def create_tasks_from_registrations_task():
+    """
+    Celery task to create tasks from TaskRegistrations.
+    Checks all active TaskRegistrations and creates a Task if:
+    - No previous task exists, OR
+    - The previous task is older than the registration's frequency
+
+    Scheduled to run hourly.
+    """
+    logger.info("Starting task creation from TaskRegistrations")
+    result = create_tasks_from_registrations()
+    logger.info(f"Task creation complete: {result}")
+    return result
+
+
