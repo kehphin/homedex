@@ -1,5 +1,86 @@
 from rest_framework import serializers
-from .models import HomeProfile, HomeLocation, HomeComponent, ComponentImage, ComponentAttachment, Document, Task, RecurringTaskInstance, Appointment, MaintenanceHistory, MaintenanceAttachment, Contractor, Notification, NotificationPreference
+from .models import (
+    Home, HomeMembership, UserHomeContext,
+    HomeProfile, HomeLocation, HomeComponent, ComponentImage, ComponentAttachment,
+    Document, Task, RecurringTaskInstance, Appointment, MaintenanceHistory,
+    MaintenanceAttachment, Contractor, Notification, NotificationPreference
+)
+
+
+class HomeSerializer(serializers.ModelSerializer):
+    """Serializer for Home model"""
+    is_current = serializers.SerializerMethodField()
+    role = serializers.SerializerMethodField()
+    is_primary = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Home
+        fields = [
+            'id', 'name', 'address', 'city', 'state', 'zip_code',
+            'square_feet', 'bedrooms', 'bathrooms', 'ac', 'ac_type',
+            'heat', 'heat_type', 'heating_source', 'is_septic', 'year_built',
+            'is_active', 'created_at', 'updated_at',
+            'is_current', 'role', 'is_primary'
+        ]
+        read_only_fields = ['created_at', 'updated_at', 'is_current', 'role', 'is_primary']
+
+    def get_is_current(self, obj):
+        """Check if this is the user's currently selected home"""
+        request = self.context.get('request')
+        if request and hasattr(request, 'user') and request.user.is_authenticated:
+            try:
+                context = request.user.home_context
+                return context.current_home_id == obj.id
+            except:
+                return False
+        return False
+
+    def get_role(self, obj):
+        """Get the user's role for this home"""
+        request = self.context.get('request')
+        if request and hasattr(request, 'user') and request.user.is_authenticated:
+            try:
+                membership = obj.memberships.get(user=request.user)
+                return membership.role
+            except:
+                return None
+        return None
+
+    def get_is_primary(self, obj):
+        """Check if this is the user's primary home"""
+        request = self.context.get('request')
+        if request and hasattr(request, 'user') and request.user.is_authenticated:
+            try:
+                membership = obj.memberships.get(user=request.user)
+                return membership.is_primary
+            except:
+                return False
+        return False
+
+
+class HomeMembershipSerializer(serializers.ModelSerializer):
+    """Serializer for HomeMembership model"""
+    home_name = serializers.CharField(source='home.name', read_only=True)
+    home_address = serializers.CharField(source='home.address', read_only=True)
+    user_email = serializers.CharField(source='user.email', read_only=True)
+
+    class Meta:
+        model = HomeMembership
+        fields = [
+            'id', 'user', 'user_email', 'home', 'home_name', 'home_address',
+            'role', 'is_primary', 'joined_at'
+        ]
+        read_only_fields = ['joined_at']
+
+
+class UserHomeContextSerializer(serializers.ModelSerializer):
+    """Serializer for UserHomeContext model"""
+    home_name = serializers.CharField(source='current_home.name', read_only=True)
+
+    class Meta:
+        model = UserHomeContext
+        fields = ['id', 'current_home', 'home_name', 'updated_at']
+        read_only_fields = ['updated_at']
 
 
 class HomeLocationSerializer(serializers.ModelSerializer):

@@ -19,6 +19,12 @@ export function HomeProfileOnboardingCheck() {
         return;
       }
 
+      // Don't show modal for superusers
+      if (user.is_superuser) {
+        setIsLoading(false);
+        return;
+      }
+
       // Don't show modal on certain pages
       const hideOnPages = [
         "/account/home-profile",

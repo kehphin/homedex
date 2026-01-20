@@ -2,7 +2,11 @@
 module.exports = {
   content: ["./src/**/*.{html,js,ts,tsx,jsx,mdx}"],
   theme: {
-    extend: {},
+    extend: {
+      fontFamily: {
+        sans: ["Hanken Grotesk", "sans-serif"],
+      },
+    },
   },
   plugins: [require("daisyui")],
   daisyui: {
@@ -37,7 +41,7 @@ module.exports = {
 
           "--rounded-box": "1rem",
           "--rounded-btn": ".5rem",
-          "--rounded-badge": "1.9rem",
+          "--rounded-badge": "0.375rem",
 
           "--animation-btn": ".25s",
           "--animation-input": ".2s",
@@ -45,6 +49,7 @@ module.exports = {
           "--btn-text-case": "uppercase",
           "--navbar-padding": ".5rem",
           "--border-btn": "1px",
+          "--font-family": "'Hanken Grotesk', sans-serif",
         },
       },
     ],

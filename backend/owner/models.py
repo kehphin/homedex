@@ -1,9 +1,116 @@
 from django.db import models
 from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError
 
 User = get_user_model()
 
 # Create your models here.
+class Home(models.Model):
+    """
+    Represents a physical home/property that can have multiple users associated with it.
+    This is the central entity that all home-related data (components, documents, etc.) belongs to.
+    """
+    AC_TYPES = [
+        ('central', 'Central'),
+        ('window', 'Window'),
+        ('portable', 'Portable'),
+        ('split', 'Split'),
+        ('none', 'None'),
+    ]
+
+    HEAT_TYPES = [
+        ('forced_air', 'Forced Air'),
+        ('radiant', 'Radiant'),
+        ('baseboard', 'Baseboard'),
+        ('stove', 'Stove'),
+    ]
+
+    HEATING_SOURCE_CHOICES = [
+        ('natural_gas', 'Natural Gas'),
+        ('oil', 'Oil'),
+        ('electric', 'Electric'),
+        ('other', 'Other'),
+    ]
+
+    name = models.CharField(max_length=255, help_text="Friendly name like 'Main House' or 'Vacation Home'")
+    address = models.CharField(max_length=255, unique=True)
+    city = models.CharField(max_length=100, blank=True)
+    state = models.CharField(max_length=50, blank=True)
+    zip_code = models.CharField(max_length=20, blank=True)
+
+    # Home details
+    square_feet = models.IntegerField(null=True, blank=True)
+    bedrooms = models.IntegerField(null=True, blank=True)
+    bathrooms = models.DecimalField(max_digits=3, decimal_places=1, null=True, blank=True)
+    ac = models.BooleanField(default=False)
+    ac_type = models.CharField(max_length=50, choices=AC_TYPES, blank=True)
+    heat = models.BooleanField(default=True)
+    heat_type = models.CharField(max_length=50, choices=HEAT_TYPES, blank=True)
+    heating_source = models.CharField(max_length=50, choices=HEATING_SOURCE_CHOICES, blank=True)
+    is_septic = models.BooleanField(default=False, verbose_name="Septic System")
+    year_built = models.IntegerField(null=True, blank=True)
+
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Home"
+        verbose_name_plural = "Homes"
+        ordering = ['name', 'address']
+
+    def __str__(self):
+        return f"{self.name} - {self.address}"
+
+
+class HomeMembership(models.Model):
+    """
+    Links users to homes with specific roles.
+    A user can be a member of multiple homes.
+    """
+    ROLE_CHOICES = [
+        ('owner', 'Owner'),
+        ('admin', 'Admin'),
+        ('viewer', 'Viewer'),
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='home_memberships')
+    home = models.ForeignKey(Home, on_delete=models.CASCADE, related_name='memberships')
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='owner')
+    is_primary = models.BooleanField(default=False, help_text="User's default/primary home")
+    joined_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ['user', 'home']
+        ordering = ['-is_primary', '-joined_at']
+
+    def __str__(self):
+        return f"{self.user.email} - {self.home.name} ({self.role})"
+
+    def save(self, *args, **kwargs):
+        # If this is set as primary, unset other primaries for this user
+        if self.is_primary:
+            HomeMembership.objects.filter(user=self.user, is_primary=True).exclude(pk=self.pk).update(is_primary=False)
+        super().save(*args, **kwargs)
+
+
+class UserHomeContext(models.Model):
+    """
+    Tracks which home a user is currently viewing/working with.
+    This allows users to switch between their homes.
+    """
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='home_context')
+    current_home = models.ForeignKey(Home, on_delete=models.SET_NULL, null=True, blank=True, related_name='active_users')
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "User Home Context"
+        verbose_name_plural = "User Home Contexts"
+
+    def __str__(self):
+        return f"{self.user.email} viewing {self.current_home.name if self.current_home else 'None'}"
+
+
 class HomeProfile(models.Model):
     """
     Stores the home's general profile information
@@ -70,7 +177,8 @@ class HomeLocation(models.Model):
     """
     Represents a location in the user's home where components are installed.
     """
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='home_locations')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='home_locations', null=True, blank=True)
+    home = models.ForeignKey(Home, on_delete=models.CASCADE, related_name='locations', null=True, blank=True)
     name = models.CharField(max_length=255)
     description = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -78,7 +186,8 @@ class HomeLocation(models.Model):
 
     class Meta:
         ordering = ['name']
-        unique_together = ['user', 'name']
+        # unique_together will be re-enabled after migration
+        # unique_together = ['home', 'name']
 
     def __str__(self):
         return f"{self.name}"
@@ -108,7 +217,8 @@ class HomeComponent(models.Model):
         ('Other', 'Other'),
     ]
 
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='home_components')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='home_components', null=True, blank=True)
+    home = models.ForeignKey(Home, on_delete=models.CASCADE, related_name='components', null=True, blank=True)
     name = models.CharField(max_length=255)
     category = models.CharField(max_length=50, choices=CATEGORY_CHOICES)
     brand = models.CharField(max_length=100, blank=True)
@@ -177,7 +287,8 @@ class Document(models.Model):
         ('Warranties', 'Warranties'),
     ]
 
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='documents')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='documents', null=True, blank=True)
+    home = models.ForeignKey(Home, on_delete=models.CASCADE, related_name='documents', null=True, blank=True)
     home_component = models.ForeignKey(HomeComponent, on_delete=models.SET_NULL, null=True, blank=True, related_name='documents')
     name = models.CharField(max_length=255)
     category = models.CharField(max_length=50, choices=CATEGORY_CHOICES)
@@ -232,7 +343,8 @@ class Task(models.Model):
         ('yearly', 'Yearly'),
     ]
 
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='tasks')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='tasks', null=True, blank=True)
+    home = models.ForeignKey(Home, on_delete=models.CASCADE, related_name='tasks', null=True, blank=True)
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
     category = models.CharField(max_length=50, choices=CATEGORY_CHOICES, default='General Maintenance')
@@ -388,7 +500,8 @@ class TaskRegistration(models.Model):
     Links a HomeComponent to a TaskTemplate and tracks task generation.
     Created when a HomeComponent matches a TaskTemplate.
     """
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='task_registrations')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='task_registrations', null=True, blank=True)
+    home = models.ForeignKey(Home, on_delete=models.CASCADE, related_name='task_registrations', null=True, blank=True)
     home_component = models.ForeignKey(HomeComponent, on_delete=models.CASCADE, related_name='task_registrations')
     task_template = models.ForeignKey(TaskTemplate, on_delete=models.CASCADE, related_name='registrations')
 
@@ -423,7 +536,8 @@ class Appointment(models.Model):
         ('cancelled', 'Cancelled'),
     ]
 
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='appointments')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='appointments', null=True, blank=True)
+    home = models.ForeignKey(Home, on_delete=models.CASCADE, related_name='appointments', null=True, blank=True)
     service_id = models.CharField(max_length=100)
     service_name = models.CharField(max_length=255)
     service_category = models.CharField(max_length=100)
@@ -456,7 +570,8 @@ class Contractor(models.Model):
         ('Other', 'Other'),
     ]
 
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='contractors')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='contractors', null=True, blank=True)
+    home = models.ForeignKey(Home, on_delete=models.CASCADE, related_name='contractors', null=True, blank=True)
     name = models.CharField(max_length=255, blank=True)
     company_name = models.CharField(max_length=255)
     category = models.CharField(max_length=50, choices=CATEGORY_CHOICES, blank=True)
@@ -480,7 +595,8 @@ class MaintenanceHistory(models.Model):
         ('Repair', 'Repair'),
     ]
 
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='maintenance_histories')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='maintenance_histories', null=True, blank=True)
+    home = models.ForeignKey(Home, on_delete=models.CASCADE, related_name='maintenance_histories', null=True, blank=True)
     name = models.CharField(max_length=255)
     date = models.DateField()
     category = models.CharField(max_length=50, choices=CATEGORY_CHOICES, blank=True)

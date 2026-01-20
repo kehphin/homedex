@@ -4,6 +4,7 @@ from rest_framework.routers import DefaultRouter
 from owner import views
 
 router = DefaultRouter()
+router.register(r'homes', views.HomeViewSet, basename='home')
 router.register(r'home-profile', views.HomeProfileViewSet, basename='homeprofile')
 router.register(r'locations', views.HomeLocationViewSet, basename='homelocation')
 router.register(r'components', views.HomeComponentViewSet, basename='homecomponent')

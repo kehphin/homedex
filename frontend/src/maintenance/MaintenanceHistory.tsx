@@ -473,16 +473,16 @@ export default function MaintenanceHistoryPage() {
                             <span className="badge badge-outline">
                               {new Date(record.date).toLocaleDateString()}
                             </span>
-                            <span className="badge badge-primary">
+                            <span className="badge badge-primary badge-light">
                               ${parseFloat(record.price).toFixed(2)}
                             </span>
                             {record.category && (
-                              <span className="badge badge-secondary">
+                              <span className="badge badge-secondary badge-light">
                                 {record.category}
                               </span>
                             )}
                             {record.contractorName && (
-                              <span className="badge badge-info">
+                              <span className="badge badge-info badge-light">
                                 {record.contractorName}
                               </span>
                             )}

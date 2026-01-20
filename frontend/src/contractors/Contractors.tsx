@@ -374,7 +374,7 @@ export default function ContractorsPage() {
                           )}
                           {selectedContractor.category && (
                             <p className="text-base-content/60 text-sm mt-1">
-                              <span className="badge badge-primary">
+                              <span className="badge badge-primary badge-light">
                                 {selectedContractor.category}
                               </span>
                             </p>

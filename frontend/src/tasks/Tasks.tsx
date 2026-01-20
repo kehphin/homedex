@@ -566,7 +566,7 @@ export default function Tasks() {
                       filterPriority !== "all" ||
                       filterCategory !== "all" ||
                       filterMonth !== "all") && (
-                      <span className="badge badge-primary badge-sm">
+                      <span className="badge badge-primary badge-sm badge-light">
                         Active
                       </span>
                     )}
@@ -808,19 +808,19 @@ export default function Tasks() {
                               {task.category}
                             </span>
                             <span
-                              className={`badge ${
+                              className={`badge badge-light ${
                                 PRIORITY_COLORS[task.priority]
                               }`}
                             >
                               {task.priority}
                             </span>
                             <span
-                              className={`badge ${STATUS_COLORS[task.status]}`}
+                              className={`badge badge-light ${ STATUS_COLORS[task.status]}`}
                             >
                               {task.status}
                             </span>
                             {task.isRecurring && (
-                              <span className="badge badge-info">
+                              <span className="badge badge-info badge-light">
                                 Recurring ({task.recurrencePattern})
                               </span>
                             )}

@@ -93,7 +93,7 @@ const PricingSection = () => {
             >
               {plan.popular && (
                 <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-                  <div className="badge badge-primary">Most Popular</div>
+                  <div className="badge badge-primary badge-light">Most Popular</div>
                 </div>
               )}
               <div className="card-body flex flex-col justify-between h-full">

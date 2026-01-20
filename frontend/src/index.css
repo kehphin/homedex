@@ -3,6 +3,10 @@
 @tailwind utilities;
 @plugin "daisyui";
 
+* {
+  font-family: "Hanken Grotesk", sans-serif;
+}
+
 @keyframes drift {
   0% {
     transform: translate(0, 0) rotate(0deg);
@@ -13,4 +17,47 @@
   100% {
     transform: translate(0, 0) rotate(360deg);
   }
+}
+
+/* Light badge variants */
+.badge-primary.badge-light {
+  background-color: rgba(82, 128, 80, 0.15);
+  color: #528050;
+  border-color: rgba(82, 128, 80, 0.2);
+}
+
+.badge-secondary.badge-light {
+  background-color: rgba(47, 76, 46, 0.15);
+  color: #2F4C2E;
+  border-color: rgba(47, 76, 46, 0.2);
+}
+
+.badge-accent.badge-light {
+  background-color: rgba(55, 205, 190, 0.15);
+  color: #37cdbe;
+  border-color: rgba(55, 205, 190, 0.2);
+}
+
+.badge-info.badge-light {
+  background-color: rgba(28, 146, 242, 0.15);
+  color: #1c92f2;
+  border-color: rgba(28, 146, 242, 0.2);
+}
+
+.badge-success.badge-light {
+  background-color: rgba(0, 148, 133, 0.15);
+  color: #009485;
+  border-color: rgba(0, 148, 133, 0.2);
+}
+
+.badge-warning.badge-light {
+  background-color: rgba(255, 153, 0, 0.15);
+  color: #ff9900;
+  border-color: rgba(255, 153, 0, 0.2);
+}
+
+.badge-error.badge-light {
+  background-color: rgba(255, 87, 36, 0.15);
+  color: #ff5724;
+  border-color: rgba(255, 87, 36, 0.2);
 }

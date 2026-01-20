@@ -699,7 +699,7 @@ export default function HomeComponents() {
                     {(filterCategory !== "all" ||
                       filterCondition !== "all" ||
                       filterLocation !== "all") && (
-                      <span className="badge badge-primary badge-sm">
+                      <span className="badge badge-primary badge-sm badge-light">
                         Active
                       </span>
                     )}
@@ -903,7 +903,7 @@ export default function HomeComponents() {
                           </span>
                         )}
                         {component.documents.length > 0 && (
-                          <span className="badge badge-primary">
+                          <span className="badge badge-primary badge-light">
                             <DocumentIcon className="h-3 w-3 mr-1" />
                             Docs: {component.documents.length}
                           </span>
@@ -1033,7 +1033,7 @@ export default function HomeComponents() {
                             )}
                             {new Date(component.warrantyExpiration) >
                               new Date() && (
-                              <span className="badge badge-success text-xs">
+                              <span className="badge badge-success badge-light text-xs">
                                 Under Warranty
                               </span>
                             )}
@@ -1606,7 +1606,7 @@ export default function HomeComponents() {
                               >
                                 <XMarkIcon className="h-4 w-4" />
                               </button>
-                              <span className="badge badge-sm badge-info absolute bottom-1 left-1">
+                              <span className="badge badge-sm badge-info badge-light absolute bottom-1 left-1">
                                 New
                               </span>
                             </div>
@@ -1679,7 +1679,7 @@ export default function HomeComponents() {
                                 <div>
                                   <p className="font-semibold text-sm">
                                     {file.name}
-                                    <span className="badge badge-sm badge-info ml-2">
+                                    <span className="badge badge-sm badge-info badge-light ml-2">
                                       New
                                     </span>
                                   </p>

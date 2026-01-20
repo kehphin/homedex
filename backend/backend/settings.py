@@ -244,6 +244,7 @@ HEADLESS_FRONTEND_URLS = {
     "account_signup": "https://app.homedex.app/account/signup",
     "socialaccount_login_error": "https://app.homedex.app/account/provider/callback",
 }
+HEADLESS_ADAPTER = 'user_auth.headless_adapter.CustomHeadlessAdapter'
 
 MFA_SUPPORTED_TYPES = ["totp", "recovery_codes",]
 MFA_PASSKEY_LOGIN_ENABLED = True

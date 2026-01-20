@@ -5,6 +5,7 @@ const API_BASE = `${config.appHost}/api/v1/owner`;
 
 export interface HomeProfile {
   id?: string;
+  name?: string;
   address: string;
   city?: string;
   state?: string;
@@ -18,6 +19,8 @@ export interface HomeProfile {
   heat_type?: string;
   heating_source?: string;
   is_septic: boolean;
+  year_built?: number;
+  is_active?: boolean;
   created_at?: string;
   updated_at?: string;
 }

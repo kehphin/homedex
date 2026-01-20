@@ -11,10 +11,68 @@ from payments.permissions import HasPurchasedProduct, HasAnyActiveSubscription, 
 from rest_framework import permissions
 import os
 
-from .models import ContactUs, HomeProfile, HomeLocation, HomeComponent, ComponentImage, ComponentAttachment, Document, Task, RecurringTaskInstance, Appointment, MaintenanceHistory, MaintenanceAttachment, Contractor, Notification, NotificationPreference
-from .serializers import HomeProfileSerializer, HomeLocationSerializer, HomeComponentSerializer, DocumentSerializer, TaskSerializer, AppointmentSerializer, MaintenanceHistorySerializer, ContractorSerializer, ContractorDetailSerializer, NotificationSerializer, NotificationPreferenceSerializer
+from .models import (
+    Home, HomeMembership, UserHomeContext,
+    ContactUs, HomeProfile, HomeLocation, HomeComponent, ComponentImage, ComponentAttachment,
+    Document, Task, RecurringTaskInstance, Appointment, MaintenanceHistory, MaintenanceAttachment,
+    Contractor, Notification, NotificationPreference
+)
+from .serializers import (
+    HomeSerializer, HomeMembershipSerializer, UserHomeContextSerializer,
+    HomeProfileSerializer, HomeLocationSerializer, HomeComponentSerializer, DocumentSerializer,
+    TaskSerializer, AppointmentSerializer, MaintenanceHistorySerializer, ContractorSerializer,
+    ContractorDetailSerializer, NotificationSerializer, NotificationPreferenceSerializer
+)
 from .recurring_tasks import get_recurring_task_stats
 from django.core.mail import send_mail
+
+# Helper function to get current home
+def get_current_home(request):
+    """Get the user's current home context"""
+    if not request.user.is_authenticated:
+        return None
+        
+    try:
+        context = request.user.home_context
+        if context.current_home:
+            return context.current_home
+    except (UserHomeContext.DoesNotExist, AttributeError):
+        pass
+    
+    # Fallback: Return user's primary home if context doesn't exist
+    try:
+        membership = HomeMembership.objects.filter(user=request.user, is_primary=True).first()
+        if membership:
+            # Auto-create context
+            context, created = UserHomeContext.objects.get_or_create(
+                user=request.user,
+                defaults={'current_home': membership.home}
+            )
+            if not context.current_home:
+                context.current_home = membership.home
+                context.save()
+            return membership.home
+    except Exception as e:
+        print(f"Error getting current home: {e}")
+        pass
+    
+    # Last resort: return any home the user has access to
+    try:
+        membership = HomeMembership.objects.filter(user=request.user).first()
+        if membership:
+            context, created = UserHomeContext.objects.get_or_create(
+                user=request.user,
+                defaults={'current_home': membership.home}
+            )
+            if not context.current_home:
+                context.current_home = membership.home
+                context.save()
+            return membership.home
+    except Exception as e:
+        print(f"Error getting any home: {e}")
+        pass
+        
+    return None
 
 # CHANGE: These are the product IDs and subscription IDs that the user must have purchased to access the views
 # You can find these IDs in the Stripe Dashboard
@@ -86,54 +144,170 @@ def send_email_for_contact_us(name, email, message):
     send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [settings.CONTACT_US_RECIPIENT_EMAIL])
 
 
+# ===== Home Management Views =====
+
+class HomeViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet for managing homes
+    """
+    serializer_class = HomeSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        """Get all homes the user has access to"""
+        return Home.objects.filter(memberships__user=self.request.user).distinct()
+
+    def create(self, request):
+        """Create a new home and claim it"""
+        address = request.data.get('address', '').strip()
+
+        if not address:
+            return Response(
+                {'error': 'Address is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Check if address is already taken
+        if Home.objects.filter(address__iexact=address).exists():
+            return Response(
+                {'error': f'A home with address "{address}" already exists'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Create the home
+        serializer = self.get_serializer(data=request.data, context={'request': request})
+        if serializer.is_valid():
+            home = serializer.save()
+
+            # Create membership for the user as owner
+            membership = HomeMembership.objects.create(
+                user=request.user,
+                home=home,
+                role='owner',
+                is_primary=not HomeMembership.objects.filter(user=request.user).exists()
+            )
+
+            # Set as current home context if it's the user's first home
+            try:
+                context = request.user.home_context
+                if not context.current_home:
+                    context.current_home = home
+                    context.save()
+            except UserHomeContext.DoesNotExist:
+                UserHomeContext.objects.create(
+                    user=request.user,
+                    current_home=home
+                )
+
+            return Response(
+                HomeSerializer(home, context={'request': request}).data,
+                status=status.HTTP_201_CREATED
+            )
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=True, methods=['post'])
+    def switch(self, request, pk=None):
+        """Switch to a different home"""
+        home = self.get_object()
+
+        # Verify user has access to this home
+        if not home.memberships.filter(user=request.user).exists():
+            return Response(
+                {'error': 'You do not have access to this home'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        # Update or create home context
+        context, created = UserHomeContext.objects.get_or_create(user=request.user)
+        context.current_home = home
+        context.save()
+
+        return Response({
+            'message': f'Switched to {home.name}',
+            'home': HomeSerializer(home, context={'request': request}).data
+        })
+
+    @action(detail=True, methods=['post'])
+    def set_primary(self, request, pk=None):
+        """Set a home as the user's primary home"""
+        home = self.get_object()
+
+        try:
+            membership = home.memberships.get(user=request.user)
+            membership.is_primary = True
+            membership.save()  # This will auto-unset other primaries
+
+            return Response({'message': f'{home.name} set as primary home'})
+        except HomeMembership.DoesNotExist:
+            return Response(
+                {'error': 'You are not a member of this home'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+    @action(detail=False, methods=['get'])
+    def current(self, request):
+        """Get the current home context"""
+        try:
+            context = request.user.home_context
+            if context.current_home:
+                return Response(
+                    HomeSerializer(context.current_home, context={'request': request}).data
+                )
+            return Response({'error': 'No current home set'}, status=status.HTTP_404_NOT_FOUND)
+        except UserHomeContext.DoesNotExist:
+            return Response({'error': 'No home context found'}, status=status.HTTP_404_NOT_FOUND)
+
+
 class HomeProfileViewSet(viewsets.ViewSet):
     """
-    ViewSet for managing user's home profile information
+    ViewSet for managing current home's profile information
+    Now uses the Home model instead of the deprecated HomeProfile model
     """
     permission_classes = [permissions.IsAuthenticated]
 
     def list(self, request):
-        """Get user's home profile"""
-        try:
-            home_profile = HomeProfile.objects.get(user=request.user)
-            serializer = HomeProfileSerializer(home_profile, context={'request': request})
-            return Response(serializer.data)
-        except HomeProfile.DoesNotExist:
-            return Response({'error': 'Home profile not found'}, status=status.HTTP_404_NOT_FOUND)
+        """Get current home's profile"""
+        home = get_current_home(request)
+        print(f"DEBUG HomeProfileViewSet.list: home={home}, id={home.id if home else None}")
+        if not home:
+            return Response({'error': 'No home selected'}, status=status.HTTP_404_NOT_FOUND)
+        
+        serializer = HomeSerializer(home, context={'request': request})
+        return Response(serializer.data)
 
     def create(self, request):
-        """Create or update user's home profile"""
-        try:
-            home_profile = HomeProfile.objects.get(user=request.user)
-            serializer = HomeProfileSerializer(home_profile, data=request.data, partial=True, context={'request': request})
-        except HomeProfile.DoesNotExist:
-            serializer = HomeProfileSerializer(data=request.data, context={'request': request})
-
+        """Create or update current home's profile"""
+        home = get_current_home(request)
+        if not home:
+            return Response({'error': 'No home selected'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        serializer = HomeSerializer(home, data=request.data, partial=True, context={'request': request})
         if serializer.is_valid():
-            serializer.save(user=request.user)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def retrieve(self, request, pk=None):
-        """Get user's home profile (same as list for single resource)"""
-        try:
-            home_profile = HomeProfile.objects.get(user=request.user)
-            serializer = HomeProfileSerializer(home_profile, context={'request': request})
-            return Response(serializer.data)
-        except HomeProfile.DoesNotExist:
-            return Response({'error': 'Home profile not found'}, status=status.HTTP_404_NOT_FOUND)
+        """Get current home's profile (same as list for single resource)"""
+        home = get_current_home(request)
+        if not home:
+            return Response({'error': 'No home selected'}, status=status.HTTP_404_NOT_FOUND)
+        
+        serializer = HomeSerializer(home, context={'request': request})
+        return Response(serializer.data)
 
     def update(self, request, pk=None):
-        """Update user's home profile"""
-        try:
-            home_profile = HomeProfile.objects.get(user=request.user)
-            serializer = HomeProfileSerializer(home_profile, data=request.data, partial=True, context={'request': request})
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        except HomeProfile.DoesNotExist:
-            return Response({'error': 'Home profile not found'}, status=status.HTTP_404_NOT_FOUND)
+        """Update current home's profile"""
+        home = get_current_home(request)
+        if not home:
+            return Response({'error': 'No home selected'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        serializer = HomeSerializer(home, data=request.data, partial=True, context={'request': request})
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class HomeLocationViewSet(viewsets.ModelViewSet):
@@ -144,12 +318,18 @@ class HomeLocationViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        # Users can only see their own locations
-        return HomeLocation.objects.filter(user=self.request.user)
+        # Filter by current home
+        home = get_current_home(self.request)
+        if home:
+            return HomeLocation.objects.filter(home=home)
+        return HomeLocation.objects.none()
 
     def perform_create(self, serializer):
-        # Automatically set the user when creating
-        serializer.save(user=self.request.user)
+        # Automatically set the home when creating
+        home = get_current_home(self.request)
+        if not home:
+            raise PermissionError('No home selected')
+        serializer.save(home=home)
 
 
 class HomeComponentViewSet(viewsets.ModelViewSet):
@@ -160,12 +340,18 @@ class HomeComponentViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        # Users can only see their own components
-        return HomeComponent.objects.filter(user=self.request.user)
+        # Filter by current home
+        home = get_current_home(self.request)
+        if home:
+            return HomeComponent.objects.filter(home=home)
+        return HomeComponent.objects.none()
 
     def perform_create(self, serializer):
-        # Automatically set the user when creating
-        serializer.save(user=self.request.user)
+        # Automatically set the home when creating
+        home = get_current_home(self.request)
+        if not home:
+            raise PermissionError('No home selected')
+        serializer.save(home=home)
 
     @action(detail=True, methods=['post'])
     def reorder_images(self, request, pk=None):
@@ -252,12 +438,18 @@ class DocumentViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        # Users can only see their own documents
-        return Document.objects.filter(user=self.request.user)
+        # Filter by current home
+        home = get_current_home(self.request)
+        if home:
+            return Document.objects.filter(home=home)
+        return Document.objects.none()
 
     def perform_create(self, serializer):
-        # Automatically set the user when creating
-        serializer.save(user=self.request.user)
+        # Automatically set the home when creating
+        home = get_current_home(self.request)
+        if not home:
+            raise PermissionError('No home selected')
+        serializer.save(home=home)
 
     @action(detail=False, methods=['get'])
     def stats(self, request):
@@ -290,12 +482,18 @@ class TaskViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        # Users can only see their own tasks
-        return Task.objects.filter(user=self.request.user)
+        # Filter by current home
+        home = get_current_home(self.request)
+        if home:
+            return Task.objects.filter(home=home)
+        return Task.objects.none()
 
     def perform_create(self, serializer):
-        # Automatically set the user when creating
-        serializer.save(user=self.request.user)
+        # Automatically set the home when creating
+        home = get_current_home(self.request)
+        if not home:
+            raise PermissionError('No home selected')
+        serializer.save(home=home)
 
     @action(detail=False, methods=['get'])
     def stats(self, request):
@@ -326,12 +524,18 @@ class AppointmentViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        # Users can only see their own appointments
-        return Appointment.objects.filter(user=self.request.user)
+        # Filter by current home
+        home = get_current_home(self.request)
+        if home:
+            return Appointment.objects.filter(home=home)
+        return Appointment.objects.none()
 
     def perform_create(self, serializer):
-        # Automatically set the user when creating
-        serializer.save(user=self.request.user)
+        # Automatically set the home when creating
+        home = get_current_home(self.request)
+        if not home:
+            raise PermissionError('No home selected')
+        serializer.save(home=home)
 
     @action(detail=True, methods=['post'])
     def cancel(self, request, pk=None):
@@ -402,12 +606,18 @@ class MaintenanceHistoryViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        # Users can only see their own maintenance histories
-        return MaintenanceHistory.objects.filter(user=self.request.user)
+        # Filter by current home
+        home = get_current_home(self.request)
+        if home:
+            return MaintenanceHistory.objects.filter(home=home)
+        return MaintenanceHistory.objects.none()
 
     def perform_create(self, serializer):
-        # Automatically set the user when creating
-        serializer.save(user=self.request.user)
+        # Automatically set the home when creating
+        home = get_current_home(self.request)
+        if not home:
+            raise PermissionError('No home selected')
+        serializer.save(home=home)
 
     @action(detail=True, methods=['delete'], url_path='attachments/(?P<attachment_id>[^/.]+)')
     def delete_attachment(self, request, pk=None, attachment_id=None):
@@ -449,8 +659,11 @@ class ContractorViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        # Users can only see their own contractors
-        return Contractor.objects.filter(user=self.request.user)
+        # Filter by current home
+        home = get_current_home(self.request)
+        if home:
+            return Contractor.objects.filter(home=home)
+        return Contractor.objects.none()
 
     def get_serializer_class(self):
         # Use detailed serializer for retrieve action to include maintenance history
@@ -459,8 +672,11 @@ class ContractorViewSet(viewsets.ModelViewSet):
         return ContractorSerializer
 
     def perform_create(self, serializer):
-        # Automatically set the user when creating
-        serializer.save(user=self.request.user)
+        # Automatically set the home when creating
+        home = get_current_home(self.request)
+        if not home:
+            raise PermissionError('No home selected')
+        serializer.save(home=home)
 
     @action(detail=False, methods=['get'])
     def stats(self, request):

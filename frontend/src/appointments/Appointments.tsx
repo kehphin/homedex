@@ -56,13 +56,13 @@ export default function Appointments() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "pending":
-        return <div className="badge badge-warning">Pending</div>;
+        return <div className="badge badge-warning badge-light">Pending</div>;
       case "confirmed":
-        return <div className="badge badge-info">Confirmed</div>;
+        return <div className="badge badge-info badge-light">Confirmed</div>;
       case "completed":
-        return <div className="badge badge-success">Completed</div>;
+        return <div className="badge badge-success badge-light">Completed</div>;
       case "cancelled":
-        return <div className="badge badge-error">Cancelled</div>;
+        return <div className="badge badge-error badge-light">Cancelled</div>;
       default:
         return <div className="badge">{status}</div>;
     }

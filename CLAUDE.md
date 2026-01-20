@@ -25,19 +25,16 @@
 ### Core Features
 
 1. **Authentication System**
-
    - Session-based authentication
    - Custom user model
    - Registration, login, and logout functionality
 
 2. **Payment Processing**
-
    - Stripe integration
    - Subscription management
    - Payment history tracking
 
 3. **API Layer**
-
    - Django REST Framework
    - Secure endpoints
    - Serialization for complex data types
@@ -72,7 +69,6 @@
 The frontend is organized into several key components and services:
 
 1. **Authentication**:
-
    - `frontend/src/auth/AuthService.ts`: Handles authentication-related API calls.
    - `frontend/src/auth/AuthContext.tsx`: Provides a React context for managing authentication state.
    - `frontend/src/auth/hooks.ts`: Custom hooks for accessing auth-related functionality.
@@ -80,11 +76,9 @@ The frontend is organized into several key components and services:
    - `frontend/src/auth/user/Login.tsx`: Component for user login.
 
 2. **API Communication**:
-
    - `frontend/src/lib/apiUtils.ts`: Utility functions for making API requests to the backend.
 
 3. **Constants and Types**:
-
    - `frontend/src/auth/constants.ts`: Stores important constants used throughout the auth system.
    - `frontend/src/auth/types.ts`: Defines TypeScript types and interfaces for auth-related data.
 
@@ -96,7 +90,6 @@ The frontend is organized into several key components and services:
 The backend is built with Django and includes the following modules:
 
 1. **Authentication Module**:
-
    - Located in `backend/user_auth/` directory.
    - Handles user registration, login, and session-based authentication.
    - Utilizes Django's built-in authentication system, with custom user model in `backend/user_auth/models.py`.
@@ -106,7 +99,6 @@ The backend is built with Django and includes the following modules:
    - Custom authentication logic implemented in `backend/user_auth/views.py`.
 
 2. **Payments Module**:
-
    - Located in `backend/payments/` directory.
    - Manages payment processing and related functionalities.
    - URL routing:
@@ -124,13 +116,11 @@ The backend is built with Django and includes the following modules:
      - `backend/payments/admin.py`: Configures admin interface for payment-related models.
 
 3. **API Layer**:
-
    - Utilizes Django REST Framework for creating RESTful APIs.
    - Implements serializers for converting complex data types to Python datatypes that can then be easily rendered into JSON.
    - Includes viewsets or function-based views for handling API requests and responses.
 
 4. **Database**:
-
    - Uses Django's ORM (Object-Relational Mapping) for database operations.
    - Likely includes models for User, Payment, Transaction, and possibly Subscription or Product.
 
@@ -141,35 +131,29 @@ The backend is built with Django and includes the following modules:
 ## Integration Between Frontend and Backend
 
 1. **Authentication Flow**:
-
    - The frontend's `frontend/src/auth/AuthService.ts` handles authentication-related API calls to the backend.
    - `frontend/src/auth/AuthContext.tsx` provides a React context for managing and sharing authentication state across components.
    - `frontend/src/auth/user/Login.tsx` component uses `AuthService` to send login credentials to the backend and update the `AuthContext` with the authenticated user information.
    - `frontend/src/auth/hooks.ts` provides custom hooks like `useAuth()` for components to easily access authentication state and functions.
 
 2. **API Communication**:
-
    - `frontend/src/lib/apiUtils.ts` contains utility functions for making HTTP requests to the backend, including:
      - A base API client setup
      - Functions to handle request headers, including authentication tokens
      - Error handling and response parsing
 
 3. **Type Safety**:
-
    - `frontend/src/auth/types.ts` defines TypeScript interfaces and types for auth-related data, ensuring type consistency between frontend components and backend responses.
 
 4. **Constants**:
-
    - `frontend/src/auth/constants.ts` stores important constants used in the auth system, including API endpoints, token storage keys, and authentication-related enums.
 
 5. **Payment Processing**:
-
    - The backend's `backend/payments/urls.py` defines API endpoints for payment-related operations.
    - Frontend components use `frontend/src/lib/apiUtils.ts` to make requests to these payment endpoints.
    - The `frontend/src/Dashboard.tsx` component may include or manage components that interact with the payment system.
 
 6. **Protected Routes**:
-
    - The `AuthContext` from `frontend/src/auth/AuthContext.tsx` and associated hooks are used to protect routes that require authentication, redirecting unauthenticated users to the `frontend/src/auth/user/Login.tsx` component.
 
 7. **Data Flow**:
@@ -404,9 +388,8 @@ class HomeComponentAdmin(admin.ModelAdmin):
 #### 6. Create Migrations
 
 ```bash
-cd backend
-python manage.py makemigrations <app_name>
-python manage.py migrate
+docker-compose exec backend python manage.py makemigrations <app_name>
+docker-compose exec backend python manage.py migrate
 ```
 
 ### Frontend Implementation
@@ -474,7 +457,7 @@ export async function getComponents(): Promise<HomeComponent[]> {
 export async function createComponent(
   data: ComponentData,
   images?: File[],
-  attachments?: File[]
+  attachments?: File[],
 ): Promise<HomeComponent> {
   const formData = new FormData();
 
@@ -642,37 +625,6 @@ const handleRemoveImage = (index: number) => {
 - Use `URL.createObjectURL()` for previews
 - Remember to `URL.revokeObjectURL()` to prevent memory leaks
 - Keep track of both new and existing files when editing
-
-### Testing the Integration
-
-1. **Create migrations and migrate the database:**
-
-   ```bash
-   cd backend
-   python manage.py makemigrations
-   python manage.py migrate
-   ```
-
-2. **Start the backend server:**
-
-   ```bash
-   python manage.py runserver
-   ```
-
-3. **Start the frontend development server:**
-
-   ```bash
-   cd frontend
-   npm start
-   ```
-
-4. **Test the following:**
-   - Authentication is required for all endpoints
-   - Users can only see their own data
-   - CRUD operations work correctly
-   - File uploads work properly
-   - Error handling works as expected
-   - Validation is working on both frontend and backend
 
 ### Common Patterns and Best Practices
 

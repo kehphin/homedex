@@ -386,7 +386,7 @@ export default function Documents() {
                     <FunnelIcon className="h-5 w-5" />
                     Filters
                     {(filterCategory !== "all" || filterYear !== "all") && (
-                      <span className="badge badge-primary badge-sm">
+                      <span className="badge badge-primary badge-sm badge-light">
                         Active
                       </span>
                     )}
@@ -549,7 +549,7 @@ export default function Documents() {
                             {document.componentName && (
                               <>
                                 <span>•</span>
-                                <span className="badge badge-primary">
+                                <span className="badge badge-primary badge-light">
                                   {document.componentName}
                                 </span>
                               </>
@@ -809,7 +809,7 @@ export default function Documents() {
                             onClick={() => handleToggleTag(tag)}
                             className={`badge badge-lg cursor-pointer ${
                               selectedTags.includes(tag)
-                                ? "badge-primary"
+                                ? "badge-primary badge-light"
                                 : "badge-outline"
                             }`}
                           >
