@@ -31,14 +31,14 @@ def get_current_home(request):
     """Get the user's current home context"""
     if not request.user.is_authenticated:
         return None
-        
+
     try:
         context = request.user.home_context
         if context.current_home:
             return context.current_home
     except (UserHomeContext.DoesNotExist, AttributeError):
         pass
-    
+
     # Fallback: Return user's primary home if context doesn't exist
     try:
         membership = HomeMembership.objects.filter(user=request.user, is_primary=True).first()
@@ -55,7 +55,7 @@ def get_current_home(request):
     except Exception as e:
         print(f"Error getting current home: {e}")
         pass
-    
+
     # Last resort: return any home the user has access to
     try:
         membership = HomeMembership.objects.filter(user=request.user).first()
@@ -71,7 +71,7 @@ def get_current_home(request):
     except Exception as e:
         print(f"Error getting any home: {e}")
         pass
-        
+
     return None
 
 # CHANGE: These are the product IDs and subscription IDs that the user must have purchased to access the views
@@ -271,17 +271,51 @@ class HomeProfileViewSet(viewsets.ViewSet):
         home = get_current_home(request)
         print(f"DEBUG HomeProfileViewSet.list: home={home}, id={home.id if home else None}")
         if not home:
-            return Response({'error': 'No home selected'}, status=status.HTTP_404_NOT_FOUND)
-        
+            # Return an empty profile structure for new users
+            return Response({}, status=status.HTTP_200_OK)
+
         serializer = HomeSerializer(home, context={'request': request})
         return Response(serializer.data)
 
     def create(self, request):
         """Create or update current home's profile"""
         home = get_current_home(request)
+
+        # If no home exists, create one for the user (first home)
         if not home:
-            return Response({'error': 'No home selected'}, status=status.HTTP_400_BAD_REQUEST)
-        
+            # Check if address is provided
+            if 'address' not in request.data or not request.data['address'].strip():
+                return Response({'error': 'Address is required to create a new home'}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Create a new home
+            home_data = request.data.copy()
+            # Set a default name if not provided
+            if 'name' not in home_data or not home_data['name']:
+                home_data['name'] = home_data.get('address', 'My Home')
+
+            serializer = HomeSerializer(data=home_data, context={'request': request})
+            if not serializer.is_valid():
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+            home = serializer.save()
+
+            # Create HomeMembership for the user
+            HomeMembership.objects.create(
+                user=request.user,
+                home=home,
+                role='owner',
+                is_primary=True
+            )
+
+            # Create UserHomeContext
+            UserHomeContext.objects.get_or_create(
+                user=request.user,
+                defaults={'current_home': home}
+            )
+
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        # Home exists, update it
         serializer = HomeSerializer(home, data=request.data, partial=True, context={'request': request})
         if serializer.is_valid():
             serializer.save()
@@ -293,7 +327,7 @@ class HomeProfileViewSet(viewsets.ViewSet):
         home = get_current_home(request)
         if not home:
             return Response({'error': 'No home selected'}, status=status.HTTP_404_NOT_FOUND)
-        
+
         serializer = HomeSerializer(home, context={'request': request})
         return Response(serializer.data)
 
@@ -302,7 +336,7 @@ class HomeProfileViewSet(viewsets.ViewSet):
         home = get_current_home(request)
         if not home:
             return Response({'error': 'No home selected'}, status=status.HTTP_400_BAD_REQUEST)
-        
+
         serializer = HomeSerializer(home, data=request.data, partial=True, context={'request': request})
         if serializer.is_valid():
             serializer.save()
