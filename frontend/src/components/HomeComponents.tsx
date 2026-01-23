@@ -130,7 +130,7 @@ export default function HomeComponents() {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [selectedImageFiles, setSelectedImageFiles] = useState<File[]>([]);
   const [selectedImagePreviews, setSelectedImagePreviews] = useState<string[]>(
-    []
+    [],
   );
   const [selectedAttachmentFiles, setSelectedAttachmentFiles] = useState<
     File[]
@@ -139,17 +139,17 @@ export default function HomeComponents() {
     Array<{ id: string; url: string }>
   >([]);
   const [existingAttachments, setExistingAttachments] = useState<Attachment[]>(
-    []
+    [],
   );
   const [locations, setLocations] = useState<HomeLocation[]>([]);
   const [isAddingNewLocation, setIsAddingNewLocation] = useState(false);
   const [newLocationInput, setNewLocationInput] = useState("");
   const [draggedImageIndex, setDraggedImageIndex] = useState<number | null>(
-    null
+    null,
   );
   const [draggedOverIndex, setDraggedOverIndex] = useState<number | null>(null);
   const [imageSourceType, setImageSourceType] = useState<"existing" | "new">(
-    "existing"
+    "existing",
   );
   const [imagePreviewComponent, setImagePreviewComponent] =
     useState<HomeComponent | null>(null);
@@ -276,7 +276,7 @@ export default function HomeComponents() {
     URL.revokeObjectURL(selectedImagePreviews[index]);
     setSelectedImageFiles(selectedImageFiles.filter((_, i) => i !== index));
     setSelectedImagePreviews(
-      selectedImagePreviews.filter((_, i) => i !== index)
+      selectedImagePreviews.filter((_, i) => i !== index),
     );
   };
 
@@ -329,7 +329,7 @@ export default function HomeComponents() {
     try {
       await ComponentsService.deleteComponentImage(
         editingComponent.id,
-        imageId
+        imageId,
       );
       setExistingImages(existingImages.filter((img) => img.id !== imageId));
       // Also update the component in the list
@@ -337,8 +337,8 @@ export default function HomeComponents() {
         components.map((c) =>
           c.id === editingComponent.id
             ? { ...c, images: c.images.filter((img) => img.id !== imageId) }
-            : c
-        )
+            : c,
+        ),
       );
     } catch (err) {
       console.error("Failed to delete image:", err);
@@ -356,7 +356,7 @@ export default function HomeComponents() {
 
   const handleRemoveNewAttachment = (index: number) => {
     setSelectedAttachmentFiles(
-      selectedAttachmentFiles.filter((_, i) => i !== index)
+      selectedAttachmentFiles.filter((_, i) => i !== index),
     );
   };
 
@@ -366,10 +366,10 @@ export default function HomeComponents() {
     try {
       await ComponentsService.deleteComponentAttachment(
         editingComponent.id,
-        attachmentId
+        attachmentId,
       );
       setExistingAttachments(
-        existingAttachments.filter((att) => att.id !== attachmentId)
+        existingAttachments.filter((att) => att.id !== attachmentId),
       );
       // Also update the component in the list
       setComponents(
@@ -378,11 +378,11 @@ export default function HomeComponents() {
             ? {
                 ...c,
                 attachments: c.attachments.filter(
-                  (att) => att.id !== attachmentId
+                  (att) => att.id !== attachmentId,
                 ),
               }
-            : c
-        )
+            : c,
+        ),
       );
     } catch (err) {
       console.error("Failed to delete attachment:", err);
@@ -420,7 +420,7 @@ export default function HomeComponents() {
           selectedImageFiles.length > 0 ? selectedImageFiles : undefined,
           selectedAttachmentFiles.length > 0
             ? selectedAttachmentFiles
-            : undefined
+            : undefined,
         );
 
         // Reorder existing images if they were reordered
@@ -428,7 +428,7 @@ export default function HomeComponents() {
           const existingImageIds = existingImages.map((img) => img.id);
           updated = await ComponentsService.reorderComponentImages(
             editingComponent.id,
-            existingImageIds
+            existingImageIds,
           );
         }
 
@@ -439,16 +439,16 @@ export default function HomeComponents() {
               await DocumentsService.createDocumentFromAttachment(
                 file,
                 editingComponent.id,
-                formData.name
+                formData.name,
               );
             } catch (docErr) {
               console.error(
                 "Failed to create document from attachment:",
-                docErr
+                docErr,
               );
               // Don't fail the entire operation if document creation fails
               toast.warn(
-                `File ${file.name} uploaded but may not be visible in Documents yet.`
+                `File ${file.name} uploaded but may not be visible in Documents yet.`,
               );
             }
           }
@@ -458,8 +458,8 @@ export default function HomeComponents() {
           components.map((comp) =>
             comp.id === editingComponent.id
               ? convertAPIToFrontend(updated)
-              : comp
-          )
+              : comp,
+          ),
         );
         toast.success("Component updated successfully!");
       } else {
@@ -469,7 +469,7 @@ export default function HomeComponents() {
           selectedImageFiles.length > 0 ? selectedImageFiles : undefined,
           selectedAttachmentFiles.length > 0
             ? selectedAttachmentFiles
-            : undefined
+            : undefined,
         );
 
         // Create documents for attachments
@@ -479,16 +479,16 @@ export default function HomeComponents() {
               await DocumentsService.createDocumentFromAttachment(
                 file,
                 created.id,
-                formData.name
+                formData.name,
               );
             } catch (docErr) {
               console.error(
                 "Failed to create document from attachment:",
-                docErr
+                docErr,
               );
               // Don't fail the entire operation if document creation fails
               toast.warn(
-                `File ${file.name} uploaded but may not be visible in Documents yet.`
+                `File ${file.name} uploaded but may not be visible in Documents yet.`,
               );
             }
           }
@@ -556,10 +556,10 @@ export default function HomeComponents() {
   const stats = {
     total: components.length,
     needsMaintenance: components.filter(
-      (c) => new Date(c.nextMaintenance) < new Date()
+      (c) => new Date(c.nextMaintenance) < new Date(),
     ).length,
     underWarranty: components.filter(
-      (c) => new Date(c.warrantyExpiration) > new Date()
+      (c) => new Date(c.warrantyExpiration) > new Date(),
     ).length,
   };
 
@@ -691,7 +691,7 @@ export default function HomeComponents() {
 
                   {/* Filter Toggle */}
                   <button
-                    className="btn btn-outline gap-2"
+                    className="btn btn-outline border-gray-300 hover:bg-gray-100 gap-2"
                     onClick={() => setIsFilterOpen(!isFilterOpen)}
                   >
                     <FunnelIcon className="h-5 w-5" />
@@ -1171,7 +1171,7 @@ export default function HomeComponents() {
                                           await ComponentsService.createLocation(
                                             {
                                               name: newLocationInput.trim(),
-                                            }
+                                            },
                                           );
                                         setLocations([
                                           ...locations,
@@ -1187,10 +1187,10 @@ export default function HomeComponents() {
                                       } catch (err) {
                                         console.error(
                                           "Failed to create location:",
-                                          err
+                                          err,
                                         );
                                         toast.error(
-                                          "Failed to create location"
+                                          "Failed to create location",
                                         );
                                       }
                                     }
@@ -1205,7 +1205,7 @@ export default function HomeComponents() {
                                           await ComponentsService.createLocation(
                                             {
                                               name: newLocationInput.trim(),
-                                            }
+                                            },
                                           );
                                         setLocations([
                                           ...locations,
@@ -1221,10 +1221,10 @@ export default function HomeComponents() {
                                       } catch (err) {
                                         console.error(
                                           "Failed to create location:",
-                                          err
+                                          err,
                                         );
                                         toast.error(
-                                          "Failed to create location"
+                                          "Failed to create location",
                                         );
                                       }
                                     }
@@ -1805,7 +1805,7 @@ export default function HomeComponents() {
                               (currentImageIndex -
                                 1 +
                                 imagePreviewComponent.images.length) %
-                                imagePreviewComponent.images.length
+                                imagePreviewComponent.images.length,
                             )
                           }
                           className="btn btn-ghost btn-sm"
@@ -1820,7 +1820,7 @@ export default function HomeComponents() {
                           onClick={() =>
                             setCurrentImageIndex(
                               (currentImageIndex + 1) %
-                                imagePreviewComponent.images.length
+                                imagePreviewComponent.images.length,
                             )
                           }
                           className="btn btn-ghost btn-sm"

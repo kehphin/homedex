@@ -322,7 +322,9 @@ export default function HomeProfilePage() {
                   <option value="forced_air">Forced Air</option>
                   <option value="radiant">Radiant</option>
                   <option value="baseboard">Baseboard</option>
+                  <option value="mini_split">Mini-split</option>
                   <option value="stove">Stove</option>
+                  <option value="multiple">Multiple</option>
                 </select>
               </div>
 
@@ -342,6 +344,7 @@ export default function HomeProfilePage() {
                   <option value="natural_gas">Natural Gas</option>
                   <option value="oil">Oil</option>
                   <option value="electric">Electric</option>
+                  <option value="multiple">Multiple</option>
                   <option value="other">Other</option>
                 </select>
               </div>

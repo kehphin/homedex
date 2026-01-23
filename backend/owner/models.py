@@ -22,13 +22,16 @@ class Home(models.Model):
         ('forced_air', 'Forced Air'),
         ('radiant', 'Radiant'),
         ('baseboard', 'Baseboard'),
+        ('mini_split', 'Mini-split'),
         ('stove', 'Stove'),
+        ('multiple', 'Multiple'),
     ]
 
     HEATING_SOURCE_CHOICES = [
         ('natural_gas', 'Natural Gas'),
         ('oil', 'Oil'),
         ('electric', 'Electric'),
+        ('multiple', 'Multiple'),
         ('other', 'Other'),
     ]
 
@@ -127,7 +130,9 @@ class HomeProfile(models.Model):
         ('forced_air', 'Forced Air'),
         ('radiant', 'Radiant'),
         ('baseboard', 'Baseboard'),
+        ('mini_split', 'Mini-split'),
         ('stove', 'Stove'),
+        ('multiple', 'Multiple'),
     ]
 
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='home_profile')
@@ -147,6 +152,7 @@ class HomeProfile(models.Model):
         ('natural_gas', 'Natural Gas'),
         ('oil', 'Oil'),
         ('electric', 'Electric'),
+        ('multiple', 'Multiple'),
         ('other', 'Other'),
     ]
     heating_source = models.CharField(max_length=50, choices=HEATING_SOURCE_CHOICES, blank=True)

@@ -27,6 +27,9 @@ const HOMEDEX_COLORS = {
   primaryFocus: "#1daf8b",
   baseContent: "#1e2734",
   base: "#ffffff",
+  primaryColor: "#088116",
+  baseContentColor: "#1e2734",
+  baseColor: "#ffffff",
 };
 
 const Dashboard = () => {
@@ -138,16 +141,16 @@ const Dashboard = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
         <div className="bg-white p-6 rounded-box border border-gray-200">
           <h2 className="text-2xl font-extrabold mb-6 text-base-content">
-            Home Value Appreciation
+            Home Value (Last 5 years)
           </h2>
           <ResponsiveContainer width="100%" height={300}>
             <AreaChart
               data={[
-                { name: "2020", value: 350000 },
-                { name: "2021", value: 375000 },
-                { name: "2022", value: 425000 },
-                { name: "2023", value: 450000 },
-                { name: "2024", value: 460000 },
+                { name: "2022", value: 350000 },
+                { name: "2023", value: 375000 },
+                { name: "2024", value: 425000 },
+                { name: "2025", value: 450000 },
+                { name: "2026", value: 460000 },
               ]}
             >
               <XAxis

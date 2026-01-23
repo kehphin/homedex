@@ -39,7 +39,9 @@ export const FeedbackModal = ({
     >
       <div className="modal-box border border-slate-200 shadow-sm">
         <h3 className="font-bold text-lg">Submit Feedback</h3>
-        <p className="py-4">Got a bug or issue to report? Let us know!</p>
+        <p className="py-4">
+          Got an issue to report? Or a feature request? Let us know!
+        </p>
         {error && <div className="alert alert-error">{error}</div>}
         <form onSubmit={handleFormSubmit}>
           <input

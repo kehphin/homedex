@@ -8,14 +8,14 @@ import Logout from "./auth/user/Logout";
 import Signup from "./auth/user/Signup";
 import ProviderSignup from "./auth/social/ProviderSignup";
 import ProviderCallback from "./auth/social/ProviderCallback";
-import ChangeEmail from "./auth/user/ChangeEmail";
+
 import ManageProviders from "./auth/social/ManageProviders";
 import VerifyEmail, {
   loader as verifyEmailLoader,
 } from "./auth/user/VerifyEmail";
 import VerificationEmailSent from "./auth/user/VerificationEmailSent";
 import RequestPasswordReset from "./auth/user/RequestPasswordReset";
-import ChangePassword from "./auth/user/ChangePassword";
+import Settings from "./auth/user/Settings";
 import MFAOverview, {
   loader as mfaOverviewLoader,
 } from "./auth/mfa/MFAOverview";
@@ -43,7 +43,6 @@ import PaymentCancel from "./payments/PaymentCancel";
 import PaymentHistory from "./payments/PaymentHistory";
 
 import Root from "./Root";
-import ActiveSubscriptions from "./payments/ActiveSubscriptions";
 import SampleProtectedFile from "./samples/SampleProtectedFile";
 import SampleProtectedSubscription from "./samples/SampleRequiresSubscription";
 import AskDex from "./dex/AskDex";
@@ -160,14 +159,7 @@ function createRouter() {
           path: "/account/login",
           element: <Login />,
         },
-        {
-          path: "/account/email",
-          element: (
-            <AuthenticatedRoute>
-              <ChangeEmail />
-            </AuthenticatedRoute>
-          ),
-        },
+
         {
           path: "/account/logout",
           element: <Logout />,
@@ -215,10 +207,10 @@ function createRouter() {
           loader: resetPasswordLoader,
         },
         {
-          path: "/account/password/change",
+          path: "/account/settings",
           element: (
             <AuthenticatedRoute>
-              <ChangePassword />
+              <Settings />
             </AuthenticatedRoute>
           ),
         },
@@ -340,14 +332,6 @@ function createRouter() {
           element: (
             <AuthenticatedRoute>
               <PaymentHistory />
-            </AuthenticatedRoute>
-          ),
-        },
-        {
-          path: "/account/payment/subscriptions",
-          element: (
-            <AuthenticatedRoute>
-              <ActiveSubscriptions />
             </AuthenticatedRoute>
           ),
         },

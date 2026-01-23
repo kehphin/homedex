@@ -24,6 +24,7 @@ import {
   BuildingOfficeIcon,
   PlusIcon,
   CheckIcon,
+  CogIcon,
 } from "@heroicons/react/24/outline";
 import { HeartIcon } from "@heroicons/react/24/solid";
 import NotificationCenter from "../notifications/NotificationCenter";
@@ -148,26 +149,6 @@ export default function SideMenu({
         { to: "/account/notifications", icon: BellIcon, name: "Notifications" },
       ],
     },
-    // {
-    //   title: "Maintenance",
-    //   items: [
-    //     {
-    //       to: "/account/appointments",
-    //       icon: CalendarDaysIcon,
-    //       name: "Appointments",
-    //     },
-    //     {
-    //       to: "/account/appointment",
-    //       icon: CalendarDaysIcon,
-    //       name: "Schedule appointment",
-    //     },
-    //     {
-    //       to: "/account/payment/history",
-    //       icon: BanknotesIcon,
-    //       name: "Payments",
-    //     },
-    //   ],
-    // },
     {
       title: "My Home",
       items: [
@@ -212,45 +193,27 @@ export default function SideMenu({
       ],
     },
     {
+      title: "Maintenance",
+      items: [
+        {
+          to: "/account/appointments",
+          icon: CalendarDaysIcon,
+          name: "Service Appointments",
+        },
+        {
+          to: "/account/payment/history",
+          icon: BanknotesIcon,
+          name: "Payments",
+        },
+      ],
+    },
+    {
       title: "User",
       items: [
-        { to: "/account/email", icon: EnvelopeIcon, name: "Change Email" },
         {
-          to: "/account/password/change",
-          icon: LockClosedIcon,
-          name: "Change Password",
-        },
-        // ...(config?.data.socialaccount
-        //   ? [
-        //       {
-        //         to: "/account/providers",
-        //         icon: UserGroupIcon,
-        //         name: "Providers",
-        //       },
-        //     ]
-        //   : []),
-        // ...(config?.data.mfa
-        //   ? [
-        //       {
-        //         to: "/account/2fa",
-        //         icon: ShieldCheckIcon,
-        //         name: "Two-Factor Authentication",
-        //       },
-        //     ]
-        //   : []),
-        // ...(config?.data.usersessions
-        //   ? [
-        //       {
-        //         to: "/account/sessions",
-        //         icon: RocketLaunchIcon,
-        //         name: "Sessions",
-        //       },
-        //     ]
-        //   : []),
-        {
-          to: "/account/payment/subscriptions",
-          icon: CalendarIcon,
-          name: "Subscription",
+          to: "/account/settings",
+          icon: CogIcon,
+          name: "Settings",
         },
       ],
     },

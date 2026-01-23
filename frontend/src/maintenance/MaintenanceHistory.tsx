@@ -41,7 +41,7 @@ interface MaintenanceHistoryRecord {
  * Convert API response to frontend format
  */
 function convertAPIToFrontend(
-  apiRecord: APIMaintenanceHistory
+  apiRecord: APIMaintenanceHistory,
 ): MaintenanceHistoryRecord {
   return {
     id: apiRecord.id,
@@ -171,21 +171,21 @@ export default function MaintenanceHistoryPage() {
         const updated = await MaintenanceService.updateMaintenanceRecord(
           editingRecord.id,
           recordData,
-          attachmentFiles.length > 0 ? attachmentFiles : undefined
+          attachmentFiles.length > 0 ? attachmentFiles : undefined,
         );
         setRecords(
           records.map((record) =>
             record.id === editingRecord.id
               ? convertAPIToFrontend(updated)
-              : record
-          )
+              : record,
+          ),
         );
         toast.success("Maintenance record updated successfully!");
       } else {
         // Create new record
         const created = await MaintenanceService.createMaintenanceRecord(
           recordData,
-          attachmentFiles.length > 0 ? attachmentFiles : undefined
+          attachmentFiles.length > 0 ? attachmentFiles : undefined,
         );
         setRecords([convertAPIToFrontend(created), ...records]);
         toast.success("Maintenance record created successfully!");
@@ -207,7 +207,7 @@ export default function MaintenanceHistoryPage() {
   const handleDelete = async (id: string) => {
     if (
       !window.confirm(
-        "Are you sure you want to delete this maintenance record?"
+        "Are you sure you want to delete this maintenance record?",
       )
     ) {
       return;
@@ -229,7 +229,7 @@ export default function MaintenanceHistoryPage() {
 
   const handleDeleteAttachment = async (
     maintenanceId: string,
-    attachmentId: string
+    attachmentId: string,
   ) => {
     try {
       await MaintenanceService.deleteAttachment(maintenanceId, attachmentId);
@@ -239,11 +239,11 @@ export default function MaintenanceHistoryPage() {
             ? {
                 ...record,
                 attachments: record.attachments.filter(
-                  (att) => att.id !== attachmentId
+                  (att) => att.id !== attachmentId,
                 ),
               }
-            : record
-        )
+            : record,
+        ),
       );
     } catch (err) {
       console.error("Failed to delete attachment:", err);
@@ -269,7 +269,7 @@ export default function MaintenanceHistoryPage() {
 
   // Sort records by date (newest first)
   const sortedRecords = [...filteredRecords].sort(
-    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
   );
 
   return (
@@ -378,7 +378,7 @@ export default function MaintenanceHistoryPage() {
 
                   {/* Filter Toggle */}
                   <button
-                    className="btn btn-outline gap-2"
+                    className="btn btn-outline border-gray-300 hover:bg-gray-100 gap-2"
                     onClick={() => setIsFilterOpen(!isFilterOpen)}
                   >
                     <FunnelIcon className="h-5 w-5" />
@@ -514,7 +514,7 @@ export default function MaintenanceHistoryPage() {
                                       onClick={() =>
                                         handleDeleteAttachment(
                                           record.id,
-                                          attachment.id
+                                          attachment.id,
                                         )
                                       }
                                       className="btn btn-ghost btn-xs text-error"

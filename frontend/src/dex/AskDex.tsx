@@ -179,9 +179,9 @@ export default function AskDex() {
                       } flex items-center justify-center`}
                     >
                       {message.role === "assistant" ? (
-                        <SparklesIcon className="h-6 w-6 text-neutral-content" />
+                        <SparklesIcon className="h-6 w-6 text-neutral-content mt-2 ml-2" />
                       ) : (
-                        <div className="text-base-content text-sm font-bold">
+                        <div className="text-base-content text-sm font-bold mt-2.5 ml-2">
                           You
                         </div>
                       )}

@@ -211,12 +211,12 @@ export default function Documents() {
         const updated = await DocumentsService.updateDocument(
           editingDocument.id,
           documentData,
-          selectedFile || undefined
+          selectedFile || undefined,
         );
         setDocuments(
           documents.map((doc) =>
-            doc.id === editingDocument.id ? convertAPIToFrontend(updated) : doc
-          )
+            doc.id === editingDocument.id ? convertAPIToFrontend(updated) : doc,
+          ),
         );
         toast.success("Document updated successfully!");
       } else {
@@ -229,7 +229,7 @@ export default function Documents() {
 
         const created = await DocumentsService.createDocument(
           documentData,
-          selectedFile
+          selectedFile,
         );
         setDocuments([convertAPIToFrontend(created), ...documents]);
         toast.success("Document uploaded successfully!");
@@ -282,7 +282,7 @@ export default function Documents() {
       document.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
       document.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
       document.tags.some((tag) =>
-        tag.toLowerCase().includes(searchQuery.toLowerCase())
+        tag.toLowerCase().includes(searchQuery.toLowerCase()),
       );
 
     const matchesCategory =
@@ -300,7 +300,7 @@ export default function Documents() {
 
   // Get unique years from documents
   const availableYears = Array.from(
-    new Set(documents.map((doc) => doc.year))
+    new Set(documents.map((doc) => doc.year)),
   ).sort((a, b) => parseInt(b) - parseInt(a));
 
   const formatBytes = (bytes: number) => {
@@ -380,7 +380,7 @@ export default function Documents() {
 
                   {/* Filter Toggle */}
                   <button
-                    className="btn btn-outline gap-2"
+                    className="btn btn-outline border-gray-300 hover:bg-gray-100 gap-2"
                     onClick={() => setIsFilterOpen(!isFilterOpen)}
                   >
                     <FunnelIcon className="h-5 w-5" />
@@ -560,7 +560,7 @@ export default function Documents() {
                             <span>
                               Uploaded:{" "}
                               {new Date(
-                                document.uploadDate
+                                document.uploadDate,
                               ).toLocaleDateString()}
                             </span>
                             {document.documentDate && (
@@ -569,7 +569,7 @@ export default function Documents() {
                                 <span>
                                   Date:{" "}
                                   {new Date(
-                                    document.documentDate
+                                    document.documentDate,
                                   ).toLocaleDateString()}
                                 </span>
                               </>
