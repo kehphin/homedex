@@ -8,6 +8,7 @@ import { SignUpData, AuthState, ConfigState, ApiError } from "../types";
 import { pathForPendingFlow } from "../../auth/routing";
 import { REDIRECT_URLs } from "../constants";
 import { useAuthStatus } from "../hooks";
+import { getAssetUrl } from "../../lib/assetUtils";
 
 const Signup: React.FC = () => {
   const [email, setEmail] = useState<string>("");
@@ -64,7 +65,7 @@ const Signup: React.FC = () => {
       } else if (content.status === 401) {
         // Check for pending flow
         const pendingFlow = content.data?.flows?.find(
-          (flow) => flow.is_pending
+          (flow) => flow.is_pending,
         );
         if (pendingFlow) {
           const path = pathForPendingFlow(content);
@@ -92,6 +93,13 @@ const Signup: React.FC = () => {
     <div className="min-h-screen bg-base-100 flex items-center">
       <div className="card mx-auto w-full max-w-sm bg-base-100 mt-16">
         <div className="card-body">
+          <div className="flex justify-center mb-6">
+            <img
+              src={getAssetUrl("assets/homedex_h.png")}
+              alt="HomeDex Logo"
+              className="h-32"
+            />
+          </div>
           <h1 className="text-2xl font-bold text-center mb-2">Sign Up</h1>
           <p className="text-center mb-4">
             Already have an account?{" "}

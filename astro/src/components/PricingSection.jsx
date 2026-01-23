@@ -10,7 +10,6 @@ const PricingSection = () => {
       annualPrice: 0,
       features: [
         "1 Home",
-        "Up to 10 Documents",
         "Basic Task Management",
         "Email Support",
         "Mobile Access",
@@ -55,7 +54,7 @@ const PricingSection = () => {
           Simple <span className="text-primary">Pricing</span>
         </h2>
         <p className="text-center text-base-content opacity-70 mb-12 max-w-2xl mx-auto">
-          FREE, owning a home is expensive enough, managing it shouldn't be
+          FREE! Owning a home is expensive enough, managing it shouldn't be
         </p>
 
         <div className="flex justify-center mb-12">
@@ -129,14 +128,14 @@ const PricingSection = () => {
                   </ul>
                 </div>
                 <div className="card-actions justify-center mt-auto">
-                  <CheckoutButton
-                    stripeProductId={plan.stripe_product_id}
+                  <a
+                    href="https://app.homedex.app/account/signup"
                     className={`btn btn-block ${
                       plan.popular ? "btn-primary" : "btn-outline btn-primary"
                     }`}
                   >
                     Get Started
-                  </CheckoutButton>
+                  </a>
                 </div>
               </div>
             </div>
@@ -147,9 +146,12 @@ const PricingSection = () => {
           <p className="text-base-content opacity-70 mb-4">
             Need a custom plan for your business?
           </p>
-          <button className="btn btn-link text-primary">
+          <a
+            href="https://app.homedex.app/account/signup"
+            className="btn btn-link text-primary"
+          >
             Contact Us for Enterprise Solutions
-          </button>
+          </a>
         </div>
       </div>
     </section>

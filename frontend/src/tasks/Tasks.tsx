@@ -184,7 +184,7 @@ export default function Tasks() {
         recurrenceDaysOfWeek: task.recurrenceDaysOfWeek || [],
         recurrenceDaysOfMonth: task.recurrenceDaysOfMonth || [],
         recurrenceDaysOfMonthType: task.recurrenceDaysOfMonth?.some(
-          (d) => typeof d === "object"
+          (d) => typeof d === "object",
         )
           ? "relative"
           : "absolute",
@@ -291,8 +291,8 @@ export default function Tasks() {
         const updated = await TasksService.updateTask(editingTask.id, taskData);
         setTasks(
           tasks.map((task) =>
-            task.id === editingTask.id ? convertAPIToFrontend(updated) : task
-          )
+            task.id === editingTask.id ? convertAPIToFrontend(updated) : task,
+          ),
         );
         toast.success("Task updated successfully!");
       } else {
@@ -334,7 +334,9 @@ export default function Tasks() {
         status: newStatus,
       });
       setTasks(
-        tasks.map((t) => (t.id === task.id ? convertAPIToFrontend(updated) : t))
+        tasks.map((t) =>
+          t.id === task.id ? convertAPIToFrontend(updated) : t,
+        ),
       );
     } catch (err) {
       console.error("Failed to update task status:", err);
@@ -348,7 +350,9 @@ export default function Tasks() {
         status: "dismissed",
       });
       setTasks(
-        tasks.map((t) => (t.id === task.id ? convertAPIToFrontend(updated) : t))
+        tasks.map((t) =>
+          t.id === task.id ? convertAPIToFrontend(updated) : t,
+        ),
       );
     } catch (err) {
       console.error("Failed to dismiss task:", err);
@@ -652,7 +656,7 @@ export default function Tasks() {
                               const date = new Date(
                                 now.getFullYear(),
                                 now.getMonth() - i,
-                                1
+                                1,
                               );
                               const year = date.getFullYear();
                               const month = (date.getMonth() + 1)
@@ -668,7 +672,7 @@ export default function Tasks() {
                                   value={`${year}-${month}`}
                                 >
                                   {label}
-                                </option>
+                                </option>,
                               );
                             }
                             return months;
@@ -815,7 +819,7 @@ export default function Tasks() {
                               {task.priority}
                             </span>
                             <span
-                              className={`badge badge-light ${ STATUS_COLORS[task.status]}`}
+                              className={`badge badge-light ${STATUS_COLORS[task.status]}`}
                             >
                               {task.status}
                             </span>
@@ -1160,7 +1164,7 @@ export default function Tasks() {
                                         type="checkbox"
                                         className="checkbox checkbox-sm"
                                         checked={formData.recurrenceDaysOfWeek.includes(
-                                          day.value
+                                          day.value,
                                         )}
                                         onChange={(e) => {
                                           const days =
@@ -1177,7 +1181,7 @@ export default function Tasks() {
                                             setFormData({
                                               ...formData,
                                               recurrenceDaysOfWeek: days.filter(
-                                                (d) => d !== day.value
+                                                (d) => d !== day.value,
                                               ),
                                             });
                                           }
@@ -1269,7 +1273,7 @@ export default function Tasks() {
                                   <div className="grid grid-cols-5 gap-2">
                                     {Array.from(
                                       { length: 31 },
-                                      (_, i) => i + 1
+                                      (_, i) => i + 1,
                                     ).map((day) => (
                                       <label
                                         key={day}
@@ -1279,7 +1283,7 @@ export default function Tasks() {
                                           type="checkbox"
                                           className="checkbox checkbox-sm"
                                           checked={formData.recurrenceDaysOfMonth.includes(
-                                            day
+                                            day,
                                           )}
                                           onChange={(e) => {
                                             const days =
@@ -1290,7 +1294,8 @@ export default function Tasks() {
                                                 ...formData,
                                                 recurrenceDaysOfMonth: [
                                                   ...days.filter(
-                                                    (d) => typeof d === "number"
+                                                    (d) =>
+                                                      typeof d === "number",
                                                   ),
                                                   day,
                                                 ],

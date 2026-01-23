@@ -29,7 +29,7 @@ export default function Appointments() {
       setError(
         err instanceof Error
           ? err.message
-          : "Failed to load appointments. Please try again."
+          : "Failed to load appointments. Please try again.",
       );
     } finally {
       setLoading(false);
@@ -69,7 +69,7 @@ export default function Appointments() {
   };
 
   const activeAppointments = appointments.filter(
-    (apt) => apt.status !== "cancelled" && apt.status !== "completed"
+    (apt) => apt.status !== "cancelled" && apt.status !== "completed",
   );
 
   return <div>TODO</div>;

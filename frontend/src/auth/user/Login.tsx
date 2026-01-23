@@ -7,6 +7,7 @@ import FormErrors from "../../components/FormErrors";
 import { LoginData, AuthState, ConfigState } from "../types";
 import { REDIRECT_URLs } from "../constants";
 import { useAuthStatus } from "../hooks";
+import { getAssetUrl } from "../../lib/assetUtils";
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState<string>("");
@@ -51,7 +52,7 @@ const Login: React.FC = () => {
       } else if (content.status === 401) {
         // Check for pending flow
         const pendingFlow = content.data?.flows?.find(
-          (flow) => flow.is_pending
+          (flow) => flow.is_pending,
         );
         if (pendingFlow) {
           const path = pathForPendingFlow(content);
@@ -79,9 +80,14 @@ const Login: React.FC = () => {
     <div className="min-h-screen bg-base-100 flex items-center">
       <div className="card mx-auto w-full max-w-sm bg-base-100 m-10">
         <div className="card-body">
-          <h1 className="text-2xl font-bold text-center mb-2">
-            Login to Homedex
-          </h1>
+          <div className="flex justify-center mb-6">
+            <img
+              src={getAssetUrl("assets/homedex_h.png")}
+              alt="HomeDex Logo"
+              className="h-32"
+            />
+          </div>
+          <h1 className="text-2xl font-bold text-center mb-2">Login</h1>
           <p className="text-center mb-4">
             No account?{" "}
             <Link to="/account/signup" className="link link-primary">

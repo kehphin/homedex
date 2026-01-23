@@ -126,21 +126,20 @@ export default function ContractorsPage() {
         // Update existing contractor
         const updated = await ContractorService.updateContractor(
           editingContractor.id,
-          contractorData
+          contractorData,
         );
         setContractors(
           contractors.map((contractor) =>
             contractor.id === editingContractor.id
               ? (updated as ContractorLocal)
-              : contractor
-          )
+              : contractor,
+          ),
         );
         toast.success("Contractor updated successfully!");
       } else {
         // Create new contractor
-        const created = await ContractorService.createContractor(
-          contractorData
-        );
+        const created =
+          await ContractorService.createContractor(contractorData);
         setContractors([created as ContractorLocal, ...contractors]);
         toast.success("Contractor added successfully!");
       }
@@ -192,7 +191,7 @@ export default function ContractorsPage() {
     if (!selectedContractor) return;
     try {
       const details = await ContractorService.getContractor(
-        selectedContractor.id
+        selectedContractor.id,
       );
       setSelectedContractor(details);
     } catch (err) {
@@ -495,13 +494,13 @@ export default function ContractorsPage() {
                                       </p>
                                       <p className="text-sm text-base-content/70">
                                         {new Date(
-                                          maintenance.date
+                                          maintenance.date,
                                         ).toLocaleDateString()}
                                       </p>
                                     </div>
                                   </div>
                                 </div>
-                              )
+                              ),
                             )}
                           </div>
                         )}

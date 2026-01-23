@@ -93,7 +93,9 @@ const PricingSection = () => {
             >
               {plan.popular && (
                 <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-                  <div className="badge badge-primary badge-light">Most Popular</div>
+                  <div className="badge badge-primary badge-light">
+                    Most Popular
+                  </div>
                 </div>
               )}
               <div className="card-body flex flex-col justify-between h-full">
@@ -133,20 +135,14 @@ const PricingSection = () => {
                   </ul>
                 </div>
                 <div className="card-actions justify-center mt-auto">
-                  <button
-                    onClick={() =>
-                      handleCheckout(
-                        plan.stripe_product_id,
-                        successUrl,
-                        cancelUrl
-                      )
-                    }
+                  <a
+                    href="https://app.homedex.app/account/signup"
                     className={`btn btn-block ${
                       plan.popular ? "btn-primary" : "btn-outline btn-primary"
                     }`}
                   >
                     Get Started
-                  </button>
+                  </a>
                 </div>
               </div>
             </div>
@@ -157,9 +153,12 @@ const PricingSection = () => {
           <p className="text-base-content opacity-70 mb-4">
             Not sure which plan is right for you?
           </p>
-          <button className="btn btn-link text-primary">
+          <a
+            href="https://app.homedex.app/account/signup"
+            className="btn btn-link text-primary"
+          >
             Compare Plans in Detail
-          </button>
+          </a>
         </div>
       </div>
     </section>
